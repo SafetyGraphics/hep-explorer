@@ -16,9 +16,9 @@ export default function safetyedish(element, settings) {
         syncedSettings = syncSettings(mergedSettings),
         syncedControlInputs = syncControlInputs(syncedSettings),
         controls = createControls(element, { location: 'top', inputs: syncedControlInputs }),
-        chart = createChart(element, syncedSettings, controls)
+        chart = createChart(element, syncedSettings, controls);
 
-      /*
+    /*
         listingSettings = {
             cols: syncedSettings.details.map(detail => detail.value_col),
             headers: syncedSettings.details.map(detail => detail.label),

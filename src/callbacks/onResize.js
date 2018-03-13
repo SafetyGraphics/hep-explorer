@@ -1,2 +1,1 @@
-export default function onResize() {
-}
+export default function onResize() {}

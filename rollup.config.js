@@ -1,10 +1,10 @@
 import babel from 'rollup-plugin-babel';
 
 export default {
-    name: 'safetyeDISH',
+    name: 'safetyedish',
     input: './src/wrapper.js',
     output:
-        {file: './build/safetyeDISH.js',
+        {file: './build/safetyedish.js',
         format: 'umd'
     },
     globals: {

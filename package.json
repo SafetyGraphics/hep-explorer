@@ -5,16 +5,16 @@
   "author": "Rho, Inc.",
   "license": "MIT",
   "homepage": "https://github.com/rhoinc/safety-eDISH#readme",
-  "main": "./build/safetyeDish.js",
+  "main": "./build/safetyedish.js",
   "module": "./src/index.js",
   "keywords": [
-      "labs",
-      "vitals",
-      "data",
-      "visualization",
-      "safety",
-      "explorer",
-      "hapatoxicity"
+    "labs",
+    "vitals",
+    "data",
+    "visualization",
+    "safety",
+    "explorer",
+    "hapatoxicity"
   ],
   "dependencies": {
     "d3": "^3",
@@ -25,7 +25,7 @@
     "bundle": "rollup -c",
     "format": "npm run format-src && npm run format-build",
     "format-src": "prettier --print-width=100 --tab-width=4 --single-quote --write \"./src/**/*.js\"",
-    "format-build": "prettier --print-width=100 --tab-width=4 --single-quote --write build/safetyHistogram.js",
+    "format-build": "prettier --print-width=100 --tab-width=4 --single-quote --write build/safetyedish.js",
     "watch": "rollup -c -w"
   },
   "devDependencies": {

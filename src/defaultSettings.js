@@ -2,53 +2,53 @@ const defaultSettings = {
     //Default template settings
     value_col: 'STRESN',
     measure_col: 'TEST',
-    measure_details:[
-      {
-        label:"ALT",
-        measure:"Aminotransferase, alanine (ALT)",
-        cut:{
-          relative:3,
-          absolute:null
+    measure_details: [
+        {
+            label: 'ALT',
+            measure: 'Aminotransferase, alanine (ALT)',
+            cut: {
+                relative: 3,
+                absolute: null
+            }
+        },
+        {
+            label: 'ALP',
+            measure: 'Alkaline phosphatase (ALP)',
+            cut: {
+                relative: 2,
+                absolute: null
+            }
+        },
+        {
+            label: 'TB',
+            measure: 'Total Bilirubin',
+            cut: {
+                relative: 2,
+                absolute: null
+            }
         }
-      },
-      {
-        label:"ALP",
-        measure:"Alkaline phosphatase (ALP)",
-        cut:{
-          relative:2,
-          absolute:null
-        }
-      },
-      {
-        label:"TB",
-        measure:"Total Bilirubin",
-        cut:{
-          relative:2,
-          absolute:null
-        }
-      }
     ],
     unit_col: 'STRESU',
     normal_range: true,
     normal_col_low: 'STNRLO',
     normal_col_high: 'STNRHI',
     id_col: 'USUBJID',
-    group_col:null,
+    group_col: null,
     filters: null,
     details: null,
     missingValues: ['', 'NA', 'N/A'],
-    display:"relative",//or "absolute"
+    display: 'relative', //or "absolute"
 
     //Standard webcharts settings
     x: {
-        column: "ALT",
+        column: 'ALT_relative',
         label: null,
         type: 'linear',
         behavior: 'flex',
         format: '.1f'
     },
     y: {
-        column:"ALP",
+        column: 'TB_relative',
         label: null,
         type: 'linear',
         behavior: 'flex'

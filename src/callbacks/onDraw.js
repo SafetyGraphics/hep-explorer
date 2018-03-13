@@ -1,2 +1,1 @@
-export default function onDraw() {
-}
+export default function onDraw() {}
