@@ -15,7 +15,7 @@ const defaultSettings = {
             label: 'ALP',
             measure: 'Alkaline phosphatase (ALP)',
             cut: {
-                relative: 2,
+                relative: 1,
                 absolute: null
             }
         },
@@ -42,16 +42,17 @@ const defaultSettings = {
     //Standard webcharts settings
     x: {
         column: 'ALT_relative',
-        label: null,
+        label: 'ALT (% ULN)',
         type: 'linear',
         behavior: 'flex',
         format: '.1f'
     },
     y: {
         column: 'TB_relative',
-        label: null,
+        label: 'TB (% ULN)',
         type: 'linear',
-        behavior: 'flex'
+        behavior: 'flex',
+        format: '.1f'
     },
     marks: [
         {
@@ -62,6 +63,8 @@ const defaultSettings = {
             attributes: { 'fill-opacity': 0.75 }
         }
     ],
+    color_by: 'ALP_relative_flagged',
+    max_width: 500,
     aspect: 1
 };
 

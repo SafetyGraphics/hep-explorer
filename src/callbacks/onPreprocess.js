@@ -1,6 +1,6 @@
-import { flattenData } from './onPreprocess/flattenData';
+import { flattenData } from './util/flattenData';
 
 export default function onPreprocess() {
-    console.log(this);
+    //update flattened data
     this.raw_data = flattenData.call(this);
 }

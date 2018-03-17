@@ -1,10 +1,10 @@
 (function(global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined'
-        ? (module.exports = factory(require('webcharts')))
+        ? (module.exports = factory(require('webcharts'), require('d3')))
         : typeof define === 'function' && define.amd
-            ? define(['webcharts'], factory)
-            : (global.safetyedish = factory(global.webCharts));
-})(this, function(webcharts) {
+            ? define(['webcharts', 'd3'], factory)
+            : (global.safetyedish = factory(global.webCharts, global.d3));
+})(this, function(webcharts, d3$1) {
     'use strict';
 
     if (typeof Object.assign != 'function') {
@@ -49,7 +49,7 @@
                 label: 'ALP',
                 measure: 'Alkaline phosphatase (ALP)',
                 cut: {
-                    relative: 2,
+                    relative: 1,
                     absolute: null
                 }
             },
@@ -76,16 +76,17 @@
         //Standard webcharts settings
         x: {
             column: 'ALT_relative',
-            label: null,
+            label: 'ALT (% ULN)',
             type: 'linear',
             behavior: 'flex',
             format: '.1f'
         },
         y: {
             column: 'TB_relative',
-            label: null,
+            label: 'TB (% ULN)',
             type: 'linear',
-            behavior: 'flex'
+            behavior: 'flex',
+            format: '.1f'
         },
         marks: [
             {
@@ -96,6 +97,8 @@
                 attributes: { 'fill-opacity': 0.75 }
             }
         ],
+        color_by: 'ALP_relative_flagged',
+        max_width: 500,
         aspect: 1
     };
 
@@ -172,6 +175,8 @@
         } else return defaultControls;
     }
 
+    //Converts a one record per measure data object to a one record per participant objects
+
     function flattenData() {
         var config = this.config;
         //make a data set with one row per ID
@@ -229,7 +234,7 @@
             m.values[config.id_col] = m.key;
             return m.values;
         });
-        console.log(flat_data);
+
         return flat_data;
     }
 
@@ -237,18 +242,246 @@
         this.raw_data = flattenData.call(this);
     }
 
-    function onLayout() {}
+    var defaultCutData = [
+        {
+            dimension: 'x',
+            value: null
+        },
+        {
+            dimension: 'y',
+            value: null
+        }
+    ];
+
+    var defaultQuadrantData = [
+        {
+            label: "Possible Hy's Law Range",
+            position: 'upper-right',
+            dataValue: 'xHigh:yHigh',
+            count: null,
+            percent: null
+        },
+        {
+            label: 'Hyperbilirubinemia',
+            position: 'upper-left',
+            dataValue: 'xNormal:yHigh',
+            count: null,
+            percent: null
+        },
+        {
+            label: "Temple's Corollary",
+            position: 'lower-right',
+            dataValue: 'xHigh:yNormal',
+            count: null,
+            percent: null
+        },
+        {
+            label: 'Normal Range',
+            position: 'lower-left',
+            dataValue: 'xNormal:yNormal',
+            count: null,
+            percent: null
+        }
+    ];
+
+    function initQuadrants() {
+        //layout the quadrants for hy's law risk levels
+        this.quadrants = {};
+
+        //////////////////////////////////////////////////////////
+        //create custom data objects for the lines and quadrants
+        /////////////////////////////////////////////////////////
+        console.log('just a test');
+        this.quadrants.quadrant_data = defaultQuadrantData;
+
+        this.quadrants.cut_data = defaultCutData;
+        this.quadrants.cut_data.x = null; //Also store the cuts as properties for convenience
+        this.quadrants.cut_data.y = null;
+
+        //////////////////////////////////////////////////////////
+        //layout the cut lines
+        /////////////////////////////////////////////////////////
+        this.quadrants.wrap = this.svg.append('g').attr('class', 'quadrants');
+        var wrap = this.quadrants.wrap;
+
+        this.quadrants.cut_g = wrap
+            .selectAll('g.cut')
+            .data(this.quadrants.cut_data)
+            .enter()
+            .append('g')
+            .attr('class', function(d) {
+                return 'cut ' + d.dimension;
+            });
+
+        this.quadrants.cut_lines = this.quadrants.cut_g
+            .append('line')
+            .attr('class', 'cut-line')
+            .attr('dash-array', '5,5')
+            .attr('stroke', '#bbb');
+
+        this.quadrants.cut_labels = this.quadrants.cut_g
+            .append('text')
+            .attr('class', 'cut-label')
+            .attr('stroke', '#bbb');
+
+        //////////////////////////////////////////////////////////
+        //layout the quadrant labels
+        /////////////////////////////////////////////////////////
+        this.quadrants.group_labels = this.svg.append('g').attr('class', 'group-labels');
+
+        this.quadrants.group_labels
+            .selectAll('text.quadrant-label')
+            .data(this.quadrants.quadrant_data)
+            .enter()
+            .append('text')
+            .attr('class', function(d) {
+                return 'quadrant-label ' + d.position;
+            })
+            .text(function(d) {
+                return d.label;
+            })
+            .attr('fill', '#bbb');
+    }
+
+    function onLayout() {
+        console.log(this);
+        initQuadrants.call(this);
+    }
 
     function onPreprocess() {
-        console.log(this);
+        //update flattened data
         this.raw_data = flattenData.call(this);
     }
 
     function onDataTransform() {}
 
-    function onDraw() {}
+    function updateQuadrantData() {
+        var chart = this;
+        var config = this.config;
+        //update cut data
+        var dimensions = ['x', 'y'];
+        dimensions.forEach(function(dimension) {
+            var cut = config.measure_details.find(function(f) {
+                return config[dimension].column.search(f.label) > -1;
+            }).cut[config.display];
 
-    function onResize() {}
+            chart.quadrants.cut_data.filter(function(f) {
+                return f.dimension == dimension;
+            })[0].value = cut;
+            chart.quadrants.cut_data[dimension] = cut; //save the cut value as a prop on the array
+        });
+
+        //add "eDISH_quadrant" column to raw_data
+        var x_var = this.config.x.column;
+        var y_var = this.config.y.column;
+        this.raw_data.forEach(function(d) {
+            var x_cat = d[x_var] >= chart.quadrants.cut_data.x ? 'xHigh' : 'xNormal';
+            var y_cat = d[y_var] >= chart.quadrants.cut_data.y ? 'yHigh' : 'yNormal';
+            d['eDISH_quadrant'] = x_cat + ':' + y_cat;
+        });
+
+        //update Quadrant data
+        this.quadrants.quadrant_data.forEach(function(quad) {
+            quad.count = chart.raw_data.filter(function(d) {
+                return d.eDish_quadrant == quad.value;
+            }).length;
+            quad.percent = quad.count / chart.raw_data.length;
+        });
+    }
+
+    function setDomain(dimension) {
+        var _this = this;
+
+        var domain = this[dimension].domain();
+        var cut = this.config.measure_details.find(function(f) {
+            return _this.config[dimension].column.search(f.label) > -1;
+        }).cut[this.config.display];
+
+        if (cut * 1.01 >= domain[1]) {
+            domain[1] = cut * 1.01;
+        }
+
+        //note: probably don't want this lower-bound calucation long term (use 0-ish value instead?)
+        if (cut * 0.99 <= domain[0]) {
+            domain[0] = cut * 0.99;
+        }
+
+        this[dimension + '_dom'] = domain;
+    }
+
+    function onDraw() {
+        //get current cutpoints and classify participants in to eDISH quadrants
+        updateQuadrantData.call(this);
+
+        //update domains to include cut lines
+        setDomain.call(this, 'x');
+        setDomain.call(this, 'y');
+    }
+
+    function drawQuadrants() {
+        var _this = this;
+
+        //position for cut-point lines
+        this.quadrants.cut_lines
+            .filter(function(d) {
+                return d.dimension == 'x';
+            })
+            .attr('x1', function(d) {
+                return _this.x(d.value);
+            })
+            .attr('x2', function(d) {
+                return _this.x(d.value);
+            })
+            .attr('y1', this.plot_height)
+            .attr('y2', 0);
+
+        this.quadrants.cut_lines
+            .filter(function(d) {
+                return d.dimension == 'y';
+            })
+            .attr('x1', 0)
+            .attr('x2', this.plot_width)
+            .attr('y1', function(d) {
+                return _this.y(d.value);
+            })
+            .attr('y2', function(d) {
+                return _this.y(d.value);
+            });
+
+        //position labels
+        this.quadrants.group_labels
+            .select('text.upper-right')
+            .attr('x', this.plot_width)
+            .attr('y', 0);
+
+        this.quadrants.group_labels
+            .select('text.upper-left')
+            .attr('x', 0)
+            .attr('y', 0);
+
+        this.quadrants.group_labels
+            .select('text.lower-right')
+            .attr('x', this.plot_width)
+            .attr('y', this.plot_height);
+
+        this.quadrants.group_labels
+            .select('text.lower-left')
+            .attr('x', 0)
+            .attr('y', this.plot_height);
+
+        this.quadrants.group_labels
+            .selectAll('text')
+            .attr('display', function(d) {
+                return d.count == 0 ? 'none' : null;
+            })
+            .text(function(d) {
+                return d.label + '(' + d.count + ')';
+            });
+    }
+
+    function onResize() {
+        drawQuadrants.call(this);
+    }
 
     function safetyedish(element, settings) {
         var mergedSettings = Object.assign({}, defaultSettings, settings),

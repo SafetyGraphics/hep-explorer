@@ -1,3 +1,5 @@
+//Converts a one record per measure data object to a one record per participant objects
+
 export function flattenData() {
     var chart = this;
     var config = this.config;
@@ -42,6 +44,6 @@ export function flattenData() {
         m.values[config.id_col] = m.key;
         return m.values;
     });
-    console.log(flat_data);
+
     return flat_data;
 }
