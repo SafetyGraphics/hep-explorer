@@ -38,5 +38,5 @@ export function drawQuadrants() {
     this.quadrants.group_labels
         .selectAll('text')
         .attr('display', d => (d.count == 0 ? 'none' : null))
-        .text(d => d.label + '(' + d.count + ')');
+        .text(d => d.label + '(' + d.percent + ')');
 }

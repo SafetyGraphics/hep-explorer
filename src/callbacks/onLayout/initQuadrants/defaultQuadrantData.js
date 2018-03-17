@@ -4,6 +4,7 @@ const defaultQuadrantData = [
         position: 'upper-right',
         dataValue: 'xHigh:yHigh',
         count: null,
+        total: null,
         percent: null
     },
     {
@@ -11,6 +12,7 @@ const defaultQuadrantData = [
         position: 'upper-left',
         dataValue: 'xNormal:yHigh',
         count: null,
+        total: null,
         percent: null
     },
     {
@@ -18,6 +20,7 @@ const defaultQuadrantData = [
         position: 'lower-right',
         dataValue: 'xHigh:yNormal',
         count: null,
+        total: null,
         percent: null
     },
     {
@@ -25,6 +28,7 @@ const defaultQuadrantData = [
         position: 'lower-left',
         dataValue: 'xNormal:yNormal',
         count: null,
+        total: null,
         percent: null
     }
 ];

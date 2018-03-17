@@ -259,6 +259,7 @@
             position: 'upper-right',
             dataValue: 'xHigh:yHigh',
             count: null,
+            total: null,
             percent: null
         },
         {
@@ -266,6 +267,7 @@
             position: 'upper-left',
             dataValue: 'xNormal:yHigh',
             count: null,
+            total: null,
             percent: null
         },
         {
@@ -273,6 +275,7 @@
             position: 'lower-right',
             dataValue: 'xHigh:yNormal',
             count: null,
+            total: null,
             percent: null
         },
         {
@@ -280,6 +283,7 @@
             position: 'lower-left',
             dataValue: 'xNormal:yNormal',
             count: null,
+            total: null,
             percent: null
         }
     ];
@@ -291,7 +295,6 @@
         //////////////////////////////////////////////////////////
         //create custom data objects for the lines and quadrants
         /////////////////////////////////////////////////////////
-        console.log('just a test');
         this.quadrants.quadrant_data = defaultQuadrantData;
 
         this.quadrants.cut_data = defaultCutData;
@@ -383,10 +386,13 @@
         //update Quadrant data
         this.quadrants.quadrant_data.forEach(function(quad) {
             quad.count = chart.raw_data.filter(function(d) {
-                return d.eDish_quadrant == quad.value;
+                return d.eDISH_quadrant == quad.dataValue;
             }).length;
-            quad.percent = quad.count / chart.raw_data.length;
+            quad.total = chart.raw_data.length;
+            quad.percent = d3.format('0.1%')(quad.count / quad.total);
         });
+
+        console.log(this.quadrants.quadrant_data);
     }
 
     function setDomain(dimension) {
@@ -475,11 +481,12 @@
                 return d.count == 0 ? 'none' : null;
             })
             .text(function(d) {
-                return d.label + '(' + d.count + ')';
+                return d.label + '(' + d.percent + ')';
             });
     }
 
     function onResize() {
+        console.log(this);
         drawQuadrants.call(this);
     }
 

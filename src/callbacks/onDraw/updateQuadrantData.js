@@ -22,7 +22,10 @@ export function updateQuadrantData() {
 
     //update Quadrant data
     this.quadrants.quadrant_data.forEach(function(quad) {
-        quad.count = chart.raw_data.filter(d => d.eDish_quadrant == quad.value).length;
-        quad.percent = quad.count / chart.raw_data.length;
+        quad.count = chart.raw_data.filter(d => d.eDISH_quadrant == quad.dataValue).length;
+        quad.total = chart.raw_data.length;
+        quad.percent = d3.format('0.1%')(quad.count / quad.total);
     });
+
+    console.log(this.quadrants.quadrant_data);
 }

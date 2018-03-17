@@ -8,7 +8,6 @@ export function initQuadrants() {
     //////////////////////////////////////////////////////////
     //create custom data objects for the lines and quadrants
     /////////////////////////////////////////////////////////
-    console.log('just a test');
     this.quadrants.quadrant_data = defaultQuadrantData;
 
     this.quadrants.cut_data = defaultCutData;
