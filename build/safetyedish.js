@@ -94,7 +94,7 @@
                 type: 'circle',
                 summarizeY: 'mean',
                 summarizeX: 'mean',
-                attributes: { 'fill-opacity': 0.75 }
+                attributes: { 'fill-opacity': 0 }
             }
         ],
         color_by: 'ALP_relative_flagged',
@@ -158,7 +158,18 @@
 
     //Map values from settings to control inputs
     function syncControlInputs(settings) {
-        var defaultControls = [];
+        var defaultControls = [
+            {
+                type: 'number',
+                label: 'ALT Cutpoint',
+                option: 'quadrants.cut_data.x'
+            },
+            {
+                type: 'number',
+                label: 'TB Cutpoint',
+                option: 'quadrants.cut_data.y'
+            }
+        ];
 
         if (settings.filters && settings.filters.length > 0) {
             var otherFilters = settings.filters.map(function(filter) {
@@ -289,40 +300,73 @@
     ];
 
     function initQuadrants() {
+        var chart = this;
+        var config = chart.config;
+
         //layout the quadrants for hy's law risk levels
-        this.quadrants = {};
+        this.config.quadrants = {};
+        var quadrants = this.config.quadrants;
 
         //////////////////////////////////////////////////////////
         //create custom data objects for the lines and quadrants
         /////////////////////////////////////////////////////////
-        this.quadrants.quadrant_data = defaultQuadrantData;
+        quadrants.quadrant_data = defaultQuadrantData;
 
-        this.quadrants.cut_data = defaultCutData;
-        this.quadrants.cut_data.x = null; //Also store the cuts as properties for convenience
-        this.quadrants.cut_data.y = null;
+        quadrants.cut_data = defaultCutData;
+        quadrants.cut_data.x = null; //Also store the cuts as properties for convenience
+        quadrants.cut_data.y = null;
+
+        ///////////////////////////////////////////////////////////
+        // set initial values
+        //////////////////////////////////////////////////////////
+        quadrants.cut_data.x = config.measure_details.find(function(f) {
+            return config.x.column.search(f.label) > -1;
+        }).cut[config.display];
+
+        chart.controls.wrap
+            .selectAll('div.control-group')
+            .filter(function(f) {
+                return f.option == 'quadrants.cut_data.x';
+            })
+            .select('input')
+            .node().value =
+            quadrants.cut_data.x;
+
+        quadrants.cut_data.y = config.measure_details.find(function(f) {
+            return config.y.column.search(f.label) > -1;
+        }).cut[config.display];
+
+        chart.controls.wrap
+            .selectAll('div.control-group')
+            .filter(function(f) {
+                return f.option == 'quadrants.cut_data.y';
+            })
+            .select('input')
+            .node().value =
+            quadrants.cut_data.y;
 
         //////////////////////////////////////////////////////////
         //layout the cut lines
         /////////////////////////////////////////////////////////
-        this.quadrants.wrap = this.svg.append('g').attr('class', 'quadrants');
-        var wrap = this.quadrants.wrap;
+        quadrants.wrap = this.svg.append('g').attr('class', 'quadrants');
+        var wrap = quadrants.wrap;
 
-        this.quadrants.cut_g = wrap
+        quadrants.cut_g = wrap
             .selectAll('g.cut')
-            .data(this.quadrants.cut_data)
+            .data(quadrants.cut_data)
             .enter()
             .append('g')
             .attr('class', function(d) {
                 return 'cut ' + d.dimension;
             });
 
-        this.quadrants.cut_lines = this.quadrants.cut_g
+        quadrants.cut_lines = quadrants.cut_g
             .append('line')
             .attr('class', 'cut-line')
             .attr('dash-array', '5,5')
             .attr('stroke', '#bbb');
 
-        this.quadrants.cut_labels = this.quadrants.cut_g
+        quadrants.cut_labels = quadrants.cut_g
             .append('text')
             .attr('class', 'cut-label')
             .attr('stroke', '#bbb');
@@ -330,20 +374,41 @@
         //////////////////////////////////////////////////////////
         //layout the quadrant labels
         /////////////////////////////////////////////////////////
-        this.quadrants.group_labels = this.svg.append('g').attr('class', 'group-labels');
+        quadrants.group_labels = this.svg.append('g').attr('class', 'group-labels');
 
-        this.quadrants.group_labels
+        quadrants.group_labels
             .selectAll('text.quadrant-label')
-            .data(this.quadrants.quadrant_data)
+            .data(quadrants.quadrant_data)
             .enter()
             .append('text')
             .attr('class', function(d) {
                 return 'quadrant-label ' + d.position;
             })
+            .attr('dy', function(d) {
+                return d.position.search('lower') > -1 ? '-.2em' : '.2em';
+            })
+            .attr('dx', function(d) {
+                return d.position.search('right') > -1 ? '-.5em' : '.5em';
+            })
+            .attr('text-anchor', function(d) {
+                return d.position.search('right') > 0 ? 'end' : null;
+            })
+            .attr('fill', '#bbb')
+            .style('cursor', 'pointer')
             .text(function(d) {
                 return d.label;
             })
-            .attr('fill', '#bbb');
+            .on('mouseover', function(d) {
+                d3.select(this).attr('fill', 'black');
+                var matches = chart.marks[0].circles.filter(function(f) {
+                    return f.values.raw[0].eDISH_quadrant == d.dataValue;
+                });
+                matches.attr('stroke-width', 2);
+            })
+            .on('mouseout', function() {
+                d3.select(this).attr('fill', '#bbb');
+                chart.marks[0].circles.attr('stroke-width', 1);
+            });
     }
 
     function onLayout() {
@@ -361,38 +426,41 @@
     function updateQuadrantData() {
         var chart = this;
         var config = this.config;
+
         //update cut data
         var dimensions = ['x', 'y'];
         dimensions.forEach(function(dimension) {
-            var cut = config.measure_details.find(function(f) {
-                return config[dimension].column.search(f.label) > -1;
-            }).cut[config.display];
+            //get value linked to the controls ...
+            var cut = config.quadrants.cut_data[dimension];
+            console.log(cut);
 
-            chart.quadrants.cut_data.filter(function(f) {
+            // ... add propogate it elsewhere
+            config.measure_details //
+                .find(function(f) {
+                    return config[dimension].column.search(f.label) > -1;
+                }).cut[config.display] = cut;
+            config.quadrants.cut_data.filter(function(f) {
                 return f.dimension == dimension;
             })[0].value = cut;
-            chart.quadrants.cut_data[dimension] = cut; //save the cut value as a prop on the array
         });
 
         //add "eDISH_quadrant" column to raw_data
         var x_var = this.config.x.column;
         var y_var = this.config.y.column;
         this.raw_data.forEach(function(d) {
-            var x_cat = d[x_var] >= chart.quadrants.cut_data.x ? 'xHigh' : 'xNormal';
-            var y_cat = d[y_var] >= chart.quadrants.cut_data.y ? 'yHigh' : 'yNormal';
+            var x_cat = d[x_var] >= config.quadrants.cut_data.x ? 'xHigh' : 'xNormal';
+            var y_cat = d[y_var] >= config.quadrants.cut_data.y ? 'yHigh' : 'yNormal';
             d['eDISH_quadrant'] = x_cat + ':' + y_cat;
         });
 
         //update Quadrant data
-        this.quadrants.quadrant_data.forEach(function(quad) {
+        config.quadrants.quadrant_data.forEach(function(quad) {
             quad.count = chart.raw_data.filter(function(d) {
                 return d.eDISH_quadrant == quad.dataValue;
             }).length;
             quad.total = chart.raw_data.length;
             quad.percent = d3.format('0.1%')(quad.count / quad.total);
         });
-
-        console.log(this.quadrants.quadrant_data);
     }
 
     function setDomain(dimension) {
@@ -428,7 +496,7 @@
         var _this = this;
 
         //position for cut-point lines
-        this.quadrants.cut_lines
+        this.config.quadrants.cut_lines
             .filter(function(d) {
                 return d.dimension == 'x';
             })
@@ -441,7 +509,7 @@
             .attr('y1', this.plot_height)
             .attr('y2', 0);
 
-        this.quadrants.cut_lines
+        this.config.quadrants.cut_lines
             .filter(function(d) {
                 return d.dimension == 'y';
             })
@@ -455,33 +523,33 @@
             });
 
         //position labels
-        this.quadrants.group_labels
+        this.config.quadrants.group_labels
             .select('text.upper-right')
             .attr('x', this.plot_width)
             .attr('y', 0);
 
-        this.quadrants.group_labels
+        this.config.quadrants.group_labels
             .select('text.upper-left')
             .attr('x', 0)
             .attr('y', 0);
 
-        this.quadrants.group_labels
+        this.config.quadrants.group_labels
             .select('text.lower-right')
             .attr('x', this.plot_width)
             .attr('y', this.plot_height);
 
-        this.quadrants.group_labels
+        this.config.quadrants.group_labels
             .select('text.lower-left')
             .attr('x', 0)
             .attr('y', this.plot_height);
 
-        this.quadrants.group_labels
+        this.config.quadrants.group_labels
             .selectAll('text')
             .attr('display', function(d) {
                 return d.count == 0 ? 'none' : null;
             })
             .text(function(d) {
-                return d.label + '(' + d.percent + ')';
+                return d.label + ' (' + d.percent + ')';
             });
     }
 

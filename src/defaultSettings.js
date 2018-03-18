@@ -60,7 +60,7 @@ const defaultSettings = {
             type: 'circle',
             summarizeY: 'mean',
             summarizeX: 'mean',
-            attributes: { 'fill-opacity': 0.75 }
+            attributes: { 'fill-opacity': 0 }
         }
     ],
     color_by: 'ALP_relative_flagged',
@@ -117,7 +117,18 @@ export function syncSettings(settings) {
 
 //Map values from settings to control inputs
 export function syncControlInputs(settings) {
-    const defaultControls = [];
+    const defaultControls = [
+        {
+            type: 'number',
+            label: 'ALT Cutpoint',
+            option: 'quadrants.cut_data.x'
+        },
+        {
+            type: 'number',
+            label: 'TB Cutpoint',
+            option: 'quadrants.cut_data.y'
+        }
+    ];
 
     if (settings.filters && settings.filters.length > 0) {
         let otherFilters = settings.filters.map(filter => {
