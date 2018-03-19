@@ -1,0 +1,47 @@
+{
+  "name": "safety-edish",
+  "description": "Interactive graphic for the Evaluation of Drug-Induced Serious Hepatotoxicity (eDISH)",
+  "version": "0.1.0",
+  "author": "Rho, Inc.",
+  "license": "MIT",
+  "homepage": "https://github.com/rhoinc/safety-eDISH#readme",
+  "main": "./build/safetyedish.js",
+  "module": "./src/index.js",
+  "keywords": [
+    "labs",
+    "vitals",
+    "data",
+    "visualization",
+    "safety",
+    "explorer",
+    "hapatoxicity"
+  ],
+  "dependencies": {
+    "d3": "^3",
+    "webcharts": "^1.10"
+  },
+  "scripts": {
+    "build": "npm run bundle && npm run format",
+    "bundle": "rollup -c",
+    "format": "npm run format-src && npm run format-build",
+    "format-src": "prettier --print-width=100 --tab-width=4 --single-quote --write \"./src/**/*.js\"",
+    "format-build": "prettier --print-width=100 --tab-width=4 --single-quote --write build/safetyedish.js",
+    "watch": "rollup -c -w"
+  },
+  "devDependencies": {
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-env": "^1.6.0",
+    "babel-register": "^6.26.0",
+    "prettier": "^1.7.4",
+    "rollup": "^0.50.0",
+    "rollup-plugin-babel": "^3.0.2",
+    "rollup-watch": "^4.3.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RhoInc/safety-eDISH.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RhoInc/safety-eDISH/issues"
+  }
+}
