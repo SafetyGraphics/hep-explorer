@@ -1,5 +1,6 @@
-//Converts a one record per measure data object to a one record per participant objects
+import { merge } from 'd3';
 
+//Converts a one record per measure data object to a one record per participant objects
 export function flattenData() {
     var chart = this;
     var config = this.config;
@@ -37,10 +38,15 @@ export function flattenData() {
                     participant_obj[m.label + '_relative'] > m.cut.relative;
             });
 
-            var varList = chart.config.filters.map(d => d.value_col);
+            //Add participant level metadata
+            var filterVars = chart.config.filters.map(d => d.value_col);
+            var groupVars = chart.config.group_cols.map(d => d.value_col);
+            var varList = merge([filterVars, groupVars]);
+
             varList.forEach(function(v) {
                 participant_obj[v] = d[0][v];
             });
+
             return participant_obj;
         })
         .entries(sub);

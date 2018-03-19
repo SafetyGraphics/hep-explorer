@@ -67,7 +67,7 @@
         normal_col_low: 'STNRLO',
         normal_col_high: 'STNRHI',
         id_col: 'USUBJID',
-        group_col: null,
+        group_cols: null,
         filters: null,
         details: null,
         missingValues: ['', 'NA', 'N/A'],
@@ -97,7 +97,7 @@
                 attributes: { 'fill-opacity': 0 }
             }
         ],
-        color_by: 'ALP_relative_flagged',
+        color_by: null, //set in syncSettings
         max_width: 500,
         aspect: 1
     };
@@ -105,6 +105,34 @@
     //Replicate settings in multiple places in the settings object
     function syncSettings(settings) {
         settings.marks[0].per[0] = settings.id_col;
+
+        //set grouping config
+        if (!(settings.group_cols instanceof Array && settings.group_cols.length)) {
+            settings.group_cols = [{ value_col: 'NONE', label: 'None' }];
+        } else {
+            settings.group_cols = settings.group_cols.map(function(group) {
+                return {
+                    value_col: group.value_col || group,
+                    label: group.label || group.value_col || group
+                };
+            });
+
+            var hasNone =
+                settings.group_cols
+                    .map(function(m) {
+                        return m.value_col;
+                    })
+                    .indexOf('NONE') > -1;
+            if (!hasNone) {
+                settings.group_cols.unshift({ value_col: 'NONE', label: 'None' });
+            }
+        }
+
+        if (settings.group_cols.length > 1) {
+            settings.color_by = settings.group_cols[1].value_col
+                ? settings.group_cols[1].value_col
+                : settings.group_cols[1];
+        }
 
         //Define default details.
         var defaultDetails = [{ value_col: settings.id_col, label: 'Subject Identifier' }];
@@ -160,17 +188,42 @@
     function syncControlInputs(settings) {
         var defaultControls = [
             {
+                type: 'dropdown',
+                label: 'Group',
+                description: 'Grouping Variable',
+                options: ['color_by'],
+                start: null, // set in syncControlInputs()
+                values: ['NONE'], // set in syncControlInputs()
+                require: true
+            },
+            {
                 type: 'number',
                 label: 'ALT Cutpoint',
+                description: 'X-axis cut',
                 option: 'quadrants.cut_data.x'
             },
             {
                 type: 'number',
                 label: 'TB Cutpoint',
+                description: 'Y-axis cut',
                 option: 'quadrants.cut_data.y'
             }
         ];
 
+        //Sync group control.
+        var groupControl = defaultControls.filter(function(controlInput) {
+            return controlInput.label === 'Group';
+        })[0];
+        groupControl.start = settings.color_by;
+        settings.group_cols
+            .filter(function(group) {
+                return group.value_col !== 'NONE';
+            })
+            .forEach(function(group) {
+                groupControl.values.push(group.value_col);
+            });
+
+        //Add custom filters to control inputs.
         if (settings.filters && settings.filters.length > 0) {
             var otherFilters = settings.filters.map(function(filter) {
                 filter = {
@@ -187,7 +240,6 @@
     }
 
     //Converts a one record per measure data object to a one record per participant objects
-
     function flattenData() {
         var chart = this;
         var config = this.config;
@@ -239,12 +291,19 @@
                         participant_obj[m.label + '_relative'] > m.cut.relative;
                 });
 
-                var varList = chart.config.filters.map(function(d) {
+                //Add participant level metadata
+                var filterVars = chart.config.filters.map(function(d) {
                     return d.value_col;
                 });
+                var groupVars = chart.config.group_cols.map(function(d) {
+                    return d.value_col;
+                });
+                var varList = d3$1.merge([filterVars, groupVars]);
+
                 varList.forEach(function(v) {
                     participant_obj[v] = d[0][v];
                 });
+
                 return participant_obj;
             })
             .entries(sub);
@@ -257,6 +316,10 @@
     }
 
     function onInit() {
+        this.raw_data.forEach(function(d) {
+            d.NONE = 'All Participants'; // placeholder variable for non-grouped comparisons
+        });
+
         this.raw_data = flattenData.call(this);
     }
 
