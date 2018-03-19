@@ -189,6 +189,7 @@
     //Converts a one record per measure data object to a one record per participant objects
 
     function flattenData() {
+        var chart = this;
         var config = this.config;
         //make a data set with one row per ID
 
@@ -237,6 +238,13 @@
                     participant_obj[m.label + '_relative_flagged'] =
                         participant_obj[m.label + '_relative'] > m.cut.relative;
                 });
+
+                var varList = chart.config.filters.map(function(d) {
+                    return d.value_col;
+                });
+                varList.forEach(function(v) {
+                    participant_obj[v] = d[0][v];
+                });
                 return participant_obj;
             })
             .entries(sub);
@@ -245,7 +253,6 @@
             m.values[config.id_col] = m.key;
             return m.values;
         });
-
         return flat_data;
     }
 
@@ -412,7 +419,6 @@
     }
 
     function onLayout() {
-        console.log(this);
         initQuadrants.call(this);
     }
 
@@ -432,7 +438,6 @@
         dimensions.forEach(function(dimension) {
             //get value linked to the controls ...
             var cut = config.quadrants.cut_data[dimension];
-            console.log(cut);
 
             // ... add propogate it elsewhere
             config.measure_details //
@@ -455,10 +460,10 @@
 
         //update Quadrant data
         config.quadrants.quadrant_data.forEach(function(quad) {
-            quad.count = chart.raw_data.filter(function(d) {
+            quad.count = chart.filtered_data.filter(function(d) {
                 return d.eDISH_quadrant == quad.dataValue;
             }).length;
-            quad.total = chart.raw_data.length;
+            quad.total = chart.filtered_data.length;
             quad.percent = d3.format('0.1%')(quad.count / quad.total);
         });
     }
@@ -554,7 +559,6 @@
     }
 
     function onResize() {
-        console.log(this);
         drawQuadrants.call(this);
     }
 

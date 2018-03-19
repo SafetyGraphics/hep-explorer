@@ -36,6 +36,11 @@ export function flattenData() {
                 participant_obj[m.label + '_relative_flagged'] =
                     participant_obj[m.label + '_relative'] > m.cut.relative;
             });
+
+            var varList = chart.config.filters.map(d => d.value_col);
+            varList.forEach(function(v) {
+                participant_obj[v] = d[0][v];
+            });
             return participant_obj;
         })
         .entries(sub);
@@ -44,6 +49,5 @@ export function flattenData() {
         m.values[config.id_col] = m.key;
         return m.values;
     });
-
     return flat_data;
 }

@@ -7,7 +7,6 @@ export function updateQuadrantData() {
     dimensions.forEach(function(dimension) {
         //get value linked to the controls ...
         var cut = config.quadrants.cut_data[dimension];
-        console.log(cut);
 
         // ... add propogate it elsewhere
         config.measure_details //
@@ -26,8 +25,8 @@ export function updateQuadrantData() {
 
     //update Quadrant data
     config.quadrants.quadrant_data.forEach(function(quad) {
-        quad.count = chart.raw_data.filter(d => d.eDISH_quadrant == quad.dataValue).length;
-        quad.total = chart.raw_data.length;
+        quad.count = chart.filtered_data.filter(d => d.eDISH_quadrant == quad.dataValue).length;
+        quad.total = chart.filtered_data.length;
         quad.percent = d3.format('0.1%')(quad.count / quad.total);
     });
 }
