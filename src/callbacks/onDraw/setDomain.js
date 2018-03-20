@@ -10,10 +10,5 @@ export function setDomain(dimension) {
         domain[1] = cut * 1.01;
     }
 
-    //note: probably don't want this lower-bound calucation long term (use 0-ish value instead?)
-    if (cut * 0.99 <= domain[0]) {
-        domain[0] = cut * 0.99;
-    }
-
     this[dimension + '_dom'] = domain;
 }

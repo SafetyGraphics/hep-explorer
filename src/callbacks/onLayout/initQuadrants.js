@@ -1,5 +1,6 @@
 import defaultCutData from './initQuadrants/defaultCutData';
 import defaultQuadrantData from './initQuadrants/defaultQuadrantData';
+import { clearRugs } from '../onResize/addPointMouseover/clearRugs';
 
 export function initQuadrants() {
     var chart = this;
@@ -85,6 +86,11 @@ export function initQuadrants() {
         .style('cursor', 'pointer')
         .text(d => d.label)
         .on('mouseover', function(d) {
+            //clear rugs if any
+            clearRugs.call(chart, 'x');
+            clearRugs.call(chart, 'y');
+
+            //highlight points in the quadrant
             d3.select(this).attr('fill', 'black');
             var matches = chart.marks[0].circles.filter(
                 f => f.values.raw[0].eDISH_quadrant == d.dataValue

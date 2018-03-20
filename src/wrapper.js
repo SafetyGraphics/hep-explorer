@@ -1,4 +1,6 @@
 import './util/object-assign';
+import './polyfills/array-find.js';
+
 import defaultSettings from './defaultSettings';
 import { syncSettings, syncControlInputs } from './defaultSettings';
 

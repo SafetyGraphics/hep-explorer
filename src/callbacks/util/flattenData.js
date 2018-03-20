@@ -50,9 +50,14 @@ export function flattenData() {
             return participant_obj;
         })
         .entries(sub);
-
+    console.log(flat_data);
     var flat_data = flat_data.map(function(m) {
         m.values[config.id_col] = m.key;
+
+        //link the raw data to the flattened object
+        var allMatches = chart.initial_data.filter(f => f[config.id_col] == m.key);
+        m.values.raw = allMatches;
+
         return m.values;
     });
     return flat_data;

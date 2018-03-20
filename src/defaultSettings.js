@@ -2,6 +2,8 @@ const defaultSettings = {
     //Default template settings
     value_col: 'STRESN',
     measure_col: 'TEST',
+    visit_col: 'VISIT',
+    visitn_col: 'VISITN',
     measure_details: [
         {
             label: 'ALT',
@@ -45,14 +47,16 @@ const defaultSettings = {
         label: 'ALT (% ULN)',
         type: 'linear',
         behavior: 'flex',
-        format: '.1f'
+        format: '.1f',
+        domain: [0, null]
     },
     y: {
         column: 'TB_relative',
         label: 'TB (% ULN)',
         type: 'linear',
         behavior: 'flex',
-        format: '.1f'
+        format: '.1f',
+        domain: [0, null]
     },
     marks: [
         {

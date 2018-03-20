@@ -32,10 +32,56 @@
         })();
     }
 
+    if (!Array.prototype.find) {
+        Object.defineProperty(Array.prototype, 'find', {
+            value: function value(predicate) {
+                // 1. Let O be ? ToObject(this value).
+                if (this == null) {
+                    throw new TypeError('"this" is null or not defined');
+                }
+
+                var o = Object(this);
+
+                // 2. Let len be ? ToLength(? Get(O, 'length')).
+                var len = o.length >>> 0;
+
+                // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+                if (typeof predicate !== 'function') {
+                    throw new TypeError('predicate must be a function');
+                }
+
+                // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+                var thisArg = arguments[1];
+
+                // 5. Let k be 0.
+                var k = 0;
+
+                // 6. Repeat, while k < len
+                while (k < len) {
+                    // a. Let Pk be ! ToString(k).
+                    // b. Let kValue be ? Get(O, Pk).
+                    // c. Let testResult be ToBoolean(? Call(predicate, T, � kValue, k, O �)).
+                    // d. If testResult is true, return kValue.
+                    var kValue = o[k];
+                    if (predicate.call(thisArg, kValue, k, o)) {
+                        return kValue;
+                    }
+                    // e. Increase k by 1.
+                    k++;
+                }
+
+                // 7. Return undefined.
+                return undefined;
+            }
+        });
+    }
+
     var defaultSettings = {
         //Default template settings
         value_col: 'STRESN',
         measure_col: 'TEST',
+        visit_col: 'VISIT',
+        visitn_col: 'VISITN',
         measure_details: [
             {
                 label: 'ALT',
@@ -79,14 +125,16 @@
             label: 'ALT (% ULN)',
             type: 'linear',
             behavior: 'flex',
-            format: '.1f'
+            format: '.1f',
+            domain: [0, null]
         },
         y: {
             column: 'TB_relative',
             label: 'TB (% ULN)',
             type: 'linear',
             behavior: 'flex',
-            format: '.1f'
+            format: '.1f',
+            domain: [0, null]
         },
         marks: [
             {
@@ -307,9 +355,16 @@
                 return participant_obj;
             })
             .entries(sub);
-
+        console.log(flat_data);
         var flat_data = flat_data.map(function(m) {
             m.values[config.id_col] = m.key;
+
+            //link the raw data to the flattened object
+            var allMatches = chart.initial_data.filter(function(f) {
+                return f[config.id_col] == m.key;
+            });
+            m.values.raw = allMatches;
+
             return m.values;
         });
         return flat_data;
@@ -368,6 +423,10 @@
             percent: null
         }
     ];
+
+    function clearRugs(axis) {
+        chart[axis + '_rug'].selectAll('*').remove();
+    }
 
     function initQuadrants() {
         var chart = this;
@@ -469,6 +528,11 @@
                 return d.label;
             })
             .on('mouseover', function(d) {
+                //clear rugs if any
+                clearRugs.call(chart, 'x');
+                clearRugs.call(chart, 'y');
+
+                //highlight points in the quadrant
                 d3.select(this).attr('fill', 'black');
                 var matches = chart.marks[0].circles.filter(function(f) {
                     return f.values.raw[0].eDISH_quadrant == d.dataValue;
@@ -481,8 +545,15 @@
             });
     }
 
+    function initRugs() {
+        //initialize a 'rug' on each axis to show the distribution for a participant on addPointMouseover
+        this.x_rug = this.svg.append('g').attr('class', 'rug x');
+        this.y_rug = this.svg.append('g').attr('class', 'rug y');
+    }
+
     function onLayout() {
         initQuadrants.call(this);
+        initRugs.call(this);
     }
 
     function onPreprocess() {
@@ -541,11 +612,6 @@
 
         if (cut * 1.01 >= domain[1]) {
             domain[1] = cut * 1.01;
-        }
-
-        //note: probably don't want this lower-bound calucation long term (use 0-ish value instead?)
-        if (cut * 0.99 <= domain[0]) {
-            domain[0] = cut * 0.99;
         }
 
         this[dimension + '_dom'] = domain;
@@ -621,8 +687,82 @@
             });
     }
 
+    //draw marginal rug for visit-level measures
+    function drawRugs(d, axis) {
+        var chart = this;
+        var config = this.config;
+
+        //get matching measures
+        var allMatches = d.values.raw[0].raw,
+            measure = config.measure_details.find(function(f) {
+                return config[axis].column.search(f.label) > -1;
+            }).measure,
+            matches = allMatches.filter(function(f) {
+                return f[config.measure_col] == measure;
+            });
+
+        //draw the rug
+        var min_value = axis == 'x' ? chart.y.domain()[0] : chart.x.domain()[0];
+        chart[axis + '_rug']
+            .selectAll('text')
+            .data(matches)
+            .enter()
+            .append('text')
+            .attr('class', 'rug-tick')
+            .attr('x', function(d) {
+                return axis == 'x'
+                    ? config.display == 'relative'
+                        ? chart.x(d.relative)
+                        : chart.x(d[config.measure_col])
+                    : chart.x(min_value);
+            })
+            .attr('y', function(d) {
+                return axis == 'y'
+                    ? config.display == 'relative'
+                        ? chart.y(d.relative)
+                        : chart.y(d[config.measure_col])
+                    : chart.y(min_value);
+            })
+            .attr('dy', axis == 'x' ? '-0.2em' : null)
+            .attr('stroke', function(d) {
+                return chart.colorScale(d[config.color_by]);
+            })
+            .text(function(d) {
+                return axis == 'x' ? '|' : '–';
+            })
+            .append('svg:title')
+            .text(function(d) {
+                return (
+                    d[config.measure_col] +
+                    '=' +
+                    d3.format('.2f')(d[config.value_col]) +
+                    ' (' +
+                    d3.format('.2f')(d.relative) +
+                    ' xULN) @ ' +
+                    d[config.visit_col]
+                );
+            });
+    }
+
+    function addPointMouseover() {
+        var chart = this;
+        this.marks[0].circles.on('mouseover', function(d) {
+            chart.marks[0].circles.attr('stroke-width', 1);
+            d3.select(this).attr('stroke-width', 2);
+
+            //only needed if mouseout didn't trigger - might be ok to delete
+            clearRugs.call(chart, 'x');
+            clearRugs.call(chart, 'y');
+
+            //draw the rugs
+            drawRugs.call(chart, d, 'x');
+            drawRugs.call(chart, d, 'y');
+        });
+    }
+
     function onResize() {
         drawQuadrants.call(this);
+        addPointMouseover.call(this);
     }
 
     function safetyedish(element, settings) {
