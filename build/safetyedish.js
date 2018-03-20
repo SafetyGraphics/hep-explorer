@@ -551,9 +551,15 @@
         this.y_rug = this.svg.append('g').attr('class', 'rug y');
     }
 
+    function initVisitPath() {
+        //initialize a 'rug' on each axis to show the distribution for a participant on addPointMouseover
+        this.visitPath = this.svg.append('g').attr('class', 'visit-path');
+    }
+
     function onLayout() {
         initQuadrants.call(this);
         initRugs.call(this);
+        initVisitPath.call(this);
     }
 
     function onPreprocess() {
@@ -744,6 +750,107 @@
             });
     }
 
+    function drawVisitPath(d) {
+        var chart = this;
+        var config = chart.config;
+
+        var allMatches = d.values.raw[0].raw,
+            x_measure = config.measure_details.find(function(f) {
+                return config.x.column.search(f.label) > -1;
+            }).measure,
+            y_measure = config.measure_details.find(function(f) {
+                return config.y.column.search(f.label) > -1;
+            }).measure,
+            matches = allMatches.filter(function(f) {
+                return f[config.measure_col] == x_measure || f[config.measure_col] == y_measure;
+            });
+
+        //get coordinates by visit
+        var visits = d3
+            .set(
+                matches.map(function(m) {
+                    return m[config.visitn_col];
+                })
+            )
+            .values();
+        var visit_data = visits
+            .map(function(m) {
+                var visitObj = {};
+                visitObj.visitn = +m;
+                visitObj.visit = matches.filter(function(f) {
+                    return f[config.visitn_col] == m;
+                })[0][config.visit_col];
+                visitObj[config.color_by] = matches[0][config.color_by];
+                //get x coordinate
+                var x_match = matches
+                    .filter(function(f) {
+                        return f[config.visitn_col] == m;
+                    })
+                    .filter(function(f) {
+                        return f[config.measure_col] == x_measure;
+                    })[0];
+                visitObj.x =
+                    config.display == 'relative' ? x_match.relative : x_match[config.value_col];
+
+                //get y coordinate
+                var y_match = matches
+                    .filter(function(f) {
+                        return f[config.visitn_col] == m;
+                    })
+                    .filter(function(f) {
+                        return f[config.measure_col] == y_measure;
+                    })[0];
+
+                visitObj.y =
+                    config.display == 'relative' ? y_match.relative : y_match[config.value_col];
+
+                return visitObj;
+            })
+            .sort(function(a, b) {
+                return a.visitn - b.visitn;
+            });
+
+        //draw the path
+        var myLine = d3.svg
+            .line()
+            .x(function(d) {
+                return chart.x(d.x);
+            })
+            .y(function(d) {
+                return chart.y(d.y);
+            });
+
+        chart.visitPath.selectAll('*').remove();
+        chart.visitPath
+            .append('path')
+            .attr('class', 'participant-visits')
+            .datum(visit_data)
+            .attr('d', myLine)
+            .attr('stroke', '#ccc')
+            .attr('stroke-width', '1px')
+            .attr('fill', 'none');
+
+        chart.visitPath
+            .selectAll('text')
+            .data(visit_data)
+            .enter()
+            .append('text')
+            .text(function(d) {
+                return d.visitn;
+            })
+            .attr('class', 'participant-visits')
+            .attr('stroke', 'none')
+            .attr('fill', function(d) {
+                return chart.colorScale(d[config.color_by]);
+            })
+            .attr('x', function(d) {
+                return chart.x(d.x);
+            })
+            .attr('y', function(d) {
+                return chart.y(d.y);
+            });
+    }
+
     function addPointMouseover() {
         var chart = this;
         this.marks[0].circles.on('mouseover', function(d) {
@@ -757,6 +864,9 @@
             //draw the rugs
             drawRugs.call(chart, d, 'x');
             drawRugs.call(chart, d, 'y');
+
+            //drawVisitPath
+            drawVisitPath.call(chart, d);
         });
     }
 

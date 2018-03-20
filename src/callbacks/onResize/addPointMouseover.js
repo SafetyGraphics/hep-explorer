@@ -1,5 +1,6 @@
 import { clearRugs } from './addPointMouseover/clearRugs';
 import { drawRugs } from './addPointMouseover/drawRugs';
+import { drawVisitPath } from './addPointMouseover/drawVisitPath';
 
 export function addPointMouseover() {
     var chart = this;
@@ -17,5 +18,8 @@ export function addPointMouseover() {
         //draw the rugs
         drawRugs.call(chart, d, 'x');
         drawRugs.call(chart, d, 'y');
+
+        //drawVisitPath
+        drawVisitPath.call(chart, d);
     });
 }
