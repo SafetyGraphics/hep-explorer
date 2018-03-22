@@ -15,7 +15,7 @@ export function addPointClick() {
 
         d3
             .select(this)
-            .attr('stroke', d => chart.colorScale(d[config.color_by])) //highlight selected point
+            .attr('stroke', d => chart.colorScale(d.values.raw[0][config.color_by])) //highlight selected point
             .attr('stroke-width', 3);
 
         drawVisitPath.call(chart, d); //draw the path showing participant's pattern over time

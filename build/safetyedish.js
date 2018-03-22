@@ -76,6 +76,22 @@
         });
     }
 
+    // https://github.com/wbkd/d3-extended
+    d3.selection.prototype.moveToFront = function() {
+        return this.each(function() {
+            this.parentNode.appendChild(this);
+        });
+    };
+
+    d3.selection.prototype.moveToBack = function() {
+        return this.each(function() {
+            var firstChild = this.parentNode.firstChild;
+            if (firstChild) {
+                this.parentNode.insertBefore(this, firstChild);
+            }
+        });
+    };
+
     var defaultSettings = {
         //Default template settings
         value_col: 'STRESN',
@@ -783,8 +799,8 @@
                 return !disabled;
             })
             .on('mouseover', function(d) {
+                //disable mouseover when highlights (onClick) are visible
                 var disabled = d3.select(this).classed('disabled');
-
                 if (!disabled) {
                     //clear previous mouseover if any
                     points.attr('stroke-width', 1);
@@ -890,6 +906,7 @@
             });
 
         chart.visitPath.selectAll('*').remove();
+        chart.visitPath.moveToFront();
         chart.visitPath
             .append('path')
             .attr('class', 'participant-visits')
@@ -899,10 +916,35 @@
             .attr('stroke-width', '1px')
             .attr('fill', 'none');
 
-        chart.visitPath
-            .selectAll('text')
+        //draw visit points
+        var visitPoints = chart.visitPath
+            .selectAll('g.visit-point')
             .data(visit_data)
             .enter()
+            .append('g')
+            .attr('class', 'visit-point');
+
+        var maxPoint = d;
+        visitPoints
+            .append('circle')
+            .attr('class', 'participant-visits')
+            .attr('fill', 'white')
+            .attr('stroke', function(d) {
+                return chart.colorScale(d[config.color_by]);
+            })
+            .attr('stroke-width', function(d) {
+                return (d.x == maxPoint.x) & (d.y == maxPoint.y) ? 3 : 1;
+            })
+            .attr('cx', function(d) {
+                return chart.x(d.x);
+            })
+            .attr('cy', function(d) {
+                return chart.y(d.y);
+            })
+            .attr('r', 6);
+
+        //draw visit numbers
+        visitPoints
             .append('text')
             .text(function(d) {
                 return d.visitn;
@@ -917,7 +959,10 @@
             })
             .attr('y', function(d) {
                 return chart.y(d.y);
-            });
+            })
+            .attr('text-anchor', 'middle')
+            .attr('alignment-baseline', 'middle')
+            .attr('font-size', 8);
     }
 
     function addPointClick() {
@@ -935,7 +980,7 @@
             d3
                 .select(this)
                 .attr('stroke', function(d) {
-                    return chart.colorScale(d[config.color_by]);
+                    return chart.colorScale(d.values.raw[0][config.color_by]);
                 }) //highlight selected point
                 .attr('stroke-width', 3);
 

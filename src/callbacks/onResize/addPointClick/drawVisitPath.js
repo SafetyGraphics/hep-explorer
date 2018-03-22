@@ -45,6 +45,7 @@ export function drawVisitPath(d) {
         .y(d => chart.y(d.y));
 
     chart.visitPath.selectAll('*').remove();
+    chart.visitPath.moveToFront();
     chart.visitPath
         .append('path')
         .attr('class', 'participant-visits')
@@ -54,15 +55,35 @@ export function drawVisitPath(d) {
         .attr('stroke-width', '1px')
         .attr('fill', 'none');
 
-    chart.visitPath
-        .selectAll('text')
+    //draw visit points
+    var visitPoints = chart.visitPath
+        .selectAll('g.visit-point')
         .data(visit_data)
         .enter()
+        .append('g')
+        .attr('class', 'visit-point');
+
+    var maxPoint = d;
+    visitPoints
+        .append('circle')
+        .attr('class', 'participant-visits')
+        .attr('fill', 'white')
+        .attr('stroke', d => chart.colorScale(d[config.color_by]))
+        .attr('stroke-width', d => ((d.x == maxPoint.x) & (d.y == maxPoint.y) ? 3 : 1))
+        .attr('cx', d => chart.x(d.x))
+        .attr('cy', d => chart.y(d.y))
+        .attr('r', 6);
+
+    //draw visit numbers
+    visitPoints
         .append('text')
         .text(d => d.visitn)
         .attr('class', 'participant-visits')
         .attr('stroke', 'none')
         .attr('fill', d => chart.colorScale(d[config.color_by]))
         .attr('x', d => chart.x(d.x))
-        .attr('y', d => chart.y(d.y));
+        .attr('y', d => chart.y(d.y))
+        .attr('text-anchor', 'middle')
+        .attr('alignment-baseline', 'middle')
+        .attr('font-size', 8);
 }
