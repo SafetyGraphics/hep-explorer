@@ -8,7 +8,7 @@ export function addPointMouseover() {
     //add event listener to all participant level points
     this.marks[0].circles.on('mouseover', function(d) {
         chart.marks[0].circles.attr('stroke-width', 1);
-        d3.select(this).attr('stroke-width', 2);
+        d3.select(this).attr('stroke-width', 3);
 
         //only needed if mouseout didn't trigger - might be ok to delete
         clearRugs.call(chart, 'x');

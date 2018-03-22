@@ -424,15 +424,9 @@
         }
     ];
 
-    function clearRugs(axis) {
-        chart[axis + '_rug'].selectAll('*').remove();
-    }
-
-    function initQuadrants() {
+    function init() {
         var chart = this;
         var config = chart.config;
-
-        //layout the quadrants for hy's law risk levels
         this.config.quadrants = {};
         var quadrants = this.config.quadrants;
 
@@ -473,6 +467,36 @@
             .select('input')
             .node().value =
             quadrants.cut_data.y;
+    }
+
+    function clearRugs(axis) {
+        chart[axis + '_rug'].selectAll('*').remove();
+    }
+
+    function highlight(d, chart) {
+        //clear rugs if any
+        clearRugs.call(chart, 'x');
+        clearRugs.call(chart, 'y');
+
+        //reset point stroke
+        chart.marks[0].circles.attr('stroke-width', 1);
+
+        //highlight points in the quadrant
+        d3.select(this).attr('fill', 'black');
+        var matches = chart.marks[0].circles.filter(function(f) {
+            return f.values.raw[0].eDISH_quadrant == d.dataValue;
+        });
+        matches.attr('stroke-width', 2);
+    }
+
+    function clearHighlight(chart) {
+        d3.select(this).attr('fill', '#bbb');
+        chart.marks[0].circles.attr('stroke-width', 1);
+    }
+
+    function layout() {
+        var chart = this;
+        var quadrants = this.config.quadrants;
 
         //////////////////////////////////////////////////////////
         //layout the cut lines
@@ -503,6 +527,7 @@
         //////////////////////////////////////////////////////////
         //layout the quadrant labels
         /////////////////////////////////////////////////////////
+
         quadrants.group_labels = this.svg.append('g').attr('class', 'group-labels');
 
         quadrants.group_labels
@@ -528,21 +553,16 @@
                 return d.label;
             })
             .on('mouseover', function(d) {
-                //clear rugs if any
-                clearRugs.call(chart, 'x');
-                clearRugs.call(chart, 'y');
-
-                //highlight points in the quadrant
-                d3.select(this).attr('fill', 'black');
-                var matches = chart.marks[0].circles.filter(function(f) {
-                    return f.values.raw[0].eDISH_quadrant == d.dataValue;
-                });
-                matches.attr('stroke-width', 2);
+                highlight.call(this, d, chart);
             })
             .on('mouseout', function() {
-                d3.select(this).attr('fill', '#bbb');
-                chart.marks[0].circles.attr('stroke-width', 1);
+                clearHighlight.call(this, chart);
             });
+    }
+
+    function initQuadrants() {
+        init.call(this);
+        layout.call(this);
     }
 
     function initRugs() {
@@ -757,7 +777,7 @@
         var chart = this;
         this.marks[0].circles.on('mouseover', function(d) {
             chart.marks[0].circles.attr('stroke-width', 1);
-            d3.select(this).attr('stroke-width', 2);
+            d3.select(this).attr('stroke-width', 3);
 
             //only needed if mouseout didn't trigger - might be ok to delete
             clearRugs.call(chart, 'x');
