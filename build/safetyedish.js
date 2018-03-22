@@ -676,7 +676,22 @@
         this[dimension + '_dom'] = domain;
     }
 
+    function clearVisitPath(d) {
+        this.visitPath.selectAll('*').remove();
+    }
+
+    function hideMeasureTable() {
+        this.measureTable.draw([]);
+        this.measureTable.wrap.selectAll('*').style('display', 'none');
+    }
+
     function onDraw() {
+        //clear highlights
+        clearVisitPath.call(this);
+        clearRugs.call(this, 'x');
+        clearRugs.call(this, 'y');
+        hideMeasureTable.call(this);
+
         //get current cutpoints and classify participants in to eDISH quadrants
         updateQuadrantData.call(this);
 
@@ -832,10 +847,6 @@
             });
     }
 
-    function clearVisitPath(d) {
-        this.visitPath.selectAll('*').remove();
-    }
-
     function clearParticipantDetails(d) {
         var chart = this;
         var config = this.config;
@@ -984,99 +995,99 @@
     }
 
     function addSparkLines(d) {
-        console.log(d);
-        console.log(this);
-
-        this.tbody.selectAll('tr').each(function(row_d) {
-            //Spark line cell
-            var cell = d3
-                    .select(this)
-                    .select('td.spark')
-                    .text(''),
-                width = 100,
-                height = 25,
-                offset = 4,
-                overTime = row_d.spark_data.sort(function(a, b) {
-                    return +a.visitn - +b.visitn;
-                }),
-                x = d3.scale
-                    .ordinal()
-                    .domain(
-                        overTime.map(function(m) {
-                            return m.visitn;
-                        })
-                    )
-                    .rangePoints([offset, width - offset]),
-                y = d3.scale
-                    .linear()
-                    .domain(
-                        d3.extent(overTime, function(d) {
-                            return d.value;
-                        })
-                    )
-                    .range([height - offset, offset]),
-                line = d3.svg
-                    .line()
-                    .interpolate('cardinal')
-                    .x(function(d) {
-                        return x(d.visitn);
-                    })
-                    .y(function(d) {
-                        return y(d.value);
+        if (this.data.raw.length > 0) {
+            //don't try to draw sparklines if the table is empty
+            this.tbody.selectAll('tr').each(function(row_d) {
+                //Spark line cell
+                var cell = d3
+                        .select(this)
+                        .select('td.spark')
+                        .text(''),
+                    width = 100,
+                    height = 25,
+                    offset = 4,
+                    overTime = row_d.spark_data.sort(function(a, b) {
+                        return +a.visitn - +b.visitn;
                     }),
-                svg = cell
-                    .append('svg')
-                    .attr({
-                        width: width,
-                        height: height
-                    })
-                    .append('g'),
-                sparkLine = svg
-                    .append('path')
-                    .datum(overTime)
-                    .attr({
-                        class: 'sparkLine',
-                        d: line,
-                        fill: 'none',
-                        stroke: '#bbb'
-                    }),
-                minimumData = overTime.filter(function(di) {
-                    return (
-                        di.value ===
-                        d3.min(
-                            overTime.map(function(dii) {
-                                return dii.value;
+                    x = d3.scale
+                        .ordinal()
+                        .domain(
+                            overTime.map(function(m) {
+                                return m.visitn;
                             })
                         )
-                    );
-                })[0],
-                minimumMonth = svg.append('circle').attr({
-                    class: 'circle minimum',
-                    cx: x(minimumData.visitn),
-                    cy: y(minimumData.value),
-                    r: '2px',
-                    stroke: 'blue',
-                    fill: 'none'
-                }),
-                maximumData = overTime.filter(function(di) {
-                    return (
-                        di.value ===
-                        d3.max(
-                            overTime.map(function(dii) {
-                                return dii.value;
+                        .rangePoints([offset, width - offset]),
+                    y = d3.scale
+                        .linear()
+                        .domain(
+                            d3.extent(overTime, function(d) {
+                                return d.value;
                             })
                         )
-                    );
-                })[0],
-                maximumMonth = svg.append('circle').attr({
-                    class: 'circle maximum',
-                    cx: x(maximumData.visitn),
-                    cy: y(maximumData.value),
-                    r: '2px',
-                    stroke: 'orange',
-                    fill: 'none'
-                });
-        });
+                        .range([height - offset, offset]),
+                    line = d3.svg
+                        .line()
+                        .interpolate('cardinal')
+                        .x(function(d) {
+                            return x(d.visitn);
+                        })
+                        .y(function(d) {
+                            return y(d.value);
+                        }),
+                    svg = cell
+                        .append('svg')
+                        .attr({
+                            width: width,
+                            height: height
+                        })
+                        .append('g'),
+                    sparkLine = svg
+                        .append('path')
+                        .datum(overTime)
+                        .attr({
+                            class: 'sparkLine',
+                            d: line,
+                            fill: 'none',
+                            stroke: '#bbb'
+                        }),
+                    minimumData = overTime.filter(function(di) {
+                        return (
+                            di.value ===
+                            d3.min(
+                                overTime.map(function(dii) {
+                                    return dii.value;
+                                })
+                            )
+                        );
+                    })[0],
+                    minimumMonth = svg.append('circle').attr({
+                        class: 'circle minimum',
+                        cx: x(minimumData.visitn),
+                        cy: y(minimumData.value),
+                        r: '2px',
+                        stroke: 'blue',
+                        fill: 'none'
+                    }),
+                    maximumData = overTime.filter(function(di) {
+                        return (
+                            di.value ===
+                            d3.max(
+                                overTime.map(function(dii) {
+                                    return dii.value;
+                                })
+                            )
+                        );
+                    })[0],
+                    maximumMonth = svg.append('circle').attr({
+                        class: 'circle maximum',
+                        cx: x(maximumData.visitn),
+                        cy: y(maximumData.value),
+                        r: '2px',
+                        stroke: 'orange',
+                        fill: 'none'
+                    });
+            });
+        }
     }
 
     function drawMeasureTable(d) {
