@@ -8,6 +8,7 @@ export function drawVisitPath(d) {
         matches = allMatches.filter(
             f => f[config.measure_col] == x_measure || f[config.measure_col] == y_measure
         );
+    console.log(allMatches);
 
     //get coordinates by visit
     var visits = d3.set(matches.map(m => m[config.visitn_col])).values();

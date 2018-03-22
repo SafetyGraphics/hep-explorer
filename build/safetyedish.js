@@ -592,10 +592,27 @@
         this.visitPath = this.svg.append('g').attr('class', 'visit-path');
     }
 
+    function initMeasureTable() {
+        var settings = {
+            cols: ['key', 'n', 'min', 'median', 'max', 'spark'],
+            headers: ['Measure', 'N', 'Min', 'Median', 'Max', ''],
+            searchable: true,
+            sortable: true,
+            pagination: false,
+            exportable: true,
+            visitn_col: this.visitn_col,
+            value_col: this.value_col
+        };
+        this.measureTable = webcharts.createTable(this.element, settings);
+        this.measureTable.init([]);
+        this.measureTable.wrap.selectAll('*').style('display', 'none');
+    }
+
     function onLayout() {
         initQuadrants.call(this);
         initRugs.call(this);
         initVisitPath.call(this);
+        initMeasureTable.call(this);
     }
 
     function onPreprocess() {
@@ -849,6 +866,7 @@
             matches = allMatches.filter(function(f) {
                 return f[config.measure_col] == x_measure || f[config.measure_col] == y_measure;
             });
+        console.log(allMatches);
 
         //get coordinates by visit
         var visits = d3
@@ -965,6 +983,147 @@
             .attr('font-size', 8);
     }
 
+    function addSparkLines(d) {
+        console.log(d);
+        console.log(this);
+
+        this.tbody.selectAll('tr').each(function(row_d) {
+            //Spark line cell
+            var cell = d3
+                    .select(this)
+                    .select('td.spark')
+                    .text(''),
+                width = 100,
+                height = 25,
+                offset = 4,
+                overTime = row_d.spark_data.sort(function(a, b) {
+                    return +a.visitn - +b.visitn;
+                }),
+                x = d3.scale
+                    .ordinal()
+                    .domain(
+                        overTime.map(function(m) {
+                            return m.visitn;
+                        })
+                    )
+                    .rangePoints([offset, width - offset]),
+                y = d3.scale
+                    .linear()
+                    .domain(
+                        d3.extent(overTime, function(d) {
+                            return d.value;
+                        })
+                    )
+                    .range([height - offset, offset]),
+                line = d3.svg
+                    .line()
+                    .interpolate('cardinal')
+                    .x(function(d) {
+                        return x(d.visitn);
+                    })
+                    .y(function(d) {
+                        return y(d.value);
+                    }),
+                svg = cell
+                    .append('svg')
+                    .attr({
+                        width: width,
+                        height: height
+                    })
+                    .append('g'),
+                sparkLine = svg
+                    .append('path')
+                    .datum(overTime)
+                    .attr({
+                        class: 'sparkLine',
+                        d: line,
+                        fill: 'none',
+                        stroke: '#bbb'
+                    }),
+                minimumData = overTime.filter(function(di) {
+                    return (
+                        di.value ===
+                        d3.min(
+                            overTime.map(function(dii) {
+                                return dii.value;
+                            })
+                        )
+                    );
+                })[0],
+                minimumMonth = svg.append('circle').attr({
+                    class: 'circle minimum',
+                    cx: x(minimumData.visitn),
+                    cy: y(minimumData.value),
+                    r: '2px',
+                    stroke: 'blue',
+                    fill: 'none'
+                }),
+                maximumData = overTime.filter(function(di) {
+                    return (
+                        di.value ===
+                        d3.max(
+                            overTime.map(function(dii) {
+                                return dii.value;
+                            })
+                        )
+                    );
+                })[0],
+                maximumMonth = svg.append('circle').attr({
+                    class: 'circle maximum',
+                    cx: x(maximumData.visitn),
+                    cy: y(maximumData.value),
+                    r: '2px',
+                    stroke: 'orange',
+                    fill: 'none'
+                });
+        });
+    }
+
+    function drawMeasureTable(d) {
+        var chart = this;
+        var config = chart.config;
+        var allMatches = d.values.raw[0].raw;
+
+        //make nest by measure
+        var nested = d3
+            .nest()
+            .key(function(d) {
+                return d[config.measure_col];
+            })
+            .rollup(function(d) {
+                var measureObj = {};
+                measureObj.raw = d;
+                measureObj.values = d.map(function(d) {
+                    return +d[config.value_col];
+                });
+                measureObj.max = +d3.format('0.2f')(d3.max(measureObj.values));
+                measureObj.min = +d3.format('0.2f')(d3.min(measureObj.values));
+                measureObj.median = +d3.format('0.2f')(d3.median(measureObj.values));
+                measureObj.n = measureObj.values.length;
+                measureObj.spark = 'spark!';
+                measureObj.spark_data = d.map(function(m) {
+                    return {
+                        visitn: +m[config.visitn_col],
+                        value: +m[config.value_col]
+                    };
+                });
+
+                return measureObj;
+            })
+            .entries(allMatches);
+
+        var nested = nested.map(function(m) {
+            m.values.key = m.key;
+            return m.values;
+        });
+        console.log(nested);
+
+        //draw the measure table
+        this.measureTable.wrap.selectAll('*').style('display', null);
+        this.measureTable.on('draw', addSparkLines);
+        this.measureTable.draw(nested);
+    }
+
     function addPointClick() {
         var chart = this;
         var config = this.config;
@@ -985,8 +1144,8 @@
                 .attr('stroke-width', 3);
 
             drawVisitPath.call(chart, d); //draw the path showing participant's pattern over time
+            drawMeasureTable.call(chart, d); //draw table showing measure values with sparklines
 
-            //draw table showing measure values with sparklines
             //add clear details button
         });
     }
@@ -1006,20 +1165,7 @@
                 inputs: syncedControlInputs
             }),
             chart = webcharts.createChart(element, syncedSettings, controls);
-
-        /*
-        listingSettings = {
-            cols: syncedSettings.details.map(detail => detail.value_col),
-            headers: syncedSettings.details.map(detail => detail.label),
-            searchable: syncedSettings.searchable,
-            sortable: syncedSettings.sortable,
-            pagination: syncedSettings.pagination,
-            exportable: syncedSettings.exportable
-        };
-     chart.listing = createTable(element, listingSettings);
-    chart.listing.init([]);
-    chart.listing.wrap.selectAll('*').style('display', 'none');
-    */
+        chart.element = element;
 
         //Define callbacks.
         chart.on('init', onInit);

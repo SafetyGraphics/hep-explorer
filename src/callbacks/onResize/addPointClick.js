@@ -1,5 +1,6 @@
 import { clearParticipantDetails } from './addPointClick/clearParticipantDetails';
 import { drawVisitPath } from './addPointClick/drawVisitPath';
+import { drawMeasureTable } from './addPointClick/drawMeasureTable';
 
 export function addPointClick() {
     var chart = this;
@@ -19,8 +20,8 @@ export function addPointClick() {
             .attr('stroke-width', 3);
 
         drawVisitPath.call(chart, d); //draw the path showing participant's pattern over time
+        drawMeasureTable.call(chart, d); //draw table showing measure values with sparklines
 
-        //draw table showing measure values with sparklines
         //add clear details button
     });
 }

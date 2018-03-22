@@ -20,21 +20,7 @@ export default function safetyedish(element, settings) {
         syncedControlInputs = syncControlInputs(syncedSettings),
         controls = createControls(element, { location: 'top', inputs: syncedControlInputs }),
         chart = createChart(element, syncedSettings, controls);
-
-    /*
-        listingSettings = {
-            cols: syncedSettings.details.map(detail => detail.value_col),
-            headers: syncedSettings.details.map(detail => detail.label),
-            searchable: syncedSettings.searchable,
-            sortable: syncedSettings.sortable,
-            pagination: syncedSettings.pagination,
-            exportable: syncedSettings.exportable
-        };
-
-    chart.listing = createTable(element, listingSettings);
-    chart.listing.init([]);
-    chart.listing.wrap.selectAll('*').style('display', 'none');
-    */
+    chart.element = element;
 
     //Define callbacks.
     chart.on('init', onInit);
