@@ -775,23 +775,181 @@
 
     function addPointMouseover() {
         var chart = this;
-        this.marks[0].circles.on('mouseover', function(d) {
-            chart.marks[0].circles.attr('stroke-width', 1);
-            d3.select(this).attr('stroke-width', 3);
+        var points = this.marks[0].circles;
+        //add event listener to all participant level points
+        points
+            .filter(function(d) {
+                var disabled = d3.select(this).classed('disabled');
+                return !disabled;
+            })
+            .on('mouseover', function(d) {
+                var disabled = d3.select(this).classed('disabled');
 
-            //only needed if mouseout didn't trigger - might be ok to delete
-            clearRugs.call(chart, 'x');
-            clearRugs.call(chart, 'y');
+                if (!disabled) {
+                    //clear previous mouseover if any
+                    points.attr('stroke-width', 1);
+                    clearRugs.call(chart, 'x');
+                    clearRugs.call(chart, 'y');
 
-            //draw the rugs
-            drawRugs.call(chart, d, 'x');
-            drawRugs.call(chart, d, 'y');
+                    //draw the rugs
+                    d3.select(this).attr('stroke-width', 3);
+                    drawRugs.call(chart, d, 'x');
+                    drawRugs.call(chart, d, 'y');
+                }
+            });
+    }
+
+    function clearVisitPath(d) {
+        this.visitPath.selectAll('*').remove();
+    }
+
+    function clearParticipantDetails(d) {
+        var chart = this;
+        var config = this.config;
+        var points = this.marks[0].circles;
+
+        points
+            .attr('stroke', function(d) {
+                return chart.colorScale(d[config.color_by]);
+            }) //reset point colors
+            .attr('stroke-width', 1); //reset stroke
+
+        clearVisitPath.call(this, d); //remove path
+
+        //remove the detail table
+    }
+
+    function drawVisitPath(d) {
+        var chart = this;
+        var config = chart.config;
+
+        var allMatches = d.values.raw[0].raw,
+            x_measure = config.measure_details.find(function(f) {
+                return config.x.column.search(f.label) > -1;
+            }).measure,
+            y_measure = config.measure_details.find(function(f) {
+                return config.y.column.search(f.label) > -1;
+            }).measure,
+            matches = allMatches.filter(function(f) {
+                return f[config.measure_col] == x_measure || f[config.measure_col] == y_measure;
+            });
+
+        //get coordinates by visit
+        var visits = d3
+            .set(
+                matches.map(function(m) {
+                    return m[config.visitn_col];
+                })
+            )
+            .values();
+        var visit_data = visits
+            .map(function(m) {
+                var visitObj = {};
+                visitObj.visitn = +m;
+                visitObj.visit = matches.filter(function(f) {
+                    return f[config.visitn_col] == m;
+                })[0][config.visit_col];
+                visitObj[config.color_by] = matches[0][config.color_by];
+                //get x coordinate
+                var x_match = matches
+                    .filter(function(f) {
+                        return f[config.visitn_col] == m;
+                    })
+                    .filter(function(f) {
+                        return f[config.measure_col] == x_measure;
+                    })[0];
+                visitObj.x =
+                    config.display == 'relative' ? x_match.relative : x_match[config.value_col];
+
+                //get y coordinate
+                var y_match = matches
+                    .filter(function(f) {
+                        return f[config.visitn_col] == m;
+                    })
+                    .filter(function(f) {
+                        return f[config.measure_col] == y_measure;
+                    })[0];
+
+                visitObj.y =
+                    config.display == 'relative' ? y_match.relative : y_match[config.value_col];
+
+                return visitObj;
+            })
+            .sort(function(a, b) {
+                return a.visitn - b.visitn;
+            });
+
+        //draw the path
+        var myLine = d3.svg
+            .line()
+            .x(function(d) {
+                return chart.x(d.x);
+            })
+            .y(function(d) {
+                return chart.y(d.y);
+            });
+
+        chart.visitPath.selectAll('*').remove();
+        chart.visitPath
+            .append('path')
+            .attr('class', 'participant-visits')
+            .datum(visit_data)
+            .attr('d', myLine)
+            .attr('stroke', '#ccc')
+            .attr('stroke-width', '1px')
+            .attr('fill', 'none');
+
+        chart.visitPath
+            .selectAll('text')
+            .data(visit_data)
+            .enter()
+            .append('text')
+            .text(function(d) {
+                return d.visitn;
+            })
+            .attr('class', 'participant-visits')
+            .attr('stroke', 'none')
+            .attr('fill', function(d) {
+                return chart.colorScale(d[config.color_by]);
+            })
+            .attr('x', function(d) {
+                return chart.x(d.x);
+            })
+            .attr('y', function(d) {
+                return chart.y(d.y);
+            });
+    }
+
+    function addPointClick() {
+        var chart = this;
+        var config = this.config;
+        var points = this.marks[0].circles;
+
+        //add event listener to all participant level points
+        points.on('click', function(d) {
+            clearParticipantDetails.call(chart, d); //clear the previous participant
+            points
+                .attr('stroke', '#ccc') //set all points to gray
+                .classed('disabled', true); //disable mouseover while viewing participant details
+
+            d3
+                .select(this)
+                .attr('stroke', function(d) {
+                    return chart.colorScale(d[config.color_by]);
+                }) //highlight selected point
+                .attr('stroke-width', 3);
+
+            drawVisitPath.call(chart, d); //draw the path showing participant's pattern over time
+
+            //draw table showing measure values with sparklines
+            //add clear details button
         });
     }
 
     function onResize() {
         drawQuadrants.call(this);
         addPointMouseover.call(this);
+        addPointClick.call(this);
     }
 
     function safetyedish(element, settings) {

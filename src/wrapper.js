@@ -4,7 +4,7 @@ import './polyfills/array-find.js';
 import defaultSettings from './defaultSettings';
 import { syncSettings, syncControlInputs } from './defaultSettings';
 
-import { createChart, createControls, createTable } from 'webcharts';
+import { createChart, createControls } from 'webcharts';
 
 import onInit from './callbacks/onInit';
 import onLayout from './callbacks/onLayout';
