@@ -3,7 +3,6 @@ import { merge } from 'd3';
 export function flattenData() {
     var chart = this;
     var config = this.config;
-    console.log(this);
     //make a data set with one row per ID
 
     //filter the lab data to only the required measures
@@ -99,7 +98,7 @@ export function flattenData() {
             return participant_obj;
         })
         .entries(sub);
-    console.log(flat_data);
+
     var flat_data = flat_data.map(function(m) {
         m.values[config.id_col] = m.key;
 

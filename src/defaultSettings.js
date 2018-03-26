@@ -11,7 +11,7 @@ const defaultSettings = {
             axis: 'x',
             cut: {
                 relative: 3,
-                absolute: null
+                absolute: 1.0
             }
         },
         {
@@ -19,7 +19,7 @@ const defaultSettings = {
             measure: 'Alkaline phosphatase (ALP)',
             cut: {
                 relative: 1,
-                absolute: null
+                absolute: 1.0
             }
         },
         {
@@ -28,7 +28,7 @@ const defaultSettings = {
             axis: 'y',
             cut: {
                 relative: 2,
-                absolute: null
+                absolute: 40
             }
         }
     ],
@@ -157,6 +157,15 @@ export function syncControlInputs(settings) {
             require: true
         },
         {
+            type: 'dropdown',
+            label: 'Display Type',
+            description: 'Relative or Absolute Axes',
+            options: ['display', 'quadrants.cut_data.displayChange'],
+            start: null, // set in syncControlInputs()
+            values: ['relative', 'absolute'],
+            require: true
+        },
+        {
             type: 'number',
             label: 'ALT Cutpoint',
             description: 'X-axis cut',
@@ -176,6 +185,12 @@ export function syncControlInputs(settings) {
     settings.group_cols.filter(group => group.value_col !== 'NONE').forEach(group => {
         groupControl.values.push(group.value_col);
     });
+
+    //Sync display control
+    const displayControl = defaultControls.filter(
+        controlInput => controlInput.label === 'Display Type'
+    )[0];
+    groupControl.start = settings.display;
 
     //Add custom filters to control inputs.
     if (settings.filters && settings.filters.length > 0) {

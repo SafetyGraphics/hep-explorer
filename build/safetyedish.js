@@ -105,7 +105,7 @@
                 axis: 'x',
                 cut: {
                     relative: 3,
-                    absolute: null
+                    absolute: 1.0
                 }
             },
             {
@@ -113,7 +113,7 @@
                 measure: 'Alkaline phosphatase (ALP)',
                 cut: {
                     relative: 1,
-                    absolute: null
+                    absolute: 1.0
                 }
             },
             {
@@ -122,7 +122,7 @@
                 axis: 'y',
                 cut: {
                     relative: 2,
-                    absolute: null
+                    absolute: 40
                 }
             }
         ],
@@ -263,6 +263,15 @@
                 require: true
             },
             {
+                type: 'dropdown',
+                label: 'Display Type',
+                description: 'Relative or Absolute Axes',
+                options: ['display', 'quadrants.cut_data.displayChange'],
+                start: null, // set in syncControlInputs()
+                values: ['relative', 'absolute'],
+                require: true
+            },
+            {
                 type: 'number',
                 label: 'ALT Cutpoint',
                 description: 'X-axis cut',
@@ -288,6 +297,12 @@
             .forEach(function(group) {
                 groupControl.values.push(group.value_col);
             });
+
+        //Sync display control
+        var displayControl = defaultControls.filter(function(controlInput) {
+            return controlInput.label === 'Display Type';
+        })[0];
+        groupControl.start = settings.display;
 
         //Add custom filters to control inputs.
         if (settings.filters && settings.filters.length > 0) {
@@ -536,7 +551,6 @@
     function flattenData() {
         var chart = this;
         var config = this.config;
-        console.log(this);
         //make a data set with one row per ID
 
         //filter the lab data to only the required measures
@@ -644,7 +658,7 @@
                 return participant_obj;
             })
             .entries(sub);
-        console.log(flat_data);
+
         var flat_data = flat_data.map(function(m) {
             m.values[config.id_col] = m.key;
 
@@ -669,7 +683,7 @@
             yMeasure = config.measure_details.find(function(f) {
                 return f.axis == 'y';
             });
-        console.log(xMeasure);
+
         config.x.column = xMeasure.label;
         config.x.label =
             xMeasure.measure + (config.display == 'relative' ? ' (xULN)' : ' (raw values)');
@@ -694,18 +708,32 @@
         //update cut data
         var dimensions = ['x', 'y'];
         dimensions.forEach(function(dimension) {
-            //get value linked to the controls ...
-            var cut = config.quadrants.cut_data[dimension];
-
-            // ... add propogate it elsewhere
-            config.measure_details //
-                .find(function(f) {
+            //change to the stored cut point if the display changed
+            if (config.quadrants.cut_data.displayChange) {
+                config.quadrants.cut_data[dimension] = config.measure_details.find(function(f) {
                     return config[dimension].column.search(f.label) > -1;
-                }).cut[config.display] = cut;
+                }).cut[config.display];
+                chart.controls.wrap
+                    .selectAll('div.control-group')
+                    .filter(function(f) {
+                        return f.option == 'quadrants.cut_data.' + dimension;
+                    })
+                    .select('input')
+                    .node().value =
+                    config.quadrants.cut_data[dimension];
+            }
+
+            // get value linked to the controls (quadrant_cut_obj), add propogate it elsewhere
+            var current_cut = config.quadrants.cut_data[dimension];
+            config.measure_details.find(function(f) {
+                return config[dimension].column.search(f.label) > -1;
+            }).cut[config.display] = current_cut;
             config.quadrants.cut_data.filter(function(f) {
                 return f.dimension == dimension;
-            })[0].value = cut;
+            })[0] = current_cut;
         });
+
+        config.quadrants.cut_data.displayChange = false;
 
         //add "eDISH_quadrant" column to raw_data
         var x_var = this.config.x.column;
@@ -768,17 +796,14 @@
     function drawQuadrants() {
         var _this = this;
 
+        var config = this.config;
         //position for cut-point lines
         this.config.quadrants.cut_lines
             .filter(function(d) {
                 return d.dimension == 'x';
             })
-            .attr('x1', function(d) {
-                return _this.x(d.value);
-            })
-            .attr('x2', function(d) {
-                return _this.x(d.value);
-            })
+            .attr('x1', this.x(config.quadrants.cut_data.x))
+            .attr('x2', this.x(config.quadrants.cut_data.x))
             .attr('y1', this.plot_height)
             .attr('y2', 0);
 
@@ -789,10 +814,10 @@
             .attr('x1', 0)
             .attr('x2', this.plot_width)
             .attr('y1', function(d) {
-                return _this.y(d.value);
+                return _this.y(config.quadrants.cut_data.y);
             })
             .attr('y2', function(d) {
-                return _this.y(d.value);
+                return _this.y(config.quadrants.cut_data.y);
             });
 
         //position labels
@@ -852,14 +877,14 @@
                 return axis == 'x'
                     ? config.display == 'relative'
                         ? chart.x(d.relative)
-                        : chart.x(d[config.measure_col])
+                        : chart.x(d[config.value_col])
                     : chart.x(min_value);
             })
             .attr('y', function(d) {
                 return axis == 'y'
                     ? config.display == 'relative'
                         ? chart.y(d.relative)
-                        : chart.y(d[config.measure_col])
+                        : chart.y(d[config.value_col])
                     : chart.y(min_value);
             })
             //        .attr('dy', axis == 'x' ? '-0.2em' : null)
@@ -942,7 +967,6 @@
             matches = allMatches.filter(function(f) {
                 return f[config.measure_col] == x_measure || f[config.measure_col] == y_measure;
             });
-        console.log(allMatches);
 
         //get coordinates by visit
         var visits = d3
@@ -1192,7 +1216,6 @@
             m.values.key = m.key;
             return m.values;
         });
-        console.log(nested);
 
         //draw the measure table
         this.measureTable.wrap.selectAll('*').style('display', null);

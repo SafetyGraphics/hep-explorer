@@ -1,9 +1,10 @@
 export function drawQuadrants() {
+    var config = this.config;
     //position for cut-point lines
     this.config.quadrants.cut_lines
         .filter(d => d.dimension == 'x')
-        .attr('x1', d => this.x(d.value))
-        .attr('x2', d => this.x(d.value))
+        .attr('x1', this.x(config.quadrants.cut_data.x))
+        .attr('x2', this.x(config.quadrants.cut_data.x))
         .attr('y1', this.plot_height)
         .attr('y2', 0);
 
@@ -11,8 +12,8 @@ export function drawQuadrants() {
         .filter(d => d.dimension == 'y')
         .attr('x1', 0)
         .attr('x2', this.plot_width)
-        .attr('y1', d => this.y(d.value))
-        .attr('y2', d => this.y(d.value));
+        .attr('y1', d => this.y(config.quadrants.cut_data.y))
+        .attr('y2', d => this.y(config.quadrants.cut_data.y));
 
     //position labels
     this.config.quadrants.group_labels

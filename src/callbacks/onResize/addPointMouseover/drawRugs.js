@@ -23,7 +23,7 @@ export function drawRugs(d, axis) {
                 axis == 'x'
                     ? config.display == 'relative'
                         ? chart.x(d.relative)
-                        : chart.x(d[config.measure_col])
+                        : chart.x(d[config.value_col])
                     : chart.x(min_value)
         )
         .attr(
@@ -32,7 +32,7 @@ export function drawRugs(d, axis) {
                 axis == 'y'
                     ? config.display == 'relative'
                         ? chart.y(d.relative)
-                        : chart.y(d[config.measure_col])
+                        : chart.y(d[config.value_col])
                     : chart.y(min_value)
         )
         //        .attr('dy', axis == 'x' ? '-0.2em' : null)
