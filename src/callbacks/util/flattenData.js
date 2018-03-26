@@ -31,11 +31,23 @@ export function flattenData() {
                 participant_obj[m.label + '_absolute'] = d3.max(matches, d => d[config.value_col]);
                 participant_obj[m.label + '_absolute_flagged'] =
                     participant_obj[m.label + '_absolute'] > m.cut.absolute;
+                var absMatch = matches.find(
+                    f => participant_obj[m.label + '_absolute'] == f[config.value_col]
+                );
+                participant_obj[m.label + '_absolute_visitn'] = absMatch[config.visitn_col];
+                participant_obj[m.label + '_absolute_visit'] = absMatch[config.visit_col];
+                participant_obj[m.label + '_absolute_unit'] = absMatch[config.unit_col];
 
                 //get max relative value and flagged status
                 participant_obj[m.label + '_relative'] = d3.max(matches, d => d.relative);
                 participant_obj[m.label + '_relative_flagged'] =
                     participant_obj[m.label + '_relative'] > m.cut.relative;
+                var relMatch = matches.find(
+                    f => participant_obj[m.label + '_relative'] == f.relative
+                );
+                participant_obj[m.label + '_relative_visitn'] = relMatch[config.visitn_col];
+                participant_obj[m.label + '_relative_visit'] = relMatch[config.visit_col];
+                participant_obj[m.label + '_relative_unit'] = 'xULN';
             });
 
             //Add participant level metadata

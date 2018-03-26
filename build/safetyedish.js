@@ -102,6 +102,7 @@
             {
                 label: 'ALT',
                 measure: 'Aminotransferase, alanine (ALT)',
+                axis: 'x',
                 cut: {
                     relative: 3,
                     absolute: null
@@ -118,6 +119,7 @@
             {
                 label: 'TB',
                 measure: 'Total Bilirubin',
+                axis: 'y',
                 cut: {
                     relative: 2,
                     absolute: null
@@ -346,6 +348,12 @@
                     });
                     participant_obj[m.label + '_absolute_flagged'] =
                         participant_obj[m.label + '_absolute'] > m.cut.absolute;
+                    var absMatch = matches.find(function(f) {
+                        return participant_obj[m.label + '_absolute'] == f[config.value_col];
+                    });
+                    participant_obj[m.label + '_absolute_visitn'] = absMatch[config.visitn_col];
+                    participant_obj[m.label + '_absolute_visit'] = absMatch[config.visit_col];
+                    participant_obj[m.label + '_absolute_unit'] = absMatch[config.unit_col];
 
                     //get max relative value and flagged status
                     participant_obj[m.label + '_relative'] = d3.max(matches, function(d) {
@@ -353,6 +361,12 @@
                     });
                     participant_obj[m.label + '_relative_flagged'] =
                         participant_obj[m.label + '_relative'] > m.cut.relative;
+                    var relMatch = matches.find(function(f) {
+                        return participant_obj[m.label + '_relative'] == f.relative;
+                    });
+                    participant_obj[m.label + '_relative_visitn'] = relMatch[config.visitn_col];
+                    participant_obj[m.label + '_relative_visit'] = relMatch[config.visit_col];
+                    participant_obj[m.label + '_relative_unit'] = 'xULN';
                 });
 
                 //Add participant level metadata
@@ -1161,10 +1175,47 @@
         });
     }
 
+    function addTitle() {
+        var config = this.config;
+        var points = this.marks[0].circles;
+
+        points.append('title').text(function(d) {
+            var raw = d.values.raw[0],
+                xLabel =
+                    config.x.label +
+                    ': ' +
+                    d3.format('0.2f')(raw['ALT_absolute']) +
+                    ' ' +
+                    raw['ALT_absolute_unit'] +
+                    ' (' +
+                    d3.format('0.2f')(raw['ALT_relative']) +
+                    ' ' +
+                    raw['ALT_relative_unit'] +
+                    ')' +
+                    ' @ V' +
+                    raw['ALT_' + config.display + '_visitn'],
+                yLabel =
+                    config.y.label +
+                    ': ' +
+                    d3.format('0.2f')(raw['TB_absolute']) +
+                    ' ' +
+                    raw['TB_absolute_unit'] +
+                    ' (' +
+                    d3.format('0.2f')(raw['TB_relative']) +
+                    ' ' +
+                    raw['TB_relative_unit'] +
+                    ')' +
+                    ' @ V' +
+                    raw['TB_' + config.display + '_visitn'];
+            return xLabel + '\n' + yLabel;
+        });
+    }
+
     function onResize() {
         drawQuadrants.call(this);
         addPointMouseover.call(this);
         addPointClick.call(this);
+        addTitle.call(this);
     }
 
     function safetyedish(element, settings) {

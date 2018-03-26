@@ -8,6 +8,7 @@ const defaultSettings = {
         {
             label: 'ALT',
             measure: 'Aminotransferase, alanine (ALT)',
+            axis: 'x',
             cut: {
                 relative: 3,
                 absolute: null
@@ -24,6 +25,7 @@ const defaultSettings = {
         {
             label: 'TB',
             measure: 'Total Bilirubin',
+            axis: 'y',
             cut: {
                 relative: 2,
                 absolute: null
