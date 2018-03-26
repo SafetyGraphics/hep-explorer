@@ -45,16 +45,16 @@ const defaultSettings = {
 
     //Standard webcharts settings
     x: {
-        column: 'ALT_relative',
-        label: 'ALT (% ULN)',
+        column: null, //set in onPreprocess/updateAxisSettings
+        label: null, // set in onPreprocess/updateAxisSettings,
         type: 'linear',
         behavior: 'flex',
         format: '.1f',
         domain: [0, null]
     },
     y: {
-        column: 'TB_relative',
-        label: 'TB (% ULN)',
+        column: null, // set in onPreprocess/updateAxisSettings,
+        label: null, // set in onPreprocess/updateAxisSettings,
         type: 'linear',
         behavior: 'flex',
         format: '.1f',

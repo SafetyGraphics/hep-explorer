@@ -139,16 +139,16 @@
 
         //Standard webcharts settings
         x: {
-            column: 'ALT_relative',
-            label: 'ALT (% ULN)',
+            column: null, //set in onPreprocess/updateAxisSettings
+            label: null, // set in onPreprocess/updateAxisSettings,
             type: 'linear',
             behavior: 'flex',
             format: '.1f',
             domain: [0, null]
         },
         y: {
-            column: 'TB_relative',
-            label: 'TB (% ULN)',
+            column: null, // set in onPreprocess/updateAxisSettings,
+            label: null, // set in onPreprocess/updateAxisSettings,
             type: 'linear',
             behavior: 'flex',
             format: '.1f',
@@ -305,107 +305,10 @@
         } else return defaultControls;
     }
 
-    //Converts a one record per measure data object to a one record per participant objects
-    function flattenData() {
-        var chart = this;
-        var config = this.config;
-        //make a data set with one row per ID
-
-        //filter the lab data to only the required measures
-        var included_measures = config.measure_details.map(function(m) {
-            return m.measure;
-        });
-
-        var sub = this.initial_data
-            .filter(function(f) {
-                return included_measures.indexOf(f[config.measure_col]) > -1;
-            })
-            .filter(function(f) {
-                return true;
-            }); //add a filter on selected visits here
-
-        //get the relative value (% of the upper limit of normal) for the measure
-        sub.forEach(function(d) {
-            d.relative = d[config.value_col] / d[config.normal_col_high];
-        });
-
-        //get maximum values for each measure type
-        var flat_data = d3
-            .nest()
-            .key(function(f) {
-                return f[config.id_col];
-            })
-            .rollup(function(d) {
-                var participant_obj = {};
-                config.measure_details.forEach(function(m) {
-                    var matches = d.filter(function(f) {
-                        return m.measure == f[config.measure_col];
-                    }); //get matching measures
-
-                    //get max raw value
-                    participant_obj[m.label + '_absolute'] = d3.max(matches, function(d) {
-                        return d[config.value_col];
-                    });
-                    participant_obj[m.label + '_absolute_flagged'] =
-                        participant_obj[m.label + '_absolute'] > m.cut.absolute;
-                    var absMatch = matches.find(function(f) {
-                        return participant_obj[m.label + '_absolute'] == f[config.value_col];
-                    });
-                    participant_obj[m.label + '_absolute_visitn'] = absMatch[config.visitn_col];
-                    participant_obj[m.label + '_absolute_visit'] = absMatch[config.visit_col];
-                    participant_obj[m.label + '_absolute_unit'] = absMatch[config.unit_col];
-
-                    //get max relative value and flagged status
-                    participant_obj[m.label + '_relative'] = d3.max(matches, function(d) {
-                        return d.relative;
-                    });
-                    participant_obj[m.label + '_relative_flagged'] =
-                        participant_obj[m.label + '_relative'] > m.cut.relative;
-                    var relMatch = matches.find(function(f) {
-                        return participant_obj[m.label + '_relative'] == f.relative;
-                    });
-                    participant_obj[m.label + '_relative_visitn'] = relMatch[config.visitn_col];
-                    participant_obj[m.label + '_relative_visit'] = relMatch[config.visit_col];
-                    participant_obj[m.label + '_relative_unit'] = 'xULN';
-                });
-
-                //Add participant level metadata
-                var filterVars = chart.config.filters.map(function(d) {
-                    return d.value_col;
-                });
-                var groupVars = chart.config.group_cols.map(function(d) {
-                    return d.value_col;
-                });
-                var varList = d3$1.merge([filterVars, groupVars]);
-
-                varList.forEach(function(v) {
-                    participant_obj[v] = d[0][v];
-                });
-
-                return participant_obj;
-            })
-            .entries(sub);
-        console.log(flat_data);
-        var flat_data = flat_data.map(function(m) {
-            m.values[config.id_col] = m.key;
-
-            //link the raw data to the flattened object
-            var allMatches = chart.initial_data.filter(function(f) {
-                return f[config.id_col] == m.key;
-            });
-            m.values.raw = allMatches;
-
-            return m.values;
-        });
-        return flat_data;
-    }
-
     function onInit() {
         this.raw_data.forEach(function(d) {
             d.NONE = 'All Participants'; // placeholder variable for non-grouped comparisons
         });
-
-        this.raw_data = flattenData.call(this);
     }
 
     var defaultCutData = [
@@ -473,7 +376,7 @@
         // set initial values
         //////////////////////////////////////////////////////////
         quadrants.cut_data.x = config.measure_details.find(function(f) {
-            return config.x.column.search(f.label) > -1;
+            return f.axis == 'x';
         }).cut[config.display];
 
         chart.controls.wrap
@@ -486,7 +389,7 @@
             quadrants.cut_data.x;
 
         quadrants.cut_data.y = config.measure_details.find(function(f) {
-            return config.y.column.search(f.label) > -1;
+            return f.axis == 'y';
         }).cut[config.display];
 
         chart.controls.wrap
@@ -629,9 +532,157 @@
         initMeasureTable.call(this);
     }
 
+    //Converts a one record per measure data object to a one record per participant objects
+    function flattenData() {
+        var chart = this;
+        var config = this.config;
+        console.log(this);
+        //make a data set with one row per ID
+
+        //filter the lab data to only the required measures
+        var included_measures = config.measure_details.map(function(m) {
+            return m.measure;
+        });
+
+        var sub = this.initial_data
+            .filter(function(f) {
+                return included_measures.indexOf(f[config.measure_col]) > -1;
+            })
+            .filter(function(f) {
+                return true;
+            }); //add a filter on selected visits here
+
+        //get the relative value (% of the upper limit of normal) for the measure
+        sub.forEach(function(d) {
+            var numerics = ['value_col', 'visitn_col', 'normal_col_low', 'normal_col_high'];
+
+            numerics.forEach(function(col) {
+                d[config[col]] = +d[config[col]];
+            });
+
+            d.relative = d[config.value_col] / d[config.normal_col_high];
+        });
+
+        //get list of columns to flatten
+        var colList = [];
+        var measureCols = [
+            'measure_col',
+            'value_col',
+            'visit_col',
+            'visitn_col',
+            'unit_col',
+            'normal_col_low',
+            'normal_col_high'
+        ];
+
+        measureCols.forEach(function(d) {
+            if (Array.isArray(d)) {
+                d.forEach(function(di) {
+                    colList.push(
+                        di.hasOwnProperty('value_col') ? config[di.value_col] : config[di]
+                    );
+                });
+            } else {
+                colList.push(d.hasOwnProperty('value_col') ? config[d.value_col] : config[d]);
+            }
+        });
+
+        colList.push('relative');
+
+        //get maximum values for each measure type
+        var flat_data = d3
+            .nest()
+            .key(function(f) {
+                return f[config.id_col];
+            })
+            .rollup(function(d) {
+                var participant_obj = {};
+                config.measure_details.forEach(function(m) {
+                    //get all raw data for the current measure
+                    var matches = d.filter(function(f) {
+                        return m.measure == f[config.measure_col];
+                    }); //get matching measures
+
+                    //get record with maximum value for the current display type
+                    participant_obj[m.label] = d3.max(matches, function(d) {
+                        return config.display == 'absolute' ? d[config.value_col] : d.relative;
+                    });
+                    var maxRecord = matches.find(function(d) {
+                        return (
+                            participant_obj[m.label] ==
+                            (config.display == 'absolute' ? d[config.value_col] : d.relative)
+                        );
+                    });
+
+                    //map all measure specific values
+                    colList.forEach(function(col) {
+                        participant_obj[m.label + '_' + col] = maxRecord[col];
+                    });
+
+                    //determine whether the value is above the specified threshold
+                    participant_obj[m.label + '_cut'] = m.cut[config.display];
+                    participant_obj[m.label + '_flagged'] =
+                        participant_obj[m.label] >= participant_obj[m.label + '_cut'];
+                });
+
+                //Add participant level metadata
+                var filterVars = chart.config.filters.map(function(d) {
+                    return d.hasOwnProperty('value_col') ? d.value_col : d;
+                });
+                var groupVars = chart.config.group_cols.map(function(d) {
+                    return d.hasOwnProperty('value_col') ? d.value_col : d;
+                });
+                var detailVars = chart.config.details.map(function(d) {
+                    return d.hasOwnProperty('value_col') ? d.value_col : d;
+                });
+                var varList = d3$1.merge([filterVars, groupVars, detailVars]);
+
+                varList.forEach(function(v) {
+                    participant_obj[v] = d[0][v];
+                });
+
+                return participant_obj;
+            })
+            .entries(sub);
+        console.log(flat_data);
+        var flat_data = flat_data.map(function(m) {
+            m.values[config.id_col] = m.key;
+
+            //link the raw data to the flattened object
+            var allMatches = chart.initial_data.filter(function(f) {
+                return f[config.id_col] == m.key;
+            });
+            m.values.raw = allMatches;
+
+            return m.values;
+        });
+        return flat_data;
+    }
+
+    function updateAxisSettings() {
+        var config = this.config;
+
+        //note: doing this in preprocess so that we can (theoretically have a control to change the variable on each axis later on)
+        var xMeasure = config.measure_details.find(function(f) {
+                return f.axis == 'x';
+            }),
+            yMeasure = config.measure_details.find(function(f) {
+                return f.axis == 'y';
+            });
+
+        config.x.column = xMeasure.label;
+        config.x.label =
+            xMeasure.measure + config.display == 'relative' ? ' (xULN)' : ' (raw values)';
+
+        config.y.column = yMeasure.label;
+        config.y.label =
+            yMeasure.measure + config.display == 'relative' ? ' (xULN)' : ' (raw values)';
+    }
+
     function onPreprocess() {
         //update flattened data
         this.raw_data = flattenData.call(this);
+        updateAxisSettings.call(this);
     }
 
     function onDataTransform() {}
