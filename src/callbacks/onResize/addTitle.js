@@ -8,29 +8,15 @@ export function addTitle() {
             xLabel =
                 config.x.label +
                 ': ' +
-                d3.format('0.2f')(raw['ALT_absolute']) +
-                ' ' +
-                raw['ALT_absolute_unit'] +
-                ' (' +
-                d3.format('0.2f')(raw['ALT_relative']) +
-                ' ' +
-                raw['ALT_relative_unit'] +
-                ')' +
+                d3.format('0.2f')(raw['ALT']) +
                 ' @ V' +
-                raw['ALT_' + config.display + '_visitn'],
+                raw['TB_' + config.visitn_col],
             yLabel =
                 config.y.label +
                 ': ' +
-                d3.format('0.2f')(raw['TB_absolute']) +
-                ' ' +
-                raw['TB_absolute_unit'] +
-                ' (' +
-                d3.format('0.2f')(raw['TB_relative']) +
-                ' ' +
-                raw['TB_relative_unit'] +
-                ')' +
+                d3.format('0.2f')(raw['TB']) +
                 ' @ V' +
-                raw['TB_' + config.display + '_visitn'];
+                raw['TB_' + config.visitn_col];
         return xLabel + '\n' + yLabel;
     });
 }

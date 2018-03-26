@@ -669,14 +669,14 @@
             yMeasure = config.measure_details.find(function(f) {
                 return f.axis == 'y';
             });
-
+        console.log(xMeasure);
         config.x.column = xMeasure.label;
         config.x.label =
-            xMeasure.measure + config.display == 'relative' ? ' (xULN)' : ' (raw values)';
+            xMeasure.measure + (config.display == 'relative' ? ' (xULN)' : ' (raw values)');
 
         config.y.column = yMeasure.label;
         config.y.label =
-            yMeasure.measure + config.display == 'relative' ? ' (xULN)' : ' (raw values)';
+            yMeasure.measure + (config.display == 'relative' ? ' (xULN)' : ' (raw values)');
     }
 
     function onPreprocess() {
@@ -1235,29 +1235,15 @@
                 xLabel =
                     config.x.label +
                     ': ' +
-                    d3.format('0.2f')(raw['ALT_absolute']) +
-                    ' ' +
-                    raw['ALT_absolute_unit'] +
-                    ' (' +
-                    d3.format('0.2f')(raw['ALT_relative']) +
-                    ' ' +
-                    raw['ALT_relative_unit'] +
-                    ')' +
+                    d3.format('0.2f')(raw['ALT']) +
                     ' @ V' +
-                    raw['ALT_' + config.display + '_visitn'],
+                    raw['TB_' + config.visitn_col],
                 yLabel =
                     config.y.label +
                     ': ' +
-                    d3.format('0.2f')(raw['TB_absolute']) +
-                    ' ' +
-                    raw['TB_absolute_unit'] +
-                    ' (' +
-                    d3.format('0.2f')(raw['TB_relative']) +
-                    ' ' +
-                    raw['TB_relative_unit'] +
-                    ')' +
+                    d3.format('0.2f')(raw['TB']) +
                     ' @ V' +
-                    raw['TB_' + config.display + '_visitn'];
+                    raw['TB_' + config.visitn_col];
             return xLabel + '\n' + yLabel;
         });
     }
