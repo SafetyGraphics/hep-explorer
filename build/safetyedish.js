@@ -334,7 +334,8 @@
         ],
         color_by: null, //set in syncSettings
         max_width: 500,
-        aspect: 1
+        aspect: 1,
+        legend: { location: 'top' }
     };
 
     //Replicate settings in multiple places in the settings object
@@ -380,18 +381,13 @@
                         : filter.value_col ? filter.value_col : filter
                 });
             });
-        defaultDetails.push({ value_col: settings.value_col, label: 'Result' });
-        if (settings.normal_col_low)
-            defaultDetails.push({
-                value_col: settings.normal_col_low,
-                label: 'Lower Limit of Normal'
+        if (settings.group_cols)
+            settings.group_cols.forEach(function(group) {
+                return defaultDetails.push({
+                    value_col: group.value_col ? group.value_col : filter,
+                    label: group.label ? group.label : group.value_col ? group.value_col : filter
+                });
             });
-        if (settings.normal_col_high)
-            defaultDetails.push({
-                value_col: settings.normal_col_high,
-                label: 'Upper Limit of Normal'
-            });
-
         //If [settings.details] is not specified:
         if (!settings.details) settings.details = defaultDetails;
         else {
@@ -693,7 +689,17 @@
         this.visitPath = this.svg.append('g').attr('class', 'visit-path');
     }
 
-    function initMeasureTable() {
+    function initParticipantDetails() {
+        //layout participant details section
+        this.participantDetails = {};
+        this.participantDetails.wrap = this.wrap.append('div').attr('class', 'participantDetails');
+
+        this.participantDetails.header = this.participantDetails.wrap
+            .append('div')
+            .attr('class', 'participantHeader');
+        this.participantDetails.wrap.append('div').attr('class', 'measureTable');
+
+        //initialize the measureTable
         var settings = {
             cols: ['key', 'n', 'min', 'median', 'max', 'spark'],
             headers: ['Measure', 'N', 'Min', 'Median', 'Max', ''],
@@ -704,9 +710,15 @@
             visitn_col: this.visitn_col,
             value_col: this.value_col
         };
-        this.measureTable = webcharts.createTable(this.element, settings);
+
+        this.measureTable = webcharts.createTable(
+            this.element + ' .participantDetails .measureTable',
+            settings
+        );
         this.measureTable.init([]);
-        this.measureTable.wrap.selectAll('*').style('display', 'none');
+
+        //hide the section until needed
+        this.participantDetails.wrap.selectAll('*').style('display', 'none');
     }
 
     function initResetButton() {
@@ -739,7 +751,7 @@
         initQuadrants.call(this);
         initRugs.call(this);
         initVisitPath.call(this);
-        initMeasureTable.call(this);
+        initParticipantDetails.call(this);
         initResetButton.call(this);
     }
 
@@ -1429,9 +1441,61 @@
         });
 
         //draw the measure table
-        this.measureTable.wrap.selectAll('*').style('display', null);
+        this.participantDetails.wrap.selectAll('*').style('display', null);
         this.measureTable.on('draw', addSparkLines);
         this.measureTable.draw(nested);
+    }
+
+    function makeParticipantHeader(d) {
+        var chart = this;
+        var raw = d.values.raw[0];
+
+        this.participantDetails.header.selectAll('*').remove();
+
+        var title = this.participantDetails.header
+            .append('h3')
+            .attr('class', 'id')
+            .html('Participant Details')
+            .style('border-top', '2px solid black')
+            .style('border-bottom', '2px solid black')
+            .style('padding', '.2em');
+
+        title
+            .append('Button')
+            .text('Clear')
+            .style('margin-left', '1em')
+            .style('float', 'right');
+
+        //show detail variables in a ul
+        var ul = this.participantDetails.header
+            .append('ul')
+            .style('list-style', 'none')
+            .style('padding', '0');
+
+        var lis = ul
+            .selectAll('li')
+            .data(chart.config.details)
+            .enter()
+            .append('li')
+            .style('', 'block')
+            .style('display', 'inline-block')
+            .style('text-align', 'center')
+            .style('padding', '0.5em');
+
+        lis
+            .append('div')
+            .text(function(d) {
+                return d.label;
+            })
+            .attr('div', 'label')
+            .style('font-size', '0.8em');
+
+        lis
+            .append('div')
+            .text(function(d) {
+                return raw[d.value_col];
+            })
+            .attr('div', 'value');
     }
 
     function addPointClick() {
@@ -1455,8 +1519,7 @@
 
             drawVisitPath.call(chart, d); //draw the path showing participant's pattern over time
             drawMeasureTable.call(chart, d); //draw table showing measure values with sparklines
-
-            //add clear details button
+            makeParticipantHeader.call(chart, d);
         });
     }
 
