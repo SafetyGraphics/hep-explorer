@@ -992,8 +992,12 @@
         this[dimension + '_dom'] = domain;
     }
 
-    function clearVisitPath(d) {
+    function clearVisitPath() {
         this.visitPath.selectAll('*').remove();
+    }
+
+    function clearParticipantHeader() {
+        this.participantDetails.header.selectAll('*').remove(); //clear participant header
     }
 
     function hideMeasureTable() {
@@ -1001,12 +1005,28 @@
         this.measureTable.wrap.selectAll('*').style('display', 'none');
     }
 
-    function onDraw() {
-        //clear highlights
-        clearVisitPath.call(this);
-        clearRugs.call(this, 'x');
+    function clearParticipantDetails() {
+        var chart = this;
+        var config = this.config;
+
+        this.svg
+            .selectAll('g.point')
+            .select('circle')
+            .attr('stroke', function(d) {
+                return chart.colorScale(d[config.color_by]);
+            }) //reset point colors
+            .attr('stroke-width', 1); //reset stroke
+
+        clearVisitPath.call(this); //remove path
+        clearParticipantHeader.call(this);
+        clearRugs.call(this, 'x'); //clear rugs
         clearRugs.call(this, 'y');
-        hideMeasureTable.call(this);
+        hideMeasureTable.call(this); //remove the detail table
+    }
+
+    function onDraw() {
+        //clear participant Details
+        clearParticipantDetails.call(this);
 
         //get current cutpoints and classify participants in to eDISH quadrants
         updateQuadrantData.call(this);
@@ -1158,22 +1178,6 @@
                     drawRugs.call(chart, d, 'y');
                 }
             });
-    }
-
-    function clearParticipantDetails(d) {
-        var chart = this;
-        var config = this.config;
-        var points = this.marks[0].circles;
-
-        points
-            .attr('stroke', function(d) {
-                return chart.colorScale(d[config.color_by]);
-            }) //reset point colors
-            .attr('stroke-width', 1); //reset stroke
-
-        clearVisitPath.call(this, d); //remove path
-
-        //remove the detail table
     }
 
     function drawVisitPath(d) {
@@ -1450,8 +1454,6 @@
         var chart = this;
         var raw = d.values.raw[0];
 
-        this.participantDetails.header.selectAll('*').remove();
-
         var title = this.participantDetails.header
             .append('h3')
             .attr('class', 'id')
@@ -1464,7 +1466,10 @@
             .append('Button')
             .text('Clear')
             .style('margin-left', '1em')
-            .style('float', 'right');
+            .style('float', 'right')
+            .on('click', function() {
+                clearParticipantDetails.call(chart);
+            });
 
         //show detail variables in a ul
         var ul = this.participantDetails.header

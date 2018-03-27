@@ -1,4 +1,4 @@
-import { clearParticipantDetails } from './addPointClick/clearParticipantDetails';
+import { clearParticipantDetails } from './clearParticipantDetails';
 import { drawVisitPath } from './addPointClick/drawVisitPath';
 import { drawMeasureTable } from './addPointClick/drawMeasureTable';
 import { makeParticipantHeader } from './addPointClick/makeParticipantHeader';

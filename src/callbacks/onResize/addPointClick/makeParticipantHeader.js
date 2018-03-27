@@ -1,11 +1,9 @@
 import { merge } from 'd3';
-
+import { clearParticipantDetails } from '../clearParticipantDetails';
 export function makeParticipantHeader(d) {
     var chart = this;
     var wrap = this.participantDetails.header;
     var raw = d.values.raw[0];
-
-    this.participantDetails.header.selectAll('*').remove();
 
     var title = this.participantDetails.header
         .append('h3')
@@ -19,7 +17,10 @@ export function makeParticipantHeader(d) {
         .append('Button')
         .text('Clear')
         .style('margin-left', '1em')
-        .style('float', 'right');
+        .style('float', 'right')
+        .on('click', function() {
+            clearParticipantDetails.call(chart);
+        });
 
     //show detail variables in a ul
     var ul = this.participantDetails.header
