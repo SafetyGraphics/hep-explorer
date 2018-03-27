@@ -693,10 +693,25 @@
             yMeasure.measure + (config.display == 'relative' ? ' (xULN)' : ' (raw values)');
     }
 
+    function setLegendLabel() {
+        //change the legend label to match the group variable
+        //or hide legend if group = NONE
+        this.config.legend.label =
+            this.config.color_by !== 'NONE'
+                ? this.config.group_cols[
+                      this.config.group_cols
+                          .map(function(group) {
+                              return group.value_col;
+                          })
+                          .indexOf(this.config.color_by)
+                  ].label
+                : '';
+    }
+
     function onPreprocess() {
-        //update flattened data
-        this.raw_data = flattenData.call(this);
-        updateAxisSettings.call(this);
+        this.raw_data = flattenData.call(this); //update flattened data
+        setLegendLabel.call(this); //update legend label based on group variable
+        updateAxisSettings.call(this); //update axis label based on display type
     }
 
     function onDataTransform() {}
@@ -1271,11 +1286,17 @@
         });
     }
 
+    function toggleLegend() {
+        var hideLegend = this.config.color_by == 'NONE';
+        this.wrap.select('.legend').style('display', hideLegend ? 'None' : null);
+    }
+
     function onResize() {
         drawQuadrants.call(this);
         addPointMouseover.call(this);
         addPointClick.call(this);
         addTitle.call(this);
+        toggleLegend.call(this);
     }
 
     function safetyedish(element, settings) {
