@@ -1013,7 +1013,8 @@
             .selectAll('g.point')
             .select('circle')
             .attr('stroke', function(d) {
-                return chart.colorScale(d[config.color_by]);
+                console.log(d);
+                return chart.colorScale(d.values.raw[0][config.color_by]);
             }) //reset point colors
             .attr('stroke-width', 1); //reset stroke
 
