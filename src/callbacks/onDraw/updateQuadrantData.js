@@ -3,12 +3,12 @@ export function updateQuadrantData() {
     var config = this.config;
 
     //update cut data
-    var dimensions = ['x', 'y'];
+    var dimensions = ['x', 'y', 'z'];
     dimensions.forEach(function(dimension) {
         //change to the stored cut point if the display changed
         if (config.quadrants.cut_data.displayChange) {
             config.quadrants.cut_data[dimension] = config.measure_details.find(
-                f => config[dimension].column.search(f.label) > -1
+                f => f.axis == dimension
             ).cut[config.display];
             chart.controls.wrap
                 .selectAll('div.control-group')
@@ -20,9 +20,7 @@ export function updateQuadrantData() {
 
         // get value linked to the controls (quadrant_cut_obj), add propogate it elsewhere
         var current_cut = config.quadrants.cut_data[dimension];
-        config.measure_details.find(f => config[dimension].column.search(f.label) > -1).cut[
-            config.display
-        ] = current_cut;
+        config.measure_details.find(f => f.axis == dimension).cut[config.display] = current_cut;
         config.quadrants.cut_data.filter(f => f.dimension == dimension)[0] = current_cut;
     });
 

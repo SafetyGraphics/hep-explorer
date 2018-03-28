@@ -4,6 +4,13 @@ const defaultSettings = {
     measure_col: 'TEST',
     visit_col: 'VISIT',
     visitn_col: 'VISITN',
+    unit_col: 'STRESU',
+    normal_col_low: 'STNRLO',
+    normal_col_high: 'STNRHI',
+    id_col: 'USUBJID',
+    group_cols: null,
+    filters: null,
+    details: null,
     measure_details: [
         {
             label: 'ALT',
@@ -17,6 +24,7 @@ const defaultSettings = {
         {
             label: 'ALP',
             measure: 'Alkaline phosphatase (ALP)',
+            axis: 'z', //used to fill circles
             cut: {
                 relative: 1,
                 absolute: 1.0
@@ -32,16 +40,9 @@ const defaultSettings = {
             }
         }
     ],
-    unit_col: 'STRESU',
-    normal_range: true,
-    normal_col_low: 'STNRLO',
-    normal_col_high: 'STNRHI',
-    id_col: 'USUBJID',
-    group_cols: null,
-    filters: null,
-    details: null,
     missingValues: ['', 'NA', 'N/A'],
     display: 'relative', //or "absolute"
+    baseline_visitn: '1',
 
     //Standard webcharts settings
     x: {
@@ -66,7 +67,7 @@ const defaultSettings = {
             type: 'circle',
             summarizeY: 'mean',
             summarizeX: 'mean',
-            attributes: { 'fill-opacity': 0 }
+            attributes: { 'fill-opacity': 0.5 }
         }
     ],
     color_by: null, //set in syncSettings
@@ -177,6 +178,12 @@ export function syncControlInputs(settings) {
             label: 'TB Cutpoint',
             description: 'Y-axis cut',
             option: 'quadrants.cut_data.y'
+        },
+        {
+            type: 'number',
+            label: 'Baseline ALP Cutpoint',
+            description: 'Points > cutpoint @ baseline are filled',
+            option: 'quadrants.cut_data.z'
         }
     ];
     //Sync group control.

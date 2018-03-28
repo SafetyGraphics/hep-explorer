@@ -2,6 +2,7 @@ import { clearVisitPath } from './addPointClick/clearVisitPath';
 import { clearParticipantHeader } from './addPointClick/clearParticipantHeader';
 import { hideMeasureTable } from './addPointClick/hideMeasureTable';
 import { clearRugs } from './addPointMouseover/clearRugs';
+import { fillFlaggedCircles } from './fillFlaggedCircles';
 
 export function clearParticipantDetails() {
     var chart = this;
@@ -13,6 +14,7 @@ export function clearParticipantDetails() {
         .attr('stroke', function(d) {
             return chart.colorScale(d.values.raw[0][config.color_by]);
         }) //reset point colors
+        .attr('fill-opacity', 0.5)
         .attr('stroke-width', 1); //reset stroke
 
     clearVisitPath.call(this); //remove path

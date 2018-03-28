@@ -13,11 +13,13 @@ export function addPointClick() {
         clearParticipantDetails.call(chart, d); //clear the previous participant
         points
             .attr('stroke', '#ccc') //set all points to gray
+            .attr('fill-opacity', 0)
             .classed('disabled', true); //disable mouseover while viewing participant details
 
         d3
             .select(this)
             .attr('stroke', d => chart.colorScale(d.values.raw[0][config.color_by])) //highlight selected point
+            .attr('fill-opacity', 0.5)
             .attr('stroke-width', 3);
 
         drawVisitPath.call(chart, d); //draw the path showing participant's pattern over time

@@ -1,8 +1,6 @@
 export function setLegendLabel() {
     //change the legend label to match the group variable
     //or hide legend if group = NONE
-    console.log(this);
-    console.log(this.config.color_by);
     this.config.legend.label =
         this.config.color_by !== 'NONE'
             ? this.config.group_cols[
