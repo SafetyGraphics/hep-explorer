@@ -368,6 +368,8 @@
             settings.color_by = settings.group_cols[1].value_col
                 ? settings.group_cols[1].value_col
                 : settings.group_cols[1];
+        } else {
+            settings.color_by = 'NONE';
         }
 
         //Define default details.
@@ -449,7 +451,6 @@
                 option: 'quadrants.cut_data.y'
             }
         ];
-
         //Sync group control.
         var groupControl = defaultControls.filter(function(controlInput) {
             return controlInput.label === 'Group';
@@ -462,6 +463,13 @@
             .forEach(function(group) {
                 groupControl.values.push(group.value_col);
             });
+
+        //drop the group control if NONE is the only option
+        if (settings.group_cols.length == 1) {
+            defaultControls = defaultControls.filter(function(controlInput) {
+                return controlInput.label != 'Group';
+            });
+        }
 
         //Sync display control
         var displayControl = defaultControls.filter(function(controlInput) {
@@ -904,6 +912,8 @@
     function setLegendLabel() {
         //change the legend label to match the group variable
         //or hide legend if group = NONE
+        console.log(this);
+        console.log(this.config.color_by);
         this.config.legend.label =
             this.config.color_by !== 'NONE'
                 ? this.config.group_cols[
@@ -1013,7 +1023,6 @@
             .selectAll('g.point')
             .select('circle')
             .attr('stroke', function(d) {
-                console.log(d);
                 return chart.colorScale(d.values.raw[0][config.color_by]);
             }) //reset point colors
             .attr('stroke-width', 1); //reset stroke

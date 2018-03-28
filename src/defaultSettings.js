@@ -100,6 +100,8 @@ export function syncSettings(settings) {
         settings.color_by = settings.group_cols[1].value_col
             ? settings.group_cols[1].value_col
             : settings.group_cols[1];
+    } else {
+        settings.color_by = 'NONE';
     }
 
     //Define default details.
@@ -145,7 +147,7 @@ export function syncSettings(settings) {
 
 //Map values from settings to control inputs
 export function syncControlInputs(settings) {
-    const defaultControls = [
+    var defaultControls = [
         {
             type: 'dropdown',
             label: 'Group',
@@ -177,13 +179,17 @@ export function syncControlInputs(settings) {
             option: 'quadrants.cut_data.y'
         }
     ];
-
     //Sync group control.
     const groupControl = defaultControls.filter(controlInput => controlInput.label === 'Group')[0];
     groupControl.start = settings.color_by;
     settings.group_cols.filter(group => group.value_col !== 'NONE').forEach(group => {
         groupControl.values.push(group.value_col);
     });
+
+    //drop the group control if NONE is the only option
+    if (settings.group_cols.length == 1) {
+        defaultControls = defaultControls.filter(controlInput => controlInput.label != 'Group');
+    }
 
     //Sync display control
     const displayControl = defaultControls.filter(
