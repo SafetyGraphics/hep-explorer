@@ -1,5 +1,6 @@
 import defaultCutData from './defaultCutData';
 import defaultQuadrantData from './defaultQuadrantData';
+import { initSummaryTable } from './initSummaryTable';
 
 export function init() {
     var chart = this;
@@ -46,4 +47,9 @@ export function init() {
         .select('input')
         .node().value =
         quadrants.cut_data.z;
+
+    ///////////////////////////////////////////////////////////
+    // initialize the summary table
+    //////////////////////////////////////////////////////////
+    initSummaryTable.call(chart);
 }

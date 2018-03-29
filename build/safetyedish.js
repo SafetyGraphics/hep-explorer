@@ -563,6 +563,104 @@
         }
     ];
 
+    function updateSummaryTable() {
+        var quadrants = this.config.quadrants;
+        var rows = quadrants.table.rows;
+        var cells = quadrants.table.cells;
+
+        function updateCells(d) {
+            var cellData = cells.map(function(cell) {
+                cell.value = d[cell.value_col];
+                return cell;
+            });
+            var row_cells = d3
+                .select(this)
+                .selectAll('td')
+                .data(cellData, function(d) {
+                    return d.value_col;
+                });
+
+            row_cells
+                .enter()
+                .append('td')
+                .style('text-align', function(d, i) {
+                    return d.label != 'Quadrant' ? 'center' : null;
+                })
+                .style('font-size', '0.9em')
+                .style('padding', '0 0.5em 0 0.5em');
+
+            row_cells.text(function(d) {
+                return d.value;
+            });
+        }
+
+        //update the content of each row
+        rows.data(quadrants.quadrant_data, function(d) {
+            return d.label;
+        });
+        rows.each(updateCells);
+    }
+
+    function initSummaryTable() {
+        var quadrants = this.config.quadrants;
+
+        quadrants.table = {};
+        quadrants.table.wrap = this.wrap
+            .append('div')
+            .attr('class', 'quadrantTable')
+            .style('padding-top', '1em');
+        quadrants.table.tab = quadrants.table.wrap
+            .append('table')
+            .style('border-collapse', 'collapse');
+
+        //table header
+        quadrants.table.cells = [
+            {
+                value_col: 'label',
+                label: 'Quadrant'
+            },
+            {
+                value_col: 'count',
+                label: '#'
+            },
+            {
+                value_col: 'percent',
+                label: '%'
+            }
+        ];
+        quadrants.table.thead = quadrants.table.tab
+            .append('thead')
+            .style('border-top', '2px solid #999')
+            .style('border-bottom', '2px solid #999')
+            .append('tr')
+            .style('padding', '0.1em');
+
+        quadrants.table.thead
+            .selectAll('th')
+            .data(quadrants.table.cells)
+            .enter()
+            .append('th')
+            .text(function(d) {
+                return d.label;
+            });
+
+        //table contents
+        quadrants.table.tbody = quadrants.table.tab
+            .append('tbody')
+            .style('border-bottom', '2px solid #999');
+        quadrants.table.rows = quadrants.table.tbody
+            .selectAll('tr')
+            .data(quadrants.quadrant_data, function(d) {
+                return d.label;
+            })
+            .enter()
+            .append('tr')
+            .style('padding', '0.1em');
+
+        //initial table update
+        updateSummaryTable.call(this);
+    }
+
     function init() {
         var chart = this;
         var config = chart.config;
@@ -620,6 +718,11 @@
             .select('input')
             .node().value =
             quadrants.cut_data.z;
+
+        ///////////////////////////////////////////////////////////
+        // initialize the summary table
+        //////////////////////////////////////////////////////////
+        initSummaryTable.call(chart);
     }
 
     function clearRugs(axis) {
@@ -1109,7 +1212,7 @@
             }) //reset point colors
             .attr('fill-opacity', 0.5)
             .attr('stroke-width', 1); //reset stroke
-
+        this.config.quadrants.table.wrap.style('display', null);
         clearVisitPath.call(this); //remove path
         clearParticipantHeader.call(this);
         clearRugs.call(this, 'x'); //clear rugs
@@ -1629,6 +1732,7 @@
         //add event listener to all participant level points
         points.on('click', function(d) {
             clearParticipantDetails.call(chart, d); //clear the previous participant
+            chart.config.quadrants.table.wrap.style('display', 'none'); //hide the quadrant summart
             points
                 .attr('stroke', '#ccc') //set all points to gray
                 .attr('fill-opacity', 0)
@@ -1762,6 +1866,7 @@
         fillFlaggedCircles.call(this);
 
         //draw the quadrants and add drag interactivity
+        updateSummaryTable.call(this);
         drawQuadrants.call(this);
         init$1.call(this);
 

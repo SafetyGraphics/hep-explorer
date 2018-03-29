@@ -11,6 +11,7 @@ export function addPointClick() {
     //add event listener to all participant level points
     points.on('click', function(d) {
         clearParticipantDetails.call(chart, d); //clear the previous participant
+        chart.config.quadrants.table.wrap.style('display', 'none'); //hide the quadrant summart
         points
             .attr('stroke', '#ccc') //set all points to gray
             .attr('fill-opacity', 0)

@@ -16,7 +16,7 @@ export function clearParticipantDetails() {
         }) //reset point colors
         .attr('fill-opacity', 0.5)
         .attr('stroke-width', 1); //reset stroke
-
+    this.config.quadrants.table.wrap.style('display', null);
     clearVisitPath.call(this); //remove path
     clearParticipantHeader.call(this);
     clearRugs.call(this, 'x'); //clear rugs
