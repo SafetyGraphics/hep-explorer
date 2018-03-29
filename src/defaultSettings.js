@@ -70,6 +70,7 @@ const defaultSettings = {
             attributes: { 'fill-opacity': 0.5 }
         }
     ],
+    gridlines:"xy",
     color_by: null, //set in syncSettings
     max_width: 500,
     aspect: 1,
