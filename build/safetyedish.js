@@ -1652,7 +1652,7 @@
                     ': ' +
                     d3.format('0.2f')(raw['ALT']) +
                     ' @ V' +
-                    raw['TB_' + config.visitn_col],
+                    raw['ALT_' + config.visitn_col],
                 yLabel =
                     config.y.label +
                     ': ' +
