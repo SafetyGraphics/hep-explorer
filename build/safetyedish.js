@@ -650,6 +650,11 @@
         quadrants.wrap = this.svg.append('g').attr('class', 'quadrants');
         var wrap = quadrants.wrap;
 
+        //slight hack to make life easier on drag
+        quadrants.cut_data.forEach(function(d) {
+            d.chart = chart;
+        });
+
         quadrants.cut_g = wrap
             .selectAll('g.cut')
             .data(quadrants.cut_data)
@@ -662,14 +667,22 @@
         quadrants.cut_lines = quadrants.cut_g
             .append('line')
             .attr('class', 'cut-line')
-            .attr('dash-array', '5,5')
+            .attr('stroke-dasharray', '5,5')
             .attr('stroke', '#bbb');
 
-        quadrants.cut_labels = quadrants.cut_g
-            .append('text')
-            .attr('class', 'cut-label')
-            .attr('stroke', '#bbb');
+        quadrants.cut_lines_backing = quadrants.cut_g
+            .append('line')
+            .attr('class', 'cut-line-backing')
+            .attr('stroke', 'transparent')
+            .attr('stroke-width', '10')
+            .attr('cursor', 'move');
 
+        /* maybe not needed
+    quadrants.cut_labels = quadrants.cut_g
+        .append('text')
+        .attr('class', 'cut-label')
+        .attr('stroke', '#bbb');
+    */
         //////////////////////////////////////////////////////////
         //layout the quadrant labels
         /////////////////////////////////////////////////////////
@@ -1127,6 +1140,28 @@
             .attr('y2', 0);
 
         this.config.quadrants.cut_lines
+            .filter(function(d) {
+                return d.dimension == 'y';
+            })
+            .attr('x1', 0)
+            .attr('x2', this.plot_width)
+            .attr('y1', function(d) {
+                return _this.y(config.quadrants.cut_data.y);
+            })
+            .attr('y2', function(d) {
+                return _this.y(config.quadrants.cut_data.y);
+            });
+
+        this.config.quadrants.cut_lines_backing
+            .filter(function(d) {
+                return d.dimension == 'x';
+            })
+            .attr('x1', this.x(config.quadrants.cut_data.x))
+            .attr('x2', this.x(config.quadrants.cut_data.x))
+            .attr('y1', this.plot_height)
+            .attr('y2', 0);
+
+        this.config.quadrants.cut_lines_backing
             .filter(function(d) {
                 return d.dimension == 'y';
             })
@@ -1633,13 +1668,98 @@
         this.wrap.select('.legend').style('display', hideLegend ? 'None' : null);
     }
 
+    function dragStarted() {
+        var dimension = d3.select(this).classed('x') ? 'x' : 'y';
+        var chart = d3.select(this).datum().chart;
+
+        d3
+            .select(this)
+            .select('line.cut-line')
+            .attr('stroke-width', '2')
+            .attr('stroke-dasharray', '2,2');
+
+        chart.config.quadrants.group_labels.style('display', 'none');
+    }
+
+    function dragged() {
+        var chart = d3.select(this).datum().chart;
+
+        var x = d3.event.dx;
+        var y = d3.event.dy;
+
+        var line = d3.select(this).select('line.cut-line');
+        var lineBack = d3.select(this).select('line.cut-line-backing');
+
+        var dimension = d3.select(this).classed('x') ? 'x' : 'y';
+        // Update the line properties
+        var attributes = {
+            x1: parseInt(line.attr('x1')) + (dimension == 'x' ? x : 0),
+            x2: parseInt(line.attr('x2')) + (dimension == 'x' ? x : 0),
+            y1: parseInt(line.attr('y1')) + (dimension == 'y' ? y : 0),
+            y2: parseInt(line.attr('y2')) + (dimension == 'y' ? y : 0)
+        };
+
+        line.attr(attributes);
+        lineBack.attr(attributes);
+
+        var rawCut = line.attr(dimension + '1');
+        var current_cut = +d3.format('0.1f')(chart[dimension].invert(rawCut));
+
+        //update the cut control in real time
+        chart.controls.wrap
+            .selectAll('div.control-group')
+            .filter(function(f) {
+                return f.option == 'quadrants.cut_data.' + dimension;
+            })
+            .select('input')
+            .node().value = current_cut;
+
+        chart.config.quadrants.cut_data[dimension] = current_cut;
+    }
+
+    function dragEnded() {
+        var chart = d3.select(this).datum().chart;
+
+        d3
+            .select(this)
+            .select('line.cut-line')
+            .attr('stroke-width', '1')
+            .attr('stroke-dasharray', '5,5');
+        chart.config.quadrants.group_labels.style('display', null);
+
+        //redraw the chart (updates the needed cutpoint settings and quadrant annotations)
+        chart.draw();
+    }
+
+    // credit to https://bl.ocks.org/dimitardanailov/99950eee511375b97de749b597147d19
+
+    function init$1() {
+        var drag = d3.behavior
+            .drag()
+            .origin(function(d) {
+                return d;
+            })
+            .on('dragstart', dragStarted)
+            .on('drag', dragged)
+            .on('dragend', dragEnded);
+
+        this.config.quadrants.wrap.moveToFront();
+        this.config.quadrants.cut_g.call(drag);
+    }
+
     function onResize() {
-        drawQuadrants.call(this);
+        //add point interactivity, custom title and formatting
         addPointMouseover.call(this);
         addPointClick.call(this);
-        toggleLegend.call(this);
         addTitle.call(this);
         fillFlaggedCircles.call(this);
+
+        //draw the quadrants and add drag interactivity
+        drawQuadrants.call(this);
+        init$1.call(this);
+
+        // hide the legend if no group options are given
+        toggleLegend.call(this);
     }
 
     function safetyedish$1(element, settings) {

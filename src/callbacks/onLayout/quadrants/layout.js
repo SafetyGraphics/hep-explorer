@@ -12,6 +12,11 @@ export function layout() {
     quadrants.wrap = this.svg.append('g').attr('class', 'quadrants');
     var wrap = quadrants.wrap;
 
+    //slight hack to make life easier on drag
+    quadrants.cut_data.forEach(function(d) {
+        d.chart = chart;
+    });
+
     quadrants.cut_g = wrap
         .selectAll('g.cut')
         .data(quadrants.cut_data)
@@ -22,14 +27,22 @@ export function layout() {
     quadrants.cut_lines = quadrants.cut_g
         .append('line')
         .attr('class', 'cut-line')
-        .attr('dash-array', '5,5')
+        .attr('stroke-dasharray', '5,5')
         .attr('stroke', '#bbb');
 
+    quadrants.cut_lines_backing = quadrants.cut_g
+        .append('line')
+        .attr('class', 'cut-line-backing')
+        .attr('stroke', 'transparent')
+        .attr('stroke-width', '10')
+        .attr('cursor', 'move');
+
+    /* maybe not needed
     quadrants.cut_labels = quadrants.cut_g
         .append('text')
         .attr('class', 'cut-label')
         .attr('stroke', '#bbb');
-
+*/
     //////////////////////////////////////////////////////////
     //layout the quadrant labels
     /////////////////////////////////////////////////////////
