@@ -70,7 +70,7 @@ const defaultSettings = {
             attributes: { 'fill-opacity': 0.5 }
         }
     ],
-    gridlines:"xy",
+    gridlines: 'xy',
     color_by: null, //set in syncSettings
     max_width: 500,
     aspect: 1,
@@ -116,7 +116,7 @@ export function syncSettings(settings) {
             })
         );
     if (settings.group_cols)
-        settings.group_cols.forEach(group =>
+        settings.group_cols.filter(f => f.value_col != 'NONE').forEach(group =>
             defaultDetails.push({
                 value_col: group.value_col ? group.value_col : filter,
                 label: group.label ? group.label : group.value_col ? group.value_col : filter

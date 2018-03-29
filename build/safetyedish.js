@@ -333,6 +333,7 @@
                 attributes: { 'fill-opacity': 0.5 }
             }
         ],
+        gridlines: 'xy',
         color_by: null, //set in syncSettings
         max_width: 500,
         aspect: 1,
@@ -385,12 +386,18 @@
                 });
             });
         if (settings.group_cols)
-            settings.group_cols.forEach(function(group) {
-                return defaultDetails.push({
-                    value_col: group.value_col ? group.value_col : filter,
-                    label: group.label ? group.label : group.value_col ? group.value_col : filter
+            settings.group_cols
+                .filter(function(f) {
+                    return f.value_col != 'NONE';
+                })
+                .forEach(function(group) {
+                    return defaultDetails.push({
+                        value_col: group.value_col ? group.value_col : filter,
+                        label: group.label
+                            ? group.label
+                            : group.value_col ? group.value_col : filter
+                    });
                 });
-            });
         //If [settings.details] is not specified:
         if (!settings.details) settings.details = defaultDetails;
         else {
