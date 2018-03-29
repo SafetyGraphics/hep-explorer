@@ -306,6 +306,8 @@
         missingValues: ['', 'NA', 'N/A'],
         display: 'relative', //or "absolute"
         baseline_visitn: '1',
+        populationProfileURL: null,
+        participantProfileURL: null,
 
         //Standard webcharts settings
         x: {
@@ -589,7 +591,7 @@
                 .style('font-size', '0.9em')
                 .style('padding', '0 0.5em 0 0.5em');
 
-            row_cells.text(function(d) {
+            row_cells.html(function(d) {
                 return d.value;
             });
         }
@@ -602,6 +604,8 @@
     }
 
     function initSummaryTable() {
+        var chart = this;
+        var config = chart.config;
         var quadrants = this.config.quadrants;
 
         quadrants.table = {};
@@ -628,6 +632,16 @@
                 label: '%'
             }
         ];
+
+        if (config.populationProfileURL) {
+            quadrants.quadrant_data.forEach(function(d) {
+                d.link = "<a href='" + config.populationProfileURL + "'>&#128279</a>";
+            });
+            quadrants.table.cells.push({
+                value_col: 'link',
+                label: 'Population Profile'
+            });
+        }
         quadrants.table.thead = quadrants.table.tab
             .append('thead')
             .style('border-top', '2px solid #999')
@@ -640,7 +654,7 @@
             .data(quadrants.table.cells)
             .enter()
             .append('th')
-            .text(function(d) {
+            .html(function(d) {
                 return d.label;
             });
 
@@ -1682,6 +1696,15 @@
             .style('border-top', '2px solid black')
             .style('border-bottom', '2px solid black')
             .style('padding', '.2em');
+
+        if (chart.config.participantProfileURL) {
+            title
+                .append('a')
+                .html('Full Participant Profile')
+                .attr('href', chart.config.participantProfileURL)
+                .style('font-size', '0.8em')
+                .style('padding-left', '1em');
+        }
 
         title
             .append('Button')

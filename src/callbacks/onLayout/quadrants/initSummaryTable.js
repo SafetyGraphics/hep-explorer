@@ -27,6 +27,16 @@ export function initSummaryTable() {
             label: '%'
         }
     ];
+
+    if (config.populationProfileURL) {
+        quadrants.quadrant_data.forEach(function(d) {
+            d.link = "<a href='" + config.populationProfileURL + "'>&#128279</a>";
+        });
+        quadrants.table.cells.push({
+            value_col: 'link',
+            label: 'Population Profile'
+        });
+    }
     quadrants.table.thead = quadrants.table.tab
         .append('thead')
         .style('border-top', '2px solid #999')
@@ -39,7 +49,7 @@ export function initSummaryTable() {
         .data(quadrants.table.cells)
         .enter()
         .append('th')
-        .text(d => d.label);
+        .html(d => d.label);
 
     //table contents
     quadrants.table.tbody = quadrants.table.tab

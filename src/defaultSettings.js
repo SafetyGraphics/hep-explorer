@@ -43,6 +43,8 @@ const defaultSettings = {
     missingValues: ['', 'NA', 'N/A'],
     display: 'relative', //or "absolute"
     baseline_visitn: '1',
+    populationProfileURL: null,
+    participantProfileURL: null,
 
     //Standard webcharts settings
     x: {

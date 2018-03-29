@@ -24,7 +24,7 @@ export function updateSummaryTable() {
             .style('font-size', '0.9em')
             .style('padding', '0 0.5em 0 0.5em');
 
-        row_cells.text(d => d.value);
+        row_cells.html(d => d.value);
     }
 
     //update the content of each row
