@@ -55,7 +55,7 @@ export function layout() {
         .enter()
         .append('text')
         .attr('class', d => 'quadrant-label ' + d.position)
-        .attr('dy', d => (d.position.search('lower') > -1 ? '-.2em' : '.2em'))
+        .attr('dy', d => (d.position.search('lower') > -1 ? '-.2em' : '.5em'))
         .attr('dx', d => (d.position.search('right') > -1 ? '-.5em' : '.5em'))
         .attr('text-anchor', d => (d.position.search('right') > 0 ? 'end' : null))
         .attr('fill', '#bbb')

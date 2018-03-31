@@ -5,6 +5,7 @@ import { addPointClick } from './onResize/addPointClick';
 import { addTitle } from './onResize/addTitle';
 import { toggleLegend } from './onResize/toggleLegend';
 import { init as addLineDrag } from './onResize/addLineDrag/init';
+import { init as initBoxPlots } from './onResize/addBoxPlots/init';
 import { fillFlaggedCircles } from './onResize/fillFlaggedCircles';
 
 export default function onResize() {
@@ -21,4 +22,7 @@ export default function onResize() {
 
     // hide the legend if no group options are given
     toggleLegend.call(this);
+
+    // add boxplots
+    initBoxPlots.call(this);
 }

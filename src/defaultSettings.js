@@ -76,7 +76,8 @@ const defaultSettings = {
     color_by: null, //set in syncSettings
     max_width: 500,
     aspect: 1,
-    legend: { location: 'top' }
+    legend: { location: 'top' },
+    margin: { right: 25, top: 25 }
 };
 
 //Replicate settings in multiple places in the settings object
