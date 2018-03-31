@@ -1487,14 +1487,27 @@
 
         chart.visitPath.selectAll('*').remove();
         chart.visitPath.moveToFront();
-        chart.visitPath
+
+        var path = chart.visitPath
             .append('path')
             .attr('class', 'participant-visits')
             .datum(visit_data)
             .attr('d', myLine)
-            .attr('stroke', '#ccc')
-            .attr('stroke-width', '1px')
+            .attr('stroke', function(d) {
+                return chart.colorScale(matches[0][config.color_by]);
+            })
+            .attr('stroke-width', '2px')
             .attr('fill', 'none');
+
+        var totalLength = path.node().getTotalLength();
+
+        path
+            .attr('stroke-dasharray', totalLength + ' ' + totalLength)
+            .attr('stroke-dashoffset', totalLength)
+            .transition()
+            .duration(2000)
+            .ease('linear')
+            .attr('stroke-dashoffset', 0);
 
         //draw visit points
         var visitPoints = chart.visitPath
@@ -1508,7 +1521,7 @@
         visitPoints
             .append('circle')
             .attr('class', 'participant-visits')
-            .attr('fill', 'white')
+            .attr('r', 0)
             .attr('stroke', function(d) {
                 return chart.colorScale(d[config.color_by]);
             })
@@ -1521,6 +1534,10 @@
             .attr('cy', function(d) {
                 return chart.y(d.y);
             })
+            .attr('fill', 'white')
+            .transition()
+            .delay(2000)
+            .duration(200)
             .attr('r', 6);
 
         //draw visit numbers
@@ -1542,6 +1559,10 @@
             })
             .attr('text-anchor', 'middle')
             .attr('alignment-baseline', 'middle')
+            .attr('font-size', 0)
+            .transition()
+            .delay(2000)
+            .duration(200)
             .attr('font-size', 8);
     }
 
