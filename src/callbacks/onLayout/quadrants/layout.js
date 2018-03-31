@@ -59,12 +59,17 @@ export function layout() {
         .attr('dx', d => (d.position.search('right') > -1 ? '-.5em' : '.5em'))
         .attr('text-anchor', d => (d.position.search('right') > 0 ? 'end' : null))
         .attr('fill', '#bbb')
-        .style('cursor', 'pointer')
-        .text(d => d.label)
+        //  .style('cursor', 'pointer')
+        .text(d => d.label);
+
+    //removing the interactivity for now, but could add it back in later if desired
+    /*
+
         .on('mouseover', function(d) {
             highlight.call(this, d, chart);
         })
         .on('mouseout', function() {
             clearHighlight.call(this, chart);
         });
+        */
 }

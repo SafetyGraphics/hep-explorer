@@ -744,27 +744,6 @@
         this[axis + '_rug'].selectAll('*').remove();
     }
 
-    function highlight(d, chart) {
-        //clear rugs if any
-        clearRugs.call(chart, 'x');
-        clearRugs.call(chart, 'y');
-
-        //reset point stroke
-        chart.marks[0].circles.attr('stroke-width', 1);
-
-        //highlight points in the quadrant
-        d3.select(this).attr('fill', 'black');
-        var matches = chart.marks[0].circles.filter(function(f) {
-            return f.values.raw[0].eDISH_quadrant == d.dataValue;
-        });
-        matches.attr('stroke-width', 2);
-    }
-
-    function clearHighlight(chart) {
-        d3.select(this).attr('fill', '#bbb');
-        chart.marks[0].circles.attr('stroke-width', 1);
-    }
-
     function layout() {
         var chart = this;
         var quadrants = this.config.quadrants;
@@ -832,16 +811,20 @@
                 return d.position.search('right') > 0 ? 'end' : null;
             })
             .attr('fill', '#bbb')
-            .style('cursor', 'pointer')
+            //  .style('cursor', 'pointer')
             .text(function(d) {
                 return d.label;
-            })
-            .on('mouseover', function(d) {
-                highlight.call(this, d, chart);
-            })
-            .on('mouseout', function() {
-                clearHighlight.call(this, chart);
             });
+
+        //removing the interactivity for now, but could add it back in later if desired
+        /*
+         .on('mouseover', function(d) {
+            highlight.call(this, d, chart);
+        })
+        .on('mouseout', function() {
+            clearHighlight.call(this, chart);
+        });
+        */
     }
 
     function initQuadrants() {
