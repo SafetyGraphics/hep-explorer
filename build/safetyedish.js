@@ -314,7 +314,7 @@
             column: null, //set in onPreprocess/updateAxisSettings
             label: null, // set in onPreprocess/updateAxisSettings,
             type: 'linear',
-            behavior: 'flex',
+            behavior: 'raw',
             format: '.1f',
             domain: [0, null]
         },
@@ -322,7 +322,7 @@
             column: null, // set in onPreprocess/updateAxisSettings,
             label: null, // set in onPreprocess/updateAxisSettings,
             type: 'linear',
-            behavior: 'flex',
+            behavior: 'raw',
             format: '.1f',
             domain: [0, null]
         },
