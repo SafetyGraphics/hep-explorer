@@ -43,6 +43,7 @@ const defaultSettings = {
     missingValues: ['', 'NA', 'N/A'],
     display: 'relative', //or "absolute"
     baseline_visitn: '1',
+    measureBounds: [0.01, 0.99],
     populationProfileURL: null,
     participantProfileURL: null,
 
