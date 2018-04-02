@@ -6,14 +6,14 @@ import { addTitle } from './onResize/addTitle';
 import { toggleLegend } from './onResize/toggleLegend';
 import { init as addLineDrag } from './onResize/addLineDrag/init';
 import { init as initBoxPlots } from './onResize/addBoxPlots/init';
-import { fillFlaggedCircles } from './onResize/fillFlaggedCircles';
+import { formatPoints } from './onResize/formatPoints';
 
 export default function onResize() {
     //add point interactivity, custom title and formatting
     addPointMouseover.call(this);
     addPointClick.call(this);
     addTitle.call(this);
-    fillFlaggedCircles.call(this);
+    formatPoints.call(this);
 
     //draw the quadrants and add drag interactivity
     updateSummaryTable.call(this);

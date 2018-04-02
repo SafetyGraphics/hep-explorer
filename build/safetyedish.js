@@ -1186,36 +1186,38 @@
         this.measureTable.wrap.selectAll('*').style('display', 'none');
     }
 
-    function fillFlaggedCircles() {
+    function formatPoints() {
         var chart = this;
         var config = this.config;
         var points = this.svg.selectAll('g.point').select('circle');
 
-        points.attr('fill', function(d) {
-            var raw = d.values.raw[0],
-                pointColor = chart.colorScale(raw[config.color_by]);
-            return raw.baselineFlag ? pointColor : 'white';
-        });
+        points
+            .attr('fill', function(d) {
+                var raw = d.values.raw[0],
+                    pointColor = chart.colorScale(raw[config.color_by]);
+                return raw.baselineFlag ? pointColor : 'white';
+            })
+            .attr('stroke', function(d) {
+                var disabled = d3.select(this).classed('disabled');
+                var raw = d.values.raw[0],
+                    pointColor = chart.colorScale(raw[config.color_by]);
+                return disabled ? '#ccc' : pointColor;
+            })
+            .attr('fill-opacity', function(d) {
+                var disabled = d3.select(this).classed('disabled');
+                return disabled ? 0 : 0.5;
+            })
+            .attr('stroke-width', 1);
     }
 
     function clearParticipantDetails() {
-        var chart = this;
-        var config = this.config;
-
-        this.svg
-            .selectAll('g.point')
-            .select('circle')
-            .attr('stroke', function(d) {
-                return chart.colorScale(d.values.raw[0][config.color_by]);
-            }) //reset point colors
-            .attr('fill-opacity', 0.5)
-            .attr('stroke-width', 1); //reset stroke
         this.config.quadrants.table.wrap.style('display', null);
         clearVisitPath.call(this); //remove path
         clearParticipantHeader.call(this);
         clearRugs.call(this, 'x'); //clear rugs
         clearRugs.call(this, 'y');
         hideMeasureTable.call(this); //remove the detail table
+        formatPoints.call(this);
     }
 
     function onDraw() {
@@ -2081,7 +2083,7 @@
         addPointMouseover.call(this);
         addPointClick.call(this);
         addTitle.call(this);
-        fillFlaggedCircles.call(this);
+        formatPoints.call(this);
 
         //draw the quadrants and add drag interactivity
         updateSummaryTable.call(this);
