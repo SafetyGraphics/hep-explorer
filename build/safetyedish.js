@@ -1777,10 +1777,25 @@
             })
             .entries(allMatches);
 
-        var nested = nested.map(function(m) {
-            return m.values;
-        });
-        console.log(nested);
+        var nested = nested
+            .map(function(m) {
+                return m.values;
+            })
+            .sort(function(a, b) {
+                var a_order = config.measure_details
+                    .map(function(m) {
+                        return m.measure;
+                    })
+                    .indexOf(a.key);
+                var b_order = config.measure_details
+                    .map(function(m) {
+                        return m.measure;
+                    })
+                    .indexOf(b.key);
+                console.log(a_order);
+                return b_order - a_order;
+            });
+
         //draw the measure table
         this.participantDetails.wrap.selectAll('*').style('display', null);
         this.measureTable.on('draw', addSparkLines);
