@@ -337,7 +337,7 @@
         ],
         gridlines: 'xy',
         color_by: null, //set in syncSettings
-        max_width: 500,
+        max_width: 600,
         aspect: 1,
         legend: { location: 'top' },
         margin: { right: 25, top: 25 }
