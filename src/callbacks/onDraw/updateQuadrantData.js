@@ -3,16 +3,28 @@ export function updateQuadrantData() {
     var config = this.config;
 
     //update cut data
-    var dimensions = ['x', 'y'];
+    var dimensions = ['x', 'y', 'z'];
     dimensions.forEach(function(dimension) {
-        //get value linked to the controls ...
-        var cut = config.quadrants.cut_data[dimension];
+        //change to the stored cut point if the display changed
+        if (config.quadrants.cut_data.displayChange) {
+            config.quadrants.cut_data[dimension] = config.measure_details.find(
+                f => f.axis == dimension
+            ).cut[config.display];
+            chart.controls.wrap
+                .selectAll('div.control-group')
+                .filter(f => f.option == 'quadrants.cut_data.' + dimension)
+                .select('input')
+                .node().value =
+                config.quadrants.cut_data[dimension];
+        }
 
-        // ... add propogate it elsewhere
-        config.measure_details //
-            .find(f => config[dimension].column.search(f.label) > -1).cut[config.display] = cut;
-        config.quadrants.cut_data.filter(f => f.dimension == dimension)[0].value = cut;
+        // get value linked to the controls (quadrant_cut_obj), add propogate it elsewhere
+        var current_cut = config.quadrants.cut_data[dimension];
+        config.measure_details.find(f => f.axis == dimension).cut[config.display] = current_cut;
+        config.quadrants.cut_data.filter(f => f.dimension == dimension)[0] = current_cut;
     });
+
+    config.quadrants.cut_data.displayChange = false;
 
     //add "eDISH_quadrant" column to raw_data
     const x_var = this.config.x.column;

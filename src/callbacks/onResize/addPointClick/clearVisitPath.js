@@ -1,3 +1,3 @@
-export function clearVisitPath(d) {
+export function clearVisitPath() {
     this.visitPath.selectAll('*').remove();
 }

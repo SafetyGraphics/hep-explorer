@@ -32,10 +32,9 @@ export function drawMeasureTable(d) {
         m.values.key = m.key;
         return m.values;
     });
-    console.log(nested);
 
     //draw the measure table
-    this.measureTable.wrap.selectAll('*').style('display', null);
+    this.participantDetails.wrap.selectAll('*').style('display', null);
     this.measureTable.on('draw', addSparkLines);
     this.measureTable.draw(nested);
 }

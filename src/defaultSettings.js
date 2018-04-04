@@ -4,55 +4,58 @@ const defaultSettings = {
     measure_col: 'TEST',
     visit_col: 'VISIT',
     visitn_col: 'VISITN',
-    measure_details: [
-        {
-            label: 'ALT',
-            measure: 'Aminotransferase, alanine (ALT)',
-            cut: {
-                relative: 3,
-                absolute: null
-            }
-        },
-        {
-            label: 'ALP',
-            measure: 'Alkaline phosphatase (ALP)',
-            cut: {
-                relative: 1,
-                absolute: null
-            }
-        },
-        {
-            label: 'TB',
-            measure: 'Total Bilirubin',
-            cut: {
-                relative: 2,
-                absolute: null
-            }
-        }
-    ],
     unit_col: 'STRESU',
-    normal_range: true,
     normal_col_low: 'STNRLO',
     normal_col_high: 'STNRHI',
     id_col: 'USUBJID',
     group_cols: null,
     filters: null,
     details: null,
+    measure_details: [
+        {
+            label: 'ALT',
+            measure: 'Aminotransferase, alanine (ALT)',
+            axis: 'x',
+            cut: {
+                relative: 3,
+                absolute: 1.0
+            }
+        },
+        {
+            label: 'ALP',
+            measure: 'Alkaline phosphatase (ALP)',
+            axis: 'z', //used to fill circles
+            cut: {
+                relative: 1,
+                absolute: 1.0
+            }
+        },
+        {
+            label: 'TB',
+            measure: 'Total Bilirubin',
+            axis: 'y',
+            cut: {
+                relative: 2,
+                absolute: 40
+            }
+        }
+    ],
     missingValues: ['', 'NA', 'N/A'],
     display: 'relative', //or "absolute"
+    baseline_visitn: '1',
 
     //Standard webcharts settings
     x: {
-        column: 'ALT_relative',
-        label: 'ALT (% ULN)',
+        column: null, //set in onPreprocess/updateAxisSettings
+        label: null, // set in onPreprocess/updateAxisSettings,
         type: 'linear',
         behavior: 'flex',
         format: '.1f',
         domain: [0, null]
     },
     y: {
-        column: 'TB_relative',
-        label: 'TB (% ULN)',
+        column: null, // set in onPreprocess/updateAxisSettings,
+        label: null, // set in onPreprocess/updateAxisSettings,
         type: 'linear',
         behavior: 'flex',
         format: '.1f',
@@ -64,12 +67,13 @@ const defaultSettings = {
             type: 'circle',
             summarizeY: 'mean',
             summarizeX: 'mean',
-            attributes: { 'fill-opacity': 0 }
+            attributes: { 'fill-opacity': 0.5 }
         }
     ],
     color_by: null, //set in syncSettings
     max_width: 500,
-    aspect: 1
+    aspect: 1,
+    legend: { location: 'top' }
 };
 
 //Replicate settings in multiple places in the settings object
@@ -97,6 +101,8 @@ export function syncSettings(settings) {
         settings.color_by = settings.group_cols[1].value_col
             ? settings.group_cols[1].value_col
             : settings.group_cols[1];
+    } else {
+        settings.color_by = 'NONE';
     }
 
     //Define default details.
@@ -108,15 +114,13 @@ export function syncSettings(settings) {
                 label: filter.label ? filter.label : filter.value_col ? filter.value_col : filter
             })
         );
-    defaultDetails.push({ value_col: settings.value_col, label: 'Result' });
-    if (settings.normal_col_low)
-        defaultDetails.push({ value_col: settings.normal_col_low, label: 'Lower Limit of Normal' });
-    if (settings.normal_col_high)
-        defaultDetails.push({
-            value_col: settings.normal_col_high,
-            label: 'Upper Limit of Normal'
-        });
-
+    if (settings.group_cols)
+        settings.group_cols.forEach(group =>
+            defaultDetails.push({
+                value_col: group.value_col ? group.value_col : filter,
+                label: group.label ? group.label : group.value_col ? group.value_col : filter
+            })
+        );
     //If [settings.details] is not specified:
     if (!settings.details) settings.details = defaultDetails;
     else {
@@ -144,7 +148,7 @@ export function syncSettings(settings) {
 
 //Map values from settings to control inputs
 export function syncControlInputs(settings) {
-    const defaultControls = [
+    var defaultControls = [
         {
             type: 'dropdown',
             label: 'Group',
@@ -152,6 +156,15 @@ export function syncControlInputs(settings) {
             options: ['color_by'],
             start: null, // set in syncControlInputs()
             values: ['NONE'], // set in syncControlInputs()
+            require: true
+        },
+        {
+            type: 'dropdown',
+            label: 'Display Type',
+            description: 'Relative or Absolute Axes',
+            options: ['display', 'quadrants.cut_data.displayChange'],
+            start: null, // set in syncControlInputs()
+            values: ['relative', 'absolute'],
             require: true
         },
         {
@@ -165,15 +178,31 @@ export function syncControlInputs(settings) {
             label: 'TB Cutpoint',
             description: 'Y-axis cut',
             option: 'quadrants.cut_data.y'
+        },
+        {
+            type: 'number',
+            label: 'Baseline ALP Cutpoint',
+            description: 'Points > cutpoint @ baseline are filled',
+            option: 'quadrants.cut_data.z'
         }
     ];
-
     //Sync group control.
     const groupControl = defaultControls.filter(controlInput => controlInput.label === 'Group')[0];
     groupControl.start = settings.color_by;
     settings.group_cols.filter(group => group.value_col !== 'NONE').forEach(group => {
         groupControl.values.push(group.value_col);
     });
+
+    //drop the group control if NONE is the only option
+    if (settings.group_cols.length == 1) {
+        defaultControls = defaultControls.filter(controlInput => controlInput.label != 'Group');
+    }
+
+    //Sync display control
+    const displayControl = defaultControls.filter(
+        controlInput => controlInput.label === 'Display Type'
+    )[0];
+    groupControl.start = settings.display;
 
     //Add custom filters to control inputs.
     if (settings.filters && settings.filters.length > 0) {
