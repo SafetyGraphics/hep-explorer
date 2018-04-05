@@ -1004,16 +1004,25 @@
                 });
 
                 //Add participant level metadata
-                var filterVars = chart.config.filters.map(function(d) {
-                    return d.hasOwnProperty('value_col') ? d.value_col : d;
-                });
-                var groupVars = chart.config.group_cols.map(function(d) {
-                    return d.hasOwnProperty('value_col') ? d.value_col : d;
-                });
-                var detailVars = chart.config.details.map(function(d) {
-                    return d.hasOwnProperty('value_col') ? d.value_col : d;
-                });
-                var varList = d3$1.merge([filterVars, groupVars, detailVars]);
+                var varList = [];
+                if (chart.config.filters) {
+                    var filterVars = chart.config.filters.map(function(d) {
+                        return d.hasOwnProperty('value_col') ? d.value_col : d;
+                    });
+                    varList = d3.merge([varList, filterVars]);
+                }
+                if (chart.config.group_cols) {
+                    var groupVars = chart.config.group_cols.map(function(d) {
+                        return d.hasOwnProperty('value_col') ? d.value_col : d;
+                    });
+                    varList = d3.merge([varList, groupVars]);
+                }
+                if (chart.config.details) {
+                    var detailVars = chart.config.details.map(function(d) {
+                        return d.hasOwnProperty('value_col') ? d.value_col : d;
+                    });
+                    varList = d3.merge([varList, detailVars]);
+                }
 
                 varList.forEach(function(v) {
                     participant_obj[v] = d[0][v];
