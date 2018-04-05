@@ -112,20 +112,31 @@ export function syncSettings(settings) {
 
     //Define default details.
     let defaultDetails = [{ value_col: settings.id_col, label: 'Subject Identifier' }];
-    if (settings.filters)
-        settings.filters.forEach(filter =>
-            defaultDetails.push({
+    if (settings.filters) {
+        settings.filters.forEach(function(filter) {
+            var obj = {
                 value_col: filter.value_col ? filter.value_col : filter,
                 label: filter.label ? filter.label : filter.value_col ? filter.value_col : filter
-            })
-        );
-    if (settings.group_cols)
-        settings.group_cols.filter(f => f.value_col != 'NONE').forEach(group =>
-            defaultDetails.push({
+            };
+
+            if (defaultDetails.find(f => f.value_col == obj.value_col) == undefined) {
+                defaultDetails.push(obj);
+            }
+        });
+    }
+
+    if (settings.group_cols) {
+        settings.group_cols.filter(f => f.value_col != 'NONE').forEach(function(group) {
+            var obj = {
                 value_col: group.value_col ? group.value_col : filter,
                 label: group.label ? group.label : group.value_col ? group.value_col : filter
-            })
-        );
+            };
+            if (defaultDetails.find(f => f.value_col == obj.value_col) == undefined) {
+                defaultDetails.push(obj);
+            }
+        });
+    }
+
     //If [settings.details] is not specified:
     if (!settings.details) settings.details = defaultDetails;
     else {

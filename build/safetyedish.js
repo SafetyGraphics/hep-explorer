@@ -380,28 +380,47 @@
 
         //Define default details.
         var defaultDetails = [{ value_col: settings.id_col, label: 'Subject Identifier' }];
-        if (settings.filters)
+        if (settings.filters) {
             settings.filters.forEach(function(filter) {
-                return defaultDetails.push({
+                var obj = {
                     value_col: filter.value_col ? filter.value_col : filter,
                     label: filter.label
                         ? filter.label
                         : filter.value_col ? filter.value_col : filter
-                });
+                };
+
+                if (
+                    defaultDetails.find(function(f) {
+                        return f.value_col == obj.value_col;
+                    }) == undefined
+                ) {
+                    defaultDetails.push(obj);
+                }
             });
-        if (settings.group_cols)
+        }
+
+        if (settings.group_cols) {
             settings.group_cols
                 .filter(function(f) {
                     return f.value_col != 'NONE';
                 })
                 .forEach(function(group) {
-                    return defaultDetails.push({
+                    var obj = {
                         value_col: group.value_col ? group.value_col : filter,
                         label: group.label
                             ? group.label
                             : group.value_col ? group.value_col : filter
-                    });
+                    };
+                    if (
+                        defaultDetails.find(function(f) {
+                            return f.value_col == obj.value_col;
+                        }) == undefined
+                    ) {
+                        defaultDetails.push(obj);
+                    }
                 });
+        }
+
         //If [settings.details] is not specified:
         if (!settings.details) settings.details = defaultDetails;
         else {
