@@ -6,10 +6,6 @@ const defaultCutData = [
     {
         dimension: 'y',
         value: null
-    },
-    {
-        dimension: 'z',
-        value: null
     }
 ];
 

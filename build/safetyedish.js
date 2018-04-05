@@ -287,7 +287,6 @@
             {
                 label: 'ALP',
                 measure: 'Alkaline phosphatase (ALP)',
-                axis: 'z', //used to fill circles
                 cut: {
                     relative: 1,
                     absolute: 1.0
@@ -306,6 +305,7 @@
         missingValues: ['', 'NA', 'N/A'],
         display: 'relative', //or "absolute"
         baseline_visitn: '1',
+        measureBounds: [0.01, 0.99],
         populationProfileURL: null,
         participantProfileURL: null,
 
@@ -332,7 +332,7 @@
                 type: 'circle',
                 summarizeY: 'mean',
                 summarizeX: 'mean',
-                attributes: { 'fill-opacity': 0.5 }
+                attributes: { 'fill-opacity': 0 }
             }
         ],
         gridlines: 'xy',
@@ -379,28 +379,47 @@
 
         //Define default details.
         var defaultDetails = [{ value_col: settings.id_col, label: 'Subject Identifier' }];
-        if (settings.filters)
+        if (settings.filters) {
             settings.filters.forEach(function(filter) {
-                return defaultDetails.push({
+                var obj = {
                     value_col: filter.value_col ? filter.value_col : filter,
                     label: filter.label
                         ? filter.label
                         : filter.value_col ? filter.value_col : filter
-                });
+                };
+
+                if (
+                    defaultDetails.find(function(f) {
+                        return f.value_col == obj.value_col;
+                    }) == undefined
+                ) {
+                    defaultDetails.push(obj);
+                }
             });
-        if (settings.group_cols)
+        }
+
+        if (settings.group_cols) {
             settings.group_cols
                 .filter(function(f) {
                     return f.value_col != 'NONE';
                 })
                 .forEach(function(group) {
-                    return defaultDetails.push({
+                    var obj = {
                         value_col: group.value_col ? group.value_col : filter,
                         label: group.label
                             ? group.label
                             : group.value_col ? group.value_col : filter
-                    });
+                    };
+                    if (
+                        defaultDetails.find(function(f) {
+                            return f.value_col == obj.value_col;
+                        }) == undefined
+                    ) {
+                        defaultDetails.push(obj);
+                    }
                 });
+        }
+
         //If [settings.details] is not specified:
         if (!settings.details) settings.details = defaultDetails;
         else {
@@ -460,12 +479,6 @@
                 label: 'TB Cutpoint',
                 description: 'Y-axis cut',
                 option: 'quadrants.cut_data.y'
-            },
-            {
-                type: 'number',
-                label: 'Baseline ALP Cutpoint',
-                description: 'Points > cutpoint @ baseline are filled',
-                option: 'quadrants.cut_data.z'
             }
         ];
         //Sync group control.
@@ -523,10 +536,6 @@
         },
         {
             dimension: 'y',
-            value: null
-        },
-        {
-            dimension: 'z',
             value: null
         }
     ];
@@ -690,7 +699,6 @@
         quadrants.cut_data = defaultCutData;
         quadrants.cut_data.x = null; //Also store the cuts as properties for convenience
         quadrants.cut_data.y = null;
-        quadrants.cut_data.z = null;
 
         ///////////////////////////////////////////////////////////
         // set initial values
@@ -721,27 +729,10 @@
             .node().value =
             quadrants.cut_data.y;
 
-        quadrants.cut_data.z = config.measure_details.find(function(f) {
-            return f.axis == 'z';
-        }).cut[config.display];
-
-        chart.controls.wrap
-            .selectAll('div.control-group')
-            .filter(function(f) {
-                return f.option == 'quadrants.cut_data.z';
-            })
-            .select('input')
-            .node().value =
-            quadrants.cut_data.z;
-
         ///////////////////////////////////////////////////////////
         // initialize the summary table
         //////////////////////////////////////////////////////////
         initSummaryTable.call(chart);
-    }
-
-    function clearRugs(axis) {
-        this[axis + '_rug'].selectAll('*').remove();
     }
 
     function layout() {
@@ -857,10 +848,11 @@
         var settings = {
             cols: ['key', 'n', 'min', 'median', 'max', 'spark'],
             headers: ['Measure', 'N', 'Min', 'Median', 'Max', ''],
-            searchable: true,
-            sortable: true,
+            searchable: false,
+            sortable: false,
             pagination: false,
-            exportable: true,
+            exportable: false,
+            applyCSS: true,
             visitn_col: this.visitn_col,
             value_col: this.value_col
         };
@@ -1002,16 +994,25 @@
                 });
 
                 //Add participant level metadata
-                var filterVars = chart.config.filters.map(function(d) {
-                    return d.hasOwnProperty('value_col') ? d.value_col : d;
-                });
-                var groupVars = chart.config.group_cols.map(function(d) {
-                    return d.hasOwnProperty('value_col') ? d.value_col : d;
-                });
-                var detailVars = chart.config.details.map(function(d) {
-                    return d.hasOwnProperty('value_col') ? d.value_col : d;
-                });
-                var varList = d3$1.merge([filterVars, groupVars, detailVars]);
+                var varList = [];
+                if (chart.config.filters) {
+                    var filterVars = chart.config.filters.map(function(d) {
+                        return d.hasOwnProperty('value_col') ? d.value_col : d;
+                    });
+                    varList = d3.merge([varList, filterVars]);
+                }
+                if (chart.config.group_cols) {
+                    var groupVars = chart.config.group_cols.map(function(d) {
+                        return d.hasOwnProperty('value_col') ? d.value_col : d;
+                    });
+                    varList = d3.merge([varList, groupVars]);
+                }
+                if (chart.config.details) {
+                    var detailVars = chart.config.details.map(function(d) {
+                        return d.hasOwnProperty('value_col') ? d.value_col : d;
+                    });
+                    varList = d3.merge([varList, detailVars]);
+                }
 
                 varList.forEach(function(v) {
                     participant_obj[v] = d[0][v];
@@ -1083,7 +1084,7 @@
         var config = this.config;
 
         //update cut data
-        var dimensions = ['x', 'y', 'z'];
+        var dimensions = ['x', 'y'];
         dimensions.forEach(function(dimension) {
             //change to the stored cut point if the display changed
             if (config.quadrants.cut_data.displayChange) {
@@ -1131,33 +1132,6 @@
         });
     }
 
-    function flagBaselineValues() {
-        var config = this.config,
-            baseline_data = this.initial_data.filter(function(f) {
-                return f[config.visitn_col] == config.baseline_visitn;
-            }),
-            meaure_obj = config.measure_details.find(function(f) {
-                return f.axis == 'z';
-            }),
-            cut_value = meaure_obj.cut[config.display],
-            cut_variable = meaure_obj.measure,
-            flagged_ids = baseline_data
-                .filter(function(f) {
-                    return f[config.measure_col] == cut_variable;
-                })
-                .filter(function(f) {
-                    return f[config.value_col] >= cut_value;
-                })
-                .map(function(m) {
-                    return m[config.id_col];
-                });
-
-        //add flag to flattened_data
-        this.raw_data.forEach(function(d) {
-            d.baselineFlag = flagged_ids.indexOf(d[config.id_col]) > -1;
-        });
-    }
-
     function setDomain(dimension) {
         var _this = this;
 
@@ -1186,31 +1160,29 @@
         this.measureTable.wrap.selectAll('*').style('display', 'none');
     }
 
+    function clearRugs(axis) {
+        this[axis + '_rug'].selectAll('*').remove();
+    }
+
     function formatPoints() {
         var chart = this;
         var config = this.config;
         var points = this.svg.selectAll('g.point').select('circle');
 
         points
-            .attr('fill', function(d) {
-                var raw = d.values.raw[0],
-                    pointColor = chart.colorScale(raw[config.color_by]);
-                return raw.baselineFlag ? pointColor : 'white';
-            })
             .attr('stroke', function(d) {
                 var disabled = d3.select(this).classed('disabled');
                 var raw = d.values.raw[0],
                     pointColor = chart.colorScale(raw[config.color_by]);
                 return disabled ? '#ccc' : pointColor;
             })
-            .attr('fill-opacity', function(d) {
-                var disabled = d3.select(this).classed('disabled');
-                return disabled ? 0 : 0.5;
-            })
             .attr('stroke-width', 1);
     }
 
     function clearParticipantDetails() {
+        var points = this.svg.selectAll('g.point').select('circle');
+
+        points.classed('disabled', false);
         this.config.quadrants.table.wrap.style('display', null);
         clearVisitPath.call(this); //remove path
         clearParticipantHeader.call(this);
@@ -1226,9 +1198,6 @@
 
         //get current cutpoints and classify participants in to eDISH quadrants
         updateQuadrantData.call(this);
-
-        //flag participant baseline values
-        flagBaselineValues.call(this);
 
         //update domains to include cut lines
         setDomain.call(this, 'x');
@@ -1555,35 +1524,95 @@
     function addSparkLines(d) {
         if (this.data.raw.length > 0) {
             //don't try to draw sparklines if the table is empty
-            this.tbody.selectAll('tr').each(function(row_d) {
-                //Spark line cell
-                var cell = d3
-                        .select(this)
-                        .select('td.spark')
-                        .text(''),
-                    width = 100,
-                    height = 25,
-                    offset = 4,
-                    overTime = row_d.spark_data.sort(function(a, b) {
-                        return +a.visitn - +b.visitn;
-                    }),
-                    x = d3.scale
+            this.tbody
+                .selectAll('tr')
+                .style('background', 'none')
+                .style('border-bottom', '.5px solid black')
+                .each(function(row_d) {
+                    console.log(row_d);
+                    //Spark line cell
+                    var cell = d3
+                            .select(this)
+                            .select('td.spark')
+                            .text(''),
+                        width = 100,
+                        height = 25,
+                        offset = 4,
+                        overTime = row_d.spark_data.sort(function(a, b) {
+                            return +a.visitn - +b.visitn;
+                        });
+                    var x = d3.scale
                         .ordinal()
                         .domain(
                             overTime.map(function(m) {
                                 return m.visitn;
                             })
                         )
-                        .rangePoints([offset, width - offset]),
-                    y = d3.scale
+                        .rangePoints([offset, width - offset]);
+                    //y-domain includes 99th population percentile + any participant outliers
+                    var y_min = d3.min(d3.merge([row_d.values, row_d.population_extent])) * 0.99;
+                    var y_max = d3.max(d3.merge([row_d.values, row_d.population_extent])) * 1.01;
+                    var y = d3.scale
                         .linear()
-                        .domain(
-                            d3.extent(overTime, function(d) {
-                                return d.value;
-                            })
-                        )
-                        .range([height - offset, offset]),
-                    line = d3.svg
+                        .domain([y_min, y_max])
+                        .range([height - offset, offset]);
+                    //render the svg
+                    var svg = cell
+                        .append('svg')
+                        .attr({
+                            width: width,
+                            height: height
+                        })
+                        .append('g');
+
+                    //draw the normal range polygon ULN and LLN
+                    var upper = overTime.map(function(m) {
+                        return { visitn: m.visitn, value: m.uln };
+                    });
+                    var lower = overTime
+                        .map(function(m) {
+                            return { visitn: m.visitn, value: m.lln };
+                        })
+                        .reverse();
+                    var normal_data = d3.merge([upper, lower]);
+                    var drawnormal = d3.svg
+                        .line()
+                        .x(function(d) {
+                            return x(d.visitn);
+                        })
+                        .y(function(d) {
+                            return y(d.value);
+                        });
+                    var normalpath = svg
+                        .append('path')
+                        .datum(normal_data)
+                        .attr({
+                            class: 'normalrange',
+                            d: drawnormal,
+                            fill: '#eee',
+                            stroke: 'none'
+                        });
+
+                    //draw lines at the population guidelines
+                    svg
+                        .selectAll('lines.guidelines')
+                        .data(row_d.population_extent)
+                        .enter()
+                        .append('line')
+                        .attr('class', 'guidelines')
+                        .attr('x1', 0)
+                        .attr('x2', width)
+                        .attr('y1', function(d) {
+                            return y(d);
+                        })
+                        .attr('y2', function(d) {
+                            return y(d);
+                        })
+                        .attr('stroke', '#ccc')
+                        .attr('stroke-dasharray', '2 2');
+
+                    //draw the sparkline
+                    var draw_sparkline = d3.svg
                         .line()
                         .interpolate('cardinal')
                         .x(function(d) {
@@ -1591,24 +1620,35 @@
                         })
                         .y(function(d) {
                             return y(d.value);
-                        }),
-                    svg = cell
-                        .append('svg')
-                        .attr({
-                            width: width,
-                            height: height
-                        })
-                        .append('g'),
-                    sparkLine = svg
+                        });
+                    var sparkline = svg
                         .append('path')
                         .datum(overTime)
                         .attr({
                             class: 'sparkLine',
-                            d: line,
+                            d: draw_sparkline,
                             fill: 'none',
-                            stroke: '#bbb'
-                        }),
-                    minimumData = overTime.filter(function(di) {
+                            stroke: '#999'
+                        });
+
+                    /*
+            draw_lln = d3.svg
+                .line()
+                .interpolate('cardinal')
+                .x(d => x(d.visitn))
+                .y(d => y(d.lln)),
+            lln = svg
+                .append('path')
+                .datum(overTime)
+                .attr({
+                    class: 'sparkLine',
+                    d: draw_lln,
+                    fill: 'none',
+                    stroke: 'green'
+                }),
+            */
+                    //draw min and max points
+                    var minimumData = overTime.filter(function(di) {
                         return (
                             di.value ===
                             d3.min(
@@ -1617,16 +1657,16 @@
                                 })
                             )
                         );
-                    })[0],
-                    minimumMonth = svg.append('circle').attr({
+                    })[0];
+                    var minimumMonth = svg.append('circle').attr({
                         class: 'circle minimum',
                         cx: x(minimumData.visitn),
                         cy: y(minimumData.value),
                         r: '2px',
                         stroke: 'blue',
                         fill: 'none'
-                    }),
-                    maximumData = overTime.filter(function(di) {
+                    });
+                    var maximumData = overTime.filter(function(di) {
                         return (
                             di.value ===
                             d3.max(
@@ -1635,8 +1675,8 @@
                                 })
                             )
                         );
-                    })[0],
-                    maximumMonth = svg.append('circle').attr({
+                    })[0];
+                    var maximumMonth = svg.append('circle').attr({
                         class: 'circle maximum',
                         cx: x(maximumData.visitn),
                         cy: y(maximumData.value),
@@ -1644,7 +1684,7 @@
                         stroke: 'orange',
                         fill: 'none'
                     });
-            });
+                });
         }
     }
 
@@ -1652,6 +1692,24 @@
         var chart = this;
         var config = chart.config;
         var allMatches = d.values.raw[0].raw;
+        var ranges = d3
+            .nest()
+            .key(function(d) {
+                return d[config.measure_col];
+            })
+            .rollup(function(d) {
+                var vals = d
+                    .map(function(m) {
+                        return m[config.value_col];
+                    })
+                    .sort(function(a, b) {
+                        return a - b;
+                    });
+                var lower_extent = d3.quantile(vals, config.measureBounds[0]),
+                    upper_extent = d3.quantile(vals, config.measureBounds[1]);
+                return [lower_extent, upper_extent];
+            })
+            .entries(chart.initial_data);
 
         //make nest by measure
         var nested = d3
@@ -1661,6 +1719,7 @@
             })
             .rollup(function(d) {
                 var measureObj = {};
+                measureObj.key = d[0][config.measure_col];
                 measureObj.raw = d;
                 measureObj.values = d.map(function(d) {
                     return +d[config.value_col];
@@ -1670,21 +1729,39 @@
                 measureObj.median = +d3.format('0.2f')(d3.median(measureObj.values));
                 measureObj.n = measureObj.values.length;
                 measureObj.spark = 'spark!';
+                measureObj.population_extent = ranges.find(function(f) {
+                    return measureObj.key == f.key;
+                }).values;
                 measureObj.spark_data = d.map(function(m) {
                     return {
                         visitn: +m[config.visitn_col],
-                        value: +m[config.value_col]
+                        value: +m[config.value_col],
+                        lln: +m[config.normal_col_low],
+                        uln: +m[config.normal_col_high]
                     };
                 });
-
                 return measureObj;
             })
             .entries(allMatches);
 
-        var nested = nested.map(function(m) {
-            m.values.key = m.key;
-            return m.values;
-        });
+        var nested = nested
+            .map(function(m) {
+                return m.values;
+            })
+            .sort(function(a, b) {
+                var a_order = config.measure_details
+                    .map(function(m) {
+                        return m.measure;
+                    })
+                    .indexOf(a.key);
+                var b_order = config.measure_details
+                    .map(function(m) {
+                        return m.measure;
+                    })
+                    .indexOf(b.key);
+                console.log(a_order);
+                return b_order - a_order;
+            });
 
         //draw the measure table
         this.participantDetails.wrap.selectAll('*').style('display', null);
@@ -1765,7 +1842,6 @@
             chart.config.quadrants.table.wrap.style('display', 'none'); //hide the quadrant summart
             points
                 .attr('stroke', '#ccc') //set all points to gray
-                .attr('fill-opacity', 0)
                 .classed('disabled', true); //disable mouseover while viewing participant details
 
             d3
@@ -1773,7 +1849,6 @@
                 .attr('stroke', function(d) {
                     return chart.colorScale(d.values.raw[0][config.color_by]);
                 }) //highlight selected point
-                .attr('fill-opacity', 0.5)
                 .attr('stroke-width', 3);
 
             drawVisitPath.call(chart, d); //draw the path showing participant's pattern over time

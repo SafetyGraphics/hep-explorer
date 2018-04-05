@@ -14,10 +14,11 @@ export function initParticipantDetails() {
     var settings = {
         cols: ['key', 'n', 'min', 'median', 'max', 'spark'],
         headers: ['Measure', 'N', 'Min', 'Median', 'Max', ''],
-        searchable: true,
-        sortable: true,
+        searchable: false,
+        sortable: false,
         pagination: false,
-        exportable: true,
+        exportable: false,
+        applyCSS: true,
         visitn_col: this.visitn_col,
         value_col: this.value_col
     };

@@ -1,6 +1,3 @@
-import { highlight } from './highlight';
-import { clearHighlight } from './clearHighlight';
-
 export function layout() {
     var chart = this;
     var config = chart.config;

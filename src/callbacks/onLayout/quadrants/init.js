@@ -16,7 +16,6 @@ export function init() {
     quadrants.cut_data = defaultCutData;
     quadrants.cut_data.x = null; //Also store the cuts as properties for convenience
     quadrants.cut_data.y = null;
-    quadrants.cut_data.z = null;
 
     ///////////////////////////////////////////////////////////
     // set initial values
@@ -38,15 +37,6 @@ export function init() {
         .select('input')
         .node().value =
         quadrants.cut_data.y;
-
-    quadrants.cut_data.z = config.measure_details.find(f => f.axis == 'z').cut[config.display];
-
-    chart.controls.wrap
-        .selectAll('div.control-group')
-        .filter(f => f.option == 'quadrants.cut_data.z')
-        .select('input')
-        .node().value =
-        quadrants.cut_data.z;
 
     ///////////////////////////////////////////////////////////
     // initialize the summary table

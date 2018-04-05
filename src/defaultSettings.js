@@ -24,7 +24,6 @@ const defaultSettings = {
         {
             label: 'ALP',
             measure: 'Alkaline phosphatase (ALP)',
-            axis: 'z', //used to fill circles
             cut: {
                 relative: 1,
                 absolute: 1.0
@@ -43,6 +42,7 @@ const defaultSettings = {
     missingValues: ['', 'NA', 'N/A'],
     display: 'relative', //or "absolute"
     baseline_visitn: '1',
+    measureBounds: [0.01, 0.99],
     populationProfileURL: null,
     participantProfileURL: null,
 
@@ -69,7 +69,7 @@ const defaultSettings = {
             type: 'circle',
             summarizeY: 'mean',
             summarizeX: 'mean',
-            attributes: { 'fill-opacity': 0.5 }
+            attributes: { 'fill-opacity': 0 }
         }
     ],
     gridlines: 'xy',
@@ -111,20 +111,31 @@ export function syncSettings(settings) {
 
     //Define default details.
     let defaultDetails = [{ value_col: settings.id_col, label: 'Subject Identifier' }];
-    if (settings.filters)
-        settings.filters.forEach(filter =>
-            defaultDetails.push({
+    if (settings.filters) {
+        settings.filters.forEach(function(filter) {
+            var obj = {
                 value_col: filter.value_col ? filter.value_col : filter,
                 label: filter.label ? filter.label : filter.value_col ? filter.value_col : filter
-            })
-        );
-    if (settings.group_cols)
-        settings.group_cols.filter(f => f.value_col != 'NONE').forEach(group =>
-            defaultDetails.push({
+            };
+
+            if (defaultDetails.find(f => f.value_col == obj.value_col) == undefined) {
+                defaultDetails.push(obj);
+            }
+        });
+    }
+
+    if (settings.group_cols) {
+        settings.group_cols.filter(f => f.value_col != 'NONE').forEach(function(group) {
+            var obj = {
                 value_col: group.value_col ? group.value_col : filter,
                 label: group.label ? group.label : group.value_col ? group.value_col : filter
-            })
-        );
+            };
+            if (defaultDetails.find(f => f.value_col == obj.value_col) == undefined) {
+                defaultDetails.push(obj);
+            }
+        });
+    }
+
     //If [settings.details] is not specified:
     if (!settings.details) settings.details = defaultDetails;
     else {
@@ -182,12 +193,6 @@ export function syncControlInputs(settings) {
             label: 'TB Cutpoint',
             description: 'Y-axis cut',
             option: 'quadrants.cut_data.y'
-        },
-        {
-            type: 'number',
-            label: 'Baseline ALP Cutpoint',
-            description: 'Points > cutpoint @ baseline are filled',
-            option: 'quadrants.cut_data.z'
         }
     ];
     //Sync group control.
