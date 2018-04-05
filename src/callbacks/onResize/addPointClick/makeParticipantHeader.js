@@ -13,6 +13,15 @@ export function makeParticipantHeader(d) {
         .style('border-bottom', '2px solid black')
         .style('padding', '.2em');
 
+    if (chart.config.participantProfileURL) {
+        title
+            .append('a')
+            .html('Full Participant Profile')
+            .attr('href', chart.config.participantProfileURL)
+            .style('font-size', '0.8em')
+            .style('padding-left', '1em');
+    }
+
     title
         .append('Button')
         .text('Clear')

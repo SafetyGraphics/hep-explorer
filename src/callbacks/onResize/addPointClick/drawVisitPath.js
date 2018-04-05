@@ -46,14 +46,25 @@ export function drawVisitPath(d) {
 
     chart.visitPath.selectAll('*').remove();
     chart.visitPath.moveToFront();
-    chart.visitPath
+
+    var path = chart.visitPath
         .append('path')
         .attr('class', 'participant-visits')
         .datum(visit_data)
         .attr('d', myLine)
-        .attr('stroke', '#ccc')
-        .attr('stroke-width', '1px')
+        .attr('stroke', d => chart.colorScale(matches[0][config.color_by]))
+        .attr('stroke-width', '2px')
         .attr('fill', 'none');
+
+    var totalLength = path.node().getTotalLength();
+
+    path
+        .attr('stroke-dasharray', totalLength + ' ' + totalLength)
+        .attr('stroke-dashoffset', totalLength)
+        .transition()
+        .duration(2000)
+        .ease('linear')
+        .attr('stroke-dashoffset', 0);
 
     //draw visit points
     var visitPoints = chart.visitPath
@@ -67,11 +78,15 @@ export function drawVisitPath(d) {
     visitPoints
         .append('circle')
         .attr('class', 'participant-visits')
-        .attr('fill', 'white')
+        .attr('r', 0)
         .attr('stroke', d => chart.colorScale(d[config.color_by]))
         .attr('stroke-width', d => ((d.x == maxPoint.x) & (d.y == maxPoint.y) ? 3 : 1))
         .attr('cx', d => chart.x(d.x))
         .attr('cy', d => chart.y(d.y))
+        .attr('fill', 'white')
+        .transition()
+        .delay(2000)
+        .duration(200)
         .attr('r', 6);
 
     //draw visit numbers
@@ -85,5 +100,9 @@ export function drawVisitPath(d) {
         .attr('y', d => chart.y(d.y))
         .attr('text-anchor', 'middle')
         .attr('alignment-baseline', 'middle')
+        .attr('font-size', 0)
+        .transition()
+        .delay(2000)
+        .duration(200)
         .attr('font-size', 8);
 }

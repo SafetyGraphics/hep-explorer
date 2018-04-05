@@ -1,15 +1,28 @@
 import { drawQuadrants } from './onResize/drawQuadrants';
+import { updateSummaryTable } from './onLayout/quadrants/updateSummaryTable';
 import { addPointMouseover } from './onResize/addPointMouseover';
 import { addPointClick } from './onResize/addPointClick';
 import { addTitle } from './onResize/addTitle';
 import { toggleLegend } from './onResize/toggleLegend';
-import { fillFlaggedCircles } from './onResize/fillFlaggedCircles';
+import { init as addLineDrag } from './onResize/addLineDrag/init';
+import { init as initBoxPlots } from './onResize/addBoxPlots/init';
+import { formatPoints } from './onResize/formatPoints';
 
 export default function onResize() {
-    drawQuadrants.call(this);
+    //add point interactivity, custom title and formatting
     addPointMouseover.call(this);
     addPointClick.call(this);
-    toggleLegend.call(this);
     addTitle.call(this);
-    fillFlaggedCircles.call(this);
+    formatPoints.call(this);
+
+    //draw the quadrants and add drag interactivity
+    updateSummaryTable.call(this);
+    drawQuadrants.call(this);
+    addLineDrag.call(this);
+
+    // hide the legend if no group options are given
+    toggleLegend.call(this);
+
+    // add boxplots
+    initBoxPlots.call(this);
 }

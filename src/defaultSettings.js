@@ -43,13 +43,15 @@ const defaultSettings = {
     missingValues: ['', 'NA', 'N/A'],
     display: 'relative', //or "absolute"
     baseline_visitn: '1',
+    populationProfileURL: null,
+    participantProfileURL: null,
 
     //Standard webcharts settings
     x: {
         column: null, //set in onPreprocess/updateAxisSettings
         label: null, // set in onPreprocess/updateAxisSettings,
         type: 'linear',
-        behavior: 'flex',
+        behavior: 'raw',
         format: '.1f',
         domain: [0, null]
     },
@@ -57,7 +59,7 @@ const defaultSettings = {
         column: null, // set in onPreprocess/updateAxisSettings,
         label: null, // set in onPreprocess/updateAxisSettings,
         type: 'linear',
-        behavior: 'flex',
+        behavior: 'raw',
         format: '.1f',
         domain: [0, null]
     },
@@ -70,10 +72,12 @@ const defaultSettings = {
             attributes: { 'fill-opacity': 0.5 }
         }
     ],
+    gridlines: 'xy',
     color_by: null, //set in syncSettings
-    max_width: 500,
+    max_width: 600,
     aspect: 1,
-    legend: { location: 'top' }
+    legend: { location: 'top' },
+    margin: { right: 25, top: 25 }
 };
 
 //Replicate settings in multiple places in the settings object
@@ -115,7 +119,7 @@ export function syncSettings(settings) {
             })
         );
     if (settings.group_cols)
-        settings.group_cols.forEach(group =>
+        settings.group_cols.filter(f => f.value_col != 'NONE').forEach(group =>
             defaultDetails.push({
                 value_col: group.value_col ? group.value_col : filter,
                 label: group.label ? group.label : group.value_col ? group.value_col : filter

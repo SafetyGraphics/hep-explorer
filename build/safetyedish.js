@@ -306,13 +306,15 @@
         missingValues: ['', 'NA', 'N/A'],
         display: 'relative', //or "absolute"
         baseline_visitn: '1',
+        populationProfileURL: null,
+        participantProfileURL: null,
 
         //Standard webcharts settings
         x: {
             column: null, //set in onPreprocess/updateAxisSettings
             label: null, // set in onPreprocess/updateAxisSettings,
             type: 'linear',
-            behavior: 'flex',
+            behavior: 'raw',
             format: '.1f',
             domain: [0, null]
         },
@@ -320,7 +322,7 @@
             column: null, // set in onPreprocess/updateAxisSettings,
             label: null, // set in onPreprocess/updateAxisSettings,
             type: 'linear',
-            behavior: 'flex',
+            behavior: 'raw',
             format: '.1f',
             domain: [0, null]
         },
@@ -333,10 +335,12 @@
                 attributes: { 'fill-opacity': 0.5 }
             }
         ],
+        gridlines: 'xy',
         color_by: null, //set in syncSettings
-        max_width: 500,
+        max_width: 600,
         aspect: 1,
-        legend: { location: 'top' }
+        legend: { location: 'top' },
+        margin: { right: 25, top: 25 }
     };
 
     //Replicate settings in multiple places in the settings object
@@ -385,12 +389,18 @@
                 });
             });
         if (settings.group_cols)
-            settings.group_cols.forEach(function(group) {
-                return defaultDetails.push({
-                    value_col: group.value_col ? group.value_col : filter,
-                    label: group.label ? group.label : group.value_col ? group.value_col : filter
+            settings.group_cols
+                .filter(function(f) {
+                    return f.value_col != 'NONE';
+                })
+                .forEach(function(group) {
+                    return defaultDetails.push({
+                        value_col: group.value_col ? group.value_col : filter,
+                        label: group.label
+                            ? group.label
+                            : group.value_col ? group.value_col : filter
+                    });
                 });
-            });
         //If [settings.details] is not specified:
         if (!settings.details) settings.details = defaultDetails;
         else {
@@ -556,6 +566,116 @@
         }
     ];
 
+    function updateSummaryTable() {
+        var quadrants = this.config.quadrants;
+        var rows = quadrants.table.rows;
+        var cells = quadrants.table.cells;
+
+        function updateCells(d) {
+            var cellData = cells.map(function(cell) {
+                cell.value = d[cell.value_col];
+                return cell;
+            });
+            var row_cells = d3
+                .select(this)
+                .selectAll('td')
+                .data(cellData, function(d) {
+                    return d.value_col;
+                });
+
+            row_cells
+                .enter()
+                .append('td')
+                .style('text-align', function(d, i) {
+                    return d.label != 'Quadrant' ? 'center' : null;
+                })
+                .style('font-size', '0.9em')
+                .style('padding', '0 0.5em 0 0.5em');
+
+            row_cells.html(function(d) {
+                return d.value;
+            });
+        }
+
+        //update the content of each row
+        rows.data(quadrants.quadrant_data, function(d) {
+            return d.label;
+        });
+        rows.each(updateCells);
+    }
+
+    function initSummaryTable() {
+        var chart = this;
+        var config = chart.config;
+        var quadrants = this.config.quadrants;
+
+        quadrants.table = {};
+        quadrants.table.wrap = this.wrap
+            .append('div')
+            .attr('class', 'quadrantTable')
+            .style('padding-top', '1em');
+        quadrants.table.tab = quadrants.table.wrap
+            .append('table')
+            .style('border-collapse', 'collapse');
+
+        //table header
+        quadrants.table.cells = [
+            {
+                value_col: 'label',
+                label: 'Quadrant'
+            },
+            {
+                value_col: 'count',
+                label: '#'
+            },
+            {
+                value_col: 'percent',
+                label: '%'
+            }
+        ];
+
+        if (config.populationProfileURL) {
+            quadrants.quadrant_data.forEach(function(d) {
+                d.link = "<a href='" + config.populationProfileURL + "'>&#128279</a>";
+            });
+            quadrants.table.cells.push({
+                value_col: 'link',
+                label: 'Population Profile'
+            });
+        }
+        quadrants.table.thead = quadrants.table.tab
+            .append('thead')
+            .style('border-top', '2px solid #999')
+            .style('border-bottom', '2px solid #999')
+            .append('tr')
+            .style('padding', '0.1em');
+
+        quadrants.table.thead
+            .selectAll('th')
+            .data(quadrants.table.cells)
+            .enter()
+            .append('th')
+            .html(function(d) {
+                return d.label;
+            });
+
+        //table contents
+        quadrants.table.tbody = quadrants.table.tab
+            .append('tbody')
+            .style('border-bottom', '2px solid #999');
+        quadrants.table.rows = quadrants.table.tbody
+            .selectAll('tr')
+            .data(quadrants.quadrant_data, function(d) {
+                return d.label;
+            })
+            .enter()
+            .append('tr')
+            .style('padding', '0.1em');
+
+        //initial table update
+        updateSummaryTable.call(this);
+    }
+
     function init() {
         var chart = this;
         var config = chart.config;
@@ -613,31 +733,15 @@
             .select('input')
             .node().value =
             quadrants.cut_data.z;
+
+        ///////////////////////////////////////////////////////////
+        // initialize the summary table
+        //////////////////////////////////////////////////////////
+        initSummaryTable.call(chart);
     }
 
     function clearRugs(axis) {
         this[axis + '_rug'].selectAll('*').remove();
-    }
-
-    function highlight(d, chart) {
-        //clear rugs if any
-        clearRugs.call(chart, 'x');
-        clearRugs.call(chart, 'y');
-
-        //reset point stroke
-        chart.marks[0].circles.attr('stroke-width', 1);
-
-        //highlight points in the quadrant
-        d3.select(this).attr('fill', 'black');
-        var matches = chart.marks[0].circles.filter(function(f) {
-            return f.values.raw[0].eDISH_quadrant == d.dataValue;
-        });
-        matches.attr('stroke-width', 2);
-    }
-
-    function clearHighlight(chart) {
-        d3.select(this).attr('fill', '#bbb');
-        chart.marks[0].circles.attr('stroke-width', 1);
     }
 
     function layout() {
@@ -649,6 +753,11 @@
         /////////////////////////////////////////////////////////
         quadrants.wrap = this.svg.append('g').attr('class', 'quadrants');
         var wrap = quadrants.wrap;
+
+        //slight hack to make life easier on drag
+        quadrants.cut_data.forEach(function(d) {
+            d.chart = chart;
+        });
 
         quadrants.cut_g = wrap
             .selectAll('g.cut')
@@ -662,14 +771,22 @@
         quadrants.cut_lines = quadrants.cut_g
             .append('line')
             .attr('class', 'cut-line')
-            .attr('dash-array', '5,5')
+            .attr('stroke-dasharray', '5,5')
             .attr('stroke', '#bbb');
 
-        quadrants.cut_labels = quadrants.cut_g
-            .append('text')
-            .attr('class', 'cut-label')
-            .attr('stroke', '#bbb');
+        quadrants.cut_lines_backing = quadrants.cut_g
+            .append('line')
+            .attr('class', 'cut-line-backing')
+            .attr('stroke', 'transparent')
+            .attr('stroke-width', '10')
+            .attr('cursor', 'move');
 
+        /* maybe not needed
+    quadrants.cut_labels = quadrants.cut_g
+        .append('text')
+        .attr('class', 'cut-label')
+        .attr('stroke', '#bbb');
+    */
         //////////////////////////////////////////////////////////
         //layout the quadrant labels
         /////////////////////////////////////////////////////////
@@ -685,7 +802,7 @@
                 return 'quadrant-label ' + d.position;
             })
             .attr('dy', function(d) {
-                return d.position.search('lower') > -1 ? '-.2em' : '.2em';
+                return d.position.search('lower') > -1 ? '-.2em' : '.5em';
             })
             .attr('dx', function(d) {
                 return d.position.search('right') > -1 ? '-.5em' : '.5em';
@@ -694,16 +811,20 @@
                 return d.position.search('right') > 0 ? 'end' : null;
             })
             .attr('fill', '#bbb')
-            .style('cursor', 'pointer')
+            //  .style('cursor', 'pointer')
             .text(function(d) {
                 return d.label;
-            })
-            .on('mouseover', function(d) {
-                highlight.call(this, d, chart);
-            })
-            .on('mouseout', function() {
-                clearHighlight.call(this, chart);
             });
+
+        //removing the interactivity for now, but could add it back in later if desired
+        /*
+         .on('mouseover', function(d) {
+            highlight.call(this, d, chart);
+        })
+        .on('mouseout', function() {
+            clearHighlight.call(this, chart);
+        });
+        */
     }
 
     function initQuadrants() {
@@ -1065,36 +1186,38 @@
         this.measureTable.wrap.selectAll('*').style('display', 'none');
     }
 
-    function fillFlaggedCircles() {
+    function formatPoints() {
         var chart = this;
         var config = this.config;
         var points = this.svg.selectAll('g.point').select('circle');
 
-        points.attr('fill', function(d) {
-            var raw = d.values.raw[0],
-                pointColor = chart.colorScale(raw[config.color_by]);
-            return raw.baselineFlag ? pointColor : 'white';
-        });
+        points
+            .attr('fill', function(d) {
+                var raw = d.values.raw[0],
+                    pointColor = chart.colorScale(raw[config.color_by]);
+                return raw.baselineFlag ? pointColor : 'white';
+            })
+            .attr('stroke', function(d) {
+                var disabled = d3.select(this).classed('disabled');
+                var raw = d.values.raw[0],
+                    pointColor = chart.colorScale(raw[config.color_by]);
+                return disabled ? '#ccc' : pointColor;
+            })
+            .attr('fill-opacity', function(d) {
+                var disabled = d3.select(this).classed('disabled');
+                return disabled ? 0 : 0.5;
+            })
+            .attr('stroke-width', 1);
     }
 
     function clearParticipantDetails() {
-        var chart = this;
-        var config = this.config;
-
-        this.svg
-            .selectAll('g.point')
-            .select('circle')
-            .attr('stroke', function(d) {
-                return chart.colorScale(d.values.raw[0][config.color_by]);
-            }) //reset point colors
-            .attr('fill-opacity', 0.5)
-            .attr('stroke-width', 1); //reset stroke
-
+        this.config.quadrants.table.wrap.style('display', null);
         clearVisitPath.call(this); //remove path
         clearParticipantHeader.call(this);
         clearRugs.call(this, 'x'); //clear rugs
         clearRugs.call(this, 'y');
         hideMeasureTable.call(this); //remove the detail table
+        formatPoints.call(this);
     }
 
     function onDraw() {
@@ -1127,6 +1250,28 @@
             .attr('y2', 0);
 
         this.config.quadrants.cut_lines
+            .filter(function(d) {
+                return d.dimension == 'y';
+            })
+            .attr('x1', 0)
+            .attr('x2', this.plot_width)
+            .attr('y1', function(d) {
+                return _this.y(config.quadrants.cut_data.y);
+            })
+            .attr('y2', function(d) {
+                return _this.y(config.quadrants.cut_data.y);
+            });
+
+        this.config.quadrants.cut_lines_backing
+            .filter(function(d) {
+                return d.dimension == 'x';
+            })
+            .attr('x1', this.x(config.quadrants.cut_data.x))
+            .attr('x2', this.x(config.quadrants.cut_data.x))
+            .attr('y1', this.plot_height)
+            .attr('y2', 0);
+
+        this.config.quadrants.cut_lines_backing
             .filter(function(d) {
                 return d.dimension == 'y';
             })
@@ -1328,14 +1473,27 @@
 
         chart.visitPath.selectAll('*').remove();
         chart.visitPath.moveToFront();
-        chart.visitPath
+
+        var path = chart.visitPath
             .append('path')
             .attr('class', 'participant-visits')
             .datum(visit_data)
             .attr('d', myLine)
-            .attr('stroke', '#ccc')
-            .attr('stroke-width', '1px')
+            .attr('stroke', function(d) {
+                return chart.colorScale(matches[0][config.color_by]);
+            })
+            .attr('stroke-width', '2px')
             .attr('fill', 'none');
+
+        var totalLength = path.node().getTotalLength();
+
+        path
+            .attr('stroke-dasharray', totalLength + ' ' + totalLength)
+            .attr('stroke-dashoffset', totalLength)
+            .transition()
+            .duration(2000)
+            .ease('linear')
+            .attr('stroke-dashoffset', 0);
 
         //draw visit points
         var visitPoints = chart.visitPath
@@ -1349,7 +1507,7 @@
         visitPoints
             .append('circle')
             .attr('class', 'participant-visits')
-            .attr('fill', 'white')
+            .attr('r', 0)
             .attr('stroke', function(d) {
                 return chart.colorScale(d[config.color_by]);
             })
@@ -1362,6 +1520,10 @@
             .attr('cy', function(d) {
                 return chart.y(d.y);
             })
+            .attr('fill', 'white')
+            .transition()
+            .delay(2000)
+            .duration(200)
             .attr('r', 6);
 
         //draw visit numbers
@@ -1383,6 +1545,10 @@
             })
             .attr('text-anchor', 'middle')
             .attr('alignment-baseline', 'middle')
+            .attr('font-size', 0)
+            .transition()
+            .delay(2000)
+            .duration(200)
             .attr('font-size', 8);
     }
 
@@ -1538,6 +1704,15 @@
             .style('border-bottom', '2px solid black')
             .style('padding', '.2em');
 
+        if (chart.config.participantProfileURL) {
+            title
+                .append('a')
+                .html('Full Participant Profile')
+                .attr('href', chart.config.participantProfileURL)
+                .style('font-size', '0.8em')
+                .style('padding-left', '1em');
+        }
+
         title
             .append('Button')
             .text('Clear')
@@ -1587,6 +1762,7 @@
         //add event listener to all participant level points
         points.on('click', function(d) {
             clearParticipantDetails.call(chart, d); //clear the previous participant
+            chart.config.quadrants.table.wrap.style('display', 'none'); //hide the quadrant summart
             points
                 .attr('stroke', '#ccc') //set all points to gray
                 .attr('fill-opacity', 0)
@@ -1603,6 +1779,8 @@
             drawVisitPath.call(chart, d); //draw the path showing participant's pattern over time
             drawMeasureTable.call(chart, d); //draw table showing measure values with sparklines
             makeParticipantHeader.call(chart, d);
+            drawRugs.call(chart, d, 'x');
+            drawRugs.call(chart, d, 'y');
         });
     }
 
@@ -1617,7 +1795,7 @@
                     ': ' +
                     d3.format('0.2f')(raw['ALT']) +
                     ' @ V' +
-                    raw['TB_' + config.visitn_col],
+                    raw['ALT_' + config.visitn_col],
                 yLabel =
                     config.y.label +
                     ': ' +
@@ -1633,13 +1811,290 @@
         this.wrap.select('.legend').style('display', hideLegend ? 'None' : null);
     }
 
+    function dragStarted() {
+        var dimension = d3.select(this).classed('x') ? 'x' : 'y';
+        var chart = d3.select(this).datum().chart;
+
+        d3
+            .select(this)
+            .select('line.cut-line')
+            .attr('stroke-width', '2')
+            .attr('stroke-dasharray', '2,2');
+
+        chart.config.quadrants.group_labels.style('display', 'none');
+    }
+
+    function dragged() {
+        var chart = d3.select(this).datum().chart;
+
+        var x = d3.event.dx;
+        var y = d3.event.dy;
+
+        var line = d3.select(this).select('line.cut-line');
+        var lineBack = d3.select(this).select('line.cut-line-backing');
+
+        var dimension = d3.select(this).classed('x') ? 'x' : 'y';
+        // Update the line properties
+        var attributes = {
+            x1: parseInt(line.attr('x1')) + (dimension == 'x' ? x : 0),
+            x2: parseInt(line.attr('x2')) + (dimension == 'x' ? x : 0),
+            y1: parseInt(line.attr('y1')) + (dimension == 'y' ? y : 0),
+            y2: parseInt(line.attr('y2')) + (dimension == 'y' ? y : 0)
+        };
+
+        line.attr(attributes);
+        lineBack.attr(attributes);
+
+        var rawCut = line.attr(dimension + '1');
+        var current_cut = +d3.format('0.1f')(chart[dimension].invert(rawCut));
+
+        //update the cut control in real time
+        chart.controls.wrap
+            .selectAll('div.control-group')
+            .filter(function(f) {
+                return f.option == 'quadrants.cut_data.' + dimension;
+            })
+            .select('input')
+            .node().value = current_cut;
+
+        chart.config.quadrants.cut_data[dimension] = current_cut;
+    }
+
+    function dragEnded() {
+        var chart = d3.select(this).datum().chart;
+
+        d3
+            .select(this)
+            .select('line.cut-line')
+            .attr('stroke-width', '1')
+            .attr('stroke-dasharray', '5,5');
+        chart.config.quadrants.group_labels.style('display', null);
+
+        //redraw the chart (updates the needed cutpoint settings and quadrant annotations)
+        chart.draw();
+    }
+
+    // credit to https://bl.ocks.org/dimitardanailov/99950eee511375b97de749b597147d19
+
+    function init$1() {
+        var drag = d3.behavior
+            .drag()
+            .origin(function(d) {
+                return d;
+            })
+            .on('dragstart', dragStarted)
+            .on('drag', dragged)
+            .on('dragend', dragEnded);
+
+        this.config.quadrants.wrap.moveToFront();
+        this.config.quadrants.cut_g.call(drag);
+    }
+
+    function addBoxPlot(
+        svg,
+        results,
+        height,
+        width,
+        domain,
+        boxPlotWidth,
+        boxColor,
+        boxInsideColor,
+        fmt,
+        horizontal
+    ) {
+        //set default orientation to "horizontal"
+        var horizontal = horizontal == undefined ? true : horizontal;
+
+        //make the results numeric and sort
+        var results = results
+            .map(function(d) {
+                return +d;
+            })
+            .sort(d3$1.ascending);
+
+        //set up scales
+        var y = d3$1.scale.linear().range([height, 0]);
+
+        var x = d3$1.scale.linear().range([0, width]);
+
+        if (horizontal) {
+            y.domain(domain);
+        } else {
+            x.domain(domain);
+        }
+
+        var probs = [0.05, 0.25, 0.5, 0.75, 0.95];
+        for (var i = 0; i < probs.length; i++) {
+            probs[i] = d3$1.quantile(results, probs[i]);
+        }
+
+        var boxplot = svg
+            .append('g')
+            .attr('class', 'boxplot')
+            .datum({ values: results, probs: probs });
+
+        //set bar width variable
+        var box_x = horizontal ? x(0.5 - boxPlotWidth / 2) : x(probs[1]);
+        var box_width = horizontal
+            ? x(0.5 + boxPlotWidth / 2) - x(0.5 - boxPlotWidth / 2)
+            : x(probs[3]) - x(probs[1]);
+        var box_y = horizontal ? y(probs[3]) : y(0.5 + boxPlotWidth / 2);
+        var box_height = horizontal
+            ? -y(probs[3]) + y(probs[1])
+            : y(0.5 - boxPlotWidth / 2) - y(0.5 + boxPlotWidth / 2);
+
+        boxplot
+            .append('rect')
+            .attr('class', 'boxplot fill')
+            .attr('x', box_x)
+            .attr('width', box_width)
+            .attr('y', box_y)
+            .attr('height', box_height)
+            .style('fill', boxColor);
+
+        //draw dividing lines at median, 95% and 5%
+        var iS = [0, 2, 4];
+        var iSclass = ['', 'median', ''];
+        var iSColor = [boxColor, boxInsideColor, boxColor];
+        for (var i = 0; i < iS.length; i++) {
+            boxplot
+                .append('line')
+                .attr('class', 'boxplot ' + iSclass[i])
+                .attr('x1', horizontal ? x(0.5 - boxPlotWidth / 2) : x(probs[iS[i]]))
+                .attr('x2', horizontal ? x(0.5 + boxPlotWidth / 2) : x(probs[iS[i]]))
+                .attr('y1', horizontal ? y(probs[iS[i]]) : y(0.5 - boxPlotWidth / 2))
+                .attr('y2', horizontal ? y(probs[iS[i]]) : y(0.5 + boxPlotWidth / 2))
+                .style('fill', iSColor[i])
+                .style('stroke', iSColor[i]);
+        }
+
+        //draw lines from 5% to 25% and from 75% to 95%
+        var iS = [[0, 1], [3, 4]];
+        for (var i = 0; i < iS.length; i++) {
+            boxplot
+                .append('line')
+                .attr('class', 'boxplot')
+                .attr('x1', horizontal ? x(0.5) : x(probs[iS[i][0]]))
+                .attr('x2', horizontal ? x(0.5) : x(probs[iS[i][1]]))
+                .attr('y1', horizontal ? y(probs[iS[i][0]]) : y(0.5))
+                .attr('y2', horizontal ? y(probs[iS[i][1]]) : y(0.5))
+                .style('stroke', boxColor);
+        }
+
+        boxplot
+            .append('circle')
+            .attr('class', 'boxplot mean')
+            .attr('cx', horizontal ? x(0.5) : x(d3$1.mean(results)))
+            .attr('cy', horizontal ? y(d3$1.mean(results)) : y(0.5))
+            .attr('r', horizontal ? x(boxPlotWidth / 3) : y(1 - boxPlotWidth / 3))
+            .style('fill', boxInsideColor)
+            .style('stroke', boxColor);
+
+        boxplot
+            .append('circle')
+            .attr('class', 'boxplot mean')
+            .attr('cx', horizontal ? x(0.5) : x(d3$1.mean(results)))
+            .attr('cy', horizontal ? y(d3$1.mean(results)) : y(0.5))
+            .attr('r', horizontal ? x(boxPlotWidth / 6) : y(1 - boxPlotWidth / 6))
+            .style('fill', boxColor)
+            .style('stroke', 'None');
+
+        var formatx = fmt ? d3$1.format(fmt) : d3$1.format('.2f');
+
+        boxplot
+            .selectAll('.boxplot')
+            .append('title')
+            .text(function(d) {
+                return (
+                    'N = ' +
+                    d.values.length +
+                    '\n' +
+                    'Min = ' +
+                    d3$1.min(d.values) +
+                    '\n' +
+                    '5th % = ' +
+                    formatx(d3$1.quantile(d.values, 0.05)) +
+                    '\n' +
+                    'Q1 = ' +
+                    formatx(d3$1.quantile(d.values, 0.25)) +
+                    '\n' +
+                    'Median = ' +
+                    formatx(d3$1.median(d.values)) +
+                    '\n' +
+                    'Q3 = ' +
+                    formatx(d3$1.quantile(d.values, 0.75)) +
+                    '\n' +
+                    '95th % = ' +
+                    formatx(d3$1.quantile(d.values, 0.95)) +
+                    '\n' +
+                    'Max = ' +
+                    d3$1.max(d.values) +
+                    '\n' +
+                    'Mean = ' +
+                    formatx(d3$1.mean(d.values)) +
+                    '\n' +
+                    'StDev = ' +
+                    formatx(d3$1.deviation(d.values))
+                );
+            });
+    }
+
+    function init$2() {
+        // Draw box plots
+        this.svg.selectAll('g.boxplot').remove();
+
+        // Y-axis box plot
+        var yValues = this.current_data.map(function(d) {
+            return d.values.y;
+        });
+        var ybox = this.svg.append('g').attr('class', 'yMargin');
+        addBoxPlot(ybox, yValues, this.plot_height, 1, this.y_dom, 10, '#bbb', 'white');
+        ybox
+            .select('g.boxplot')
+            .attr(
+                'transform',
+                'translate(' + (this.plot_width + this.config.margin.right / 2) + ',0)'
+            );
+
+        //X-axis box plot
+        var xValues = this.current_data.map(function(d) {
+            return d.values.x;
+        });
+        var xbox = this.svg.append('g').attr('class', 'xMargin');
+        addBoxPlot(
+            xbox, //svg element
+            xValues, //values
+            1, //height
+            this.plot_width, //width
+            this.x_dom, //domain
+            10, //box plot width
+            '#bbb', //box color
+            'white', //detail color
+            '0.2f', //format
+            false // horizontal?
+        );
+        xbox
+            .select('g.boxplot')
+            .attr('transform', 'translate(0,' + -(this.config.margin.top / 2) + ')');
+    }
+
     function onResize() {
-        drawQuadrants.call(this);
+        //add point interactivity, custom title and formatting
         addPointMouseover.call(this);
         addPointClick.call(this);
-        toggleLegend.call(this);
         addTitle.call(this);
-        fillFlaggedCircles.call(this);
+        formatPoints.call(this);
+
+        //draw the quadrants and add drag interactivity
+        updateSummaryTable.call(this);
+        drawQuadrants.call(this);
+        init$1.call(this);
+
+        // hide the legend if no group options are given
+        toggleLegend.call(this);
+
+        // add boxplots
+        init$2.call(this);
     }
 
     function safetyedish$1(element, settings) {
