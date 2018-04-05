@@ -3,7 +3,7 @@ export function updateQuadrantData() {
     var config = this.config;
 
     //update cut data
-    var dimensions = ['x', 'y', 'z'];
+    var dimensions = ['x', 'y'];
     dimensions.forEach(function(dimension) {
         //change to the stored cut point if the display changed
         if (config.quadrants.cut_data.displayChange) {

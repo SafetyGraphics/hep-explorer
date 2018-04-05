@@ -287,7 +287,6 @@
             {
                 label: 'ALP',
                 measure: 'Alkaline phosphatase (ALP)',
-                axis: 'z', //used to fill circles
                 cut: {
                     relative: 1,
                     absolute: 1.0
@@ -333,7 +332,7 @@
                 type: 'circle',
                 summarizeY: 'mean',
                 summarizeX: 'mean',
-                attributes: { 'fill-opacity': 0.5 }
+                attributes: { 'fill-opacity': 0 }
             }
         ],
         gridlines: 'xy',
@@ -480,12 +479,6 @@
                 label: 'TB Cutpoint',
                 description: 'Y-axis cut',
                 option: 'quadrants.cut_data.y'
-            },
-            {
-                type: 'number',
-                label: 'Baseline ALP Cutpoint',
-                description: 'Points > cutpoint @ baseline are filled',
-                option: 'quadrants.cut_data.z'
             }
         ];
         //Sync group control.
@@ -543,10 +536,6 @@
         },
         {
             dimension: 'y',
-            value: null
-        },
-        {
-            dimension: 'z',
             value: null
         }
     ];
@@ -710,7 +699,6 @@
         quadrants.cut_data = defaultCutData;
         quadrants.cut_data.x = null; //Also store the cuts as properties for convenience
         quadrants.cut_data.y = null;
-        quadrants.cut_data.z = null;
 
         ///////////////////////////////////////////////////////////
         // set initial values
@@ -741,27 +729,10 @@
             .node().value =
             quadrants.cut_data.y;
 
-        quadrants.cut_data.z = config.measure_details.find(function(f) {
-            return f.axis == 'z';
-        }).cut[config.display];
-
-        chart.controls.wrap
-            .selectAll('div.control-group')
-            .filter(function(f) {
-                return f.option == 'quadrants.cut_data.z';
-            })
-            .select('input')
-            .node().value =
-            quadrants.cut_data.z;
-
         ///////////////////////////////////////////////////////////
         // initialize the summary table
         //////////////////////////////////////////////////////////
         initSummaryTable.call(chart);
-    }
-
-    function clearRugs(axis) {
-        this[axis + '_rug'].selectAll('*').remove();
     }
 
     function layout() {
@@ -1113,7 +1084,7 @@
         var config = this.config;
 
         //update cut data
-        var dimensions = ['x', 'y', 'z'];
+        var dimensions = ['x', 'y'];
         dimensions.forEach(function(dimension) {
             //change to the stored cut point if the display changed
             if (config.quadrants.cut_data.displayChange) {
@@ -1161,33 +1132,6 @@
         });
     }
 
-    function flagBaselineValues() {
-        var config = this.config,
-            baseline_data = this.initial_data.filter(function(f) {
-                return f[config.visitn_col] == config.baseline_visitn;
-            }),
-            meaure_obj = config.measure_details.find(function(f) {
-                return f.axis == 'z';
-            }),
-            cut_value = meaure_obj.cut[config.display],
-            cut_variable = meaure_obj.measure,
-            flagged_ids = baseline_data
-                .filter(function(f) {
-                    return f[config.measure_col] == cut_variable;
-                })
-                .filter(function(f) {
-                    return f[config.value_col] >= cut_value;
-                })
-                .map(function(m) {
-                    return m[config.id_col];
-                });
-
-        //add flag to flattened_data
-        this.raw_data.forEach(function(d) {
-            d.baselineFlag = flagged_ids.indexOf(d[config.id_col]) > -1;
-        });
-    }
-
     function setDomain(dimension) {
         var _this = this;
 
@@ -1216,26 +1160,21 @@
         this.measureTable.wrap.selectAll('*').style('display', 'none');
     }
 
+    function clearRugs(axis) {
+        this[axis + '_rug'].selectAll('*').remove();
+    }
+
     function formatPoints() {
         var chart = this;
         var config = this.config;
         var points = this.svg.selectAll('g.point').select('circle');
 
         points
-            .attr('fill', function(d) {
-                var raw = d.values.raw[0],
-                    pointColor = chart.colorScale(raw[config.color_by]);
-                return raw.baselineFlag ? pointColor : 'white';
-            })
             .attr('stroke', function(d) {
                 var disabled = d3.select(this).classed('disabled');
                 var raw = d.values.raw[0],
                     pointColor = chart.colorScale(raw[config.color_by]);
                 return disabled ? '#ccc' : pointColor;
-            })
-            .attr('fill-opacity', function(d) {
-                var disabled = d3.select(this).classed('disabled');
-                return disabled ? 0 : 0.5;
             })
             .attr('stroke-width', 1);
     }
@@ -1259,9 +1198,6 @@
 
         //get current cutpoints and classify participants in to eDISH quadrants
         updateQuadrantData.call(this);
-
-        //flag participant baseline values
-        flagBaselineValues.call(this);
 
         //update domains to include cut lines
         setDomain.call(this, 'x');
@@ -1906,7 +1842,6 @@
             chart.config.quadrants.table.wrap.style('display', 'none'); //hide the quadrant summart
             points
                 .attr('stroke', '#ccc') //set all points to gray
-                .attr('fill-opacity', 0)
                 .classed('disabled', true); //disable mouseover while viewing participant details
 
             d3
@@ -1914,7 +1849,6 @@
                 .attr('stroke', function(d) {
                     return chart.colorScale(d.values.raw[0][config.color_by]);
                 }) //highlight selected point
-                .attr('fill-opacity', 0.5)
                 .attr('stroke-width', 3);
 
             drawVisitPath.call(chart, d); //draw the path showing participant's pattern over time

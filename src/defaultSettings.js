@@ -24,7 +24,6 @@ const defaultSettings = {
         {
             label: 'ALP',
             measure: 'Alkaline phosphatase (ALP)',
-            axis: 'z', //used to fill circles
             cut: {
                 relative: 1,
                 absolute: 1.0
@@ -70,7 +69,7 @@ const defaultSettings = {
             type: 'circle',
             summarizeY: 'mean',
             summarizeX: 'mean',
-            attributes: { 'fill-opacity': 0.5 }
+            attributes: { 'fill-opacity': 0 }
         }
     ],
     gridlines: 'xy',
@@ -194,12 +193,6 @@ export function syncControlInputs(settings) {
             label: 'TB Cutpoint',
             description: 'Y-axis cut',
             option: 'quadrants.cut_data.y'
-        },
-        {
-            type: 'number',
-            label: 'Baseline ALP Cutpoint',
-            description: 'Points > cutpoint @ baseline are filled',
-            option: 'quadrants.cut_data.z'
         }
     ];
     //Sync group control.
