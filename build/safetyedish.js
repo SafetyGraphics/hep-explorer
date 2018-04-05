@@ -1241,6 +1241,9 @@
     }
 
     function clearParticipantDetails() {
+        var points = this.svg.selectAll('g.point').select('circle');
+
+        points.classed('disabled', false);
         this.config.quadrants.table.wrap.style('display', null);
         clearVisitPath.call(this); //remove path
         clearParticipantHeader.call(this);
