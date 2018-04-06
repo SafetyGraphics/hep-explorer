@@ -308,6 +308,7 @@
         measureBounds: [0.01, 0.99],
         populationProfileURL: null,
         participantProfileURL: null,
+        point_size: null,
 
         //Standard webcharts settings
         x: {
@@ -479,6 +480,15 @@
                 label: 'TB Cutpoint',
                 description: 'Y-axis cut',
                 option: 'quadrants.cut_data.y'
+            },
+            {
+                type: 'dropdown',
+                label: 'Point Size',
+                description: 'Parameter to set circle radius',
+                options: ['point_size'],
+                start: 'None', // set in syncControlInputs()
+                values: ['None', 'Time Between Measures', 'Maximum ALP'],
+                require: true
             }
         ];
         //Sync group control.
@@ -2153,12 +2163,52 @@
             .attr('transform', 'translate(0,' + -(this.config.margin.top / 2) + ')');
     }
 
+    function setPointSize() {
+        var chart = this;
+        var config = this.config;
+        var points = this.svg.selectAll('g.point').select('circle');
+
+        if (config.point_size == 'Time Between Measures' || config.point_size == 'Maximum ALP') {
+            //Set the size variable
+            var size_col = null;
+            if (config.point_size == 'Time Between Measures') {
+                size_col = 'day_diff';
+            } else if (config.point_size == 'Maximum ALP') {
+                size_col = 'ALP';
+            }
+
+            //create the scale
+            var sizeScale = d3.scale
+                .linear()
+                .range(config.point_size == 'Time Between Measures' ? [10, 0] : [0, 10])
+                .domain(
+                    d3.extent(
+                        chart.raw_data.map(function(m) {
+                            return m[size_col];
+                        })
+                    )
+                );
+            console.log(sizeScale);
+            console.log(sizeScale.domain());
+            console.log(sizeScale.range());
+
+            //set the point radius
+            points.transition().attr('r', function(d) {
+                console.log(d);
+                var raw = d.values.raw[0];
+                console.log(sizeScale(raw[size_col]));
+                return sizeScale(raw[size_col]);
+            });
+        }
+    }
+
     function onResize() {
         //add point interactivity, custom title and formatting
         addPointMouseover.call(this);
         addPointClick.call(this);
         addTitle.call(this);
         formatPoints.call(this);
+        setPointSize.call(this);
 
         //draw the quadrants and add drag interactivity
         updateSummaryTable.call(this);

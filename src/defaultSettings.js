@@ -45,6 +45,7 @@ const defaultSettings = {
     measureBounds: [0.01, 0.99],
     populationProfileURL: null,
     participantProfileURL: null,
+    point_size: null,
 
     //Standard webcharts settings
     x: {
@@ -193,6 +194,15 @@ export function syncControlInputs(settings) {
             label: 'TB Cutpoint',
             description: 'Y-axis cut',
             option: 'quadrants.cut_data.y'
+        },
+        {
+            type: 'dropdown',
+            label: 'Point Size',
+            description: 'Parameter to set circle radius',
+            options: ['point_size'],
+            start: 'None', // set in syncControlInputs()
+            values: ['None', 'Time Between Measures', 'Maximum ALP'],
+            require: true
         }
     ];
     //Sync group control.
