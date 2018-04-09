@@ -267,6 +267,7 @@
         measure_col: 'TEST',
         visit_col: 'VISIT',
         visitn_col: 'VISITN',
+        studyday_col: 'DY',
         unit_col: 'STRESU',
         normal_col_low: 'STNRLO',
         normal_col_high: 'STNRHI',
@@ -287,6 +288,7 @@
             {
                 label: 'ALP',
                 measure: 'Alkaline phosphatase (ALP)',
+                axis: null,
                 cut: {
                     relative: 1,
                     absolute: 1.0
@@ -308,7 +310,8 @@
         measureBounds: [0.01, 0.99],
         populationProfileURL: null,
         participantProfileURL: null,
-        point_size: null,
+        point_size: 'Uniform',
+        point_opacity: false,
 
         //Standard webcharts settings
         x: {
@@ -484,17 +487,25 @@
             {
                 type: 'dropdown',
                 label: 'Point Size',
-                description: 'Parameter to set circle radius',
+                description: 'Parameter to set point radius',
                 options: ['point_size'],
                 start: 'None', // set in syncControlInputs()
-                values: ['None', 'Time Between Measures', 'Maximum ALP'],
+                values: ['Uniform'],
                 require: true
+            },
+            {
+                type: 'checkbox',
+                label: 'Point Opacity using time between measures',
+                description: 'Darkest points collected on same day',
+                option: 'point_opacity'
+                //  start: false, // set in syncControlInputs()
+                //  require: true
             }
         ];
         //Sync group control.
-        var groupControl = defaultControls.filter(function(controlInput) {
+        var groupControl = defaultControls.find(function(controlInput) {
             return controlInput.label === 'Group';
-        })[0];
+        });
         groupControl.start = settings.color_by;
         settings.group_cols
             .filter(function(group) {
@@ -508,6 +519,25 @@
         if (settings.group_cols.length == 1) {
             defaultControls = defaultControls.filter(function(controlInput) {
                 return controlInput.label != 'Group';
+            });
+        }
+
+        //Sync point size control.
+        var pointSizeControl = defaultControls.find(function(controlInput) {
+            return controlInput.label === 'Point Size';
+        });
+        settings.measure_details
+            .filter(function(f) {
+                return (f.axis != 'x') & (f.axis != 'y');
+            })
+            .forEach(function(group) {
+                pointSizeControl.values.push(group.label);
+            });
+
+        //drop the pointSize control if NONE is the only option
+        if (settings.measure_details.length == 2) {
+            defaultControls = defaultControls.filter(function(controlInput) {
+                return controlInput.label != 'Point Size';
             });
         }
 
@@ -948,6 +978,7 @@
             'value_col',
             'visit_col',
             'visitn_col',
+            'studyday_col',
             'unit_col',
             'normal_col_low',
             'normal_col_high'
@@ -975,6 +1006,9 @@
             })
             .rollup(function(d) {
                 var participant_obj = {};
+                participant_obj.days_x = null;
+                participant_obj.days_y = null;
+
                 config.measure_details.forEach(function(m) {
                     //get all raw data for the current measure
                     var matches = d.filter(function(f) {
@@ -1001,6 +1035,10 @@
                     participant_obj[m.label + '_cut'] = m.cut[config.display];
                     participant_obj[m.label + '_flagged'] =
                         participant_obj[m.label] >= participant_obj[m.label + '_cut'];
+
+                    //save study days for each axis;
+                    if (m.axis == 'x') participant_obj.days_x = maxRecord[config.studyday_col];
+                    if (m.axis == 'y') participant_obj.days_y = maxRecord[config.studyday_col];
                 });
 
                 //Add participant level metadata
@@ -1028,6 +1066,11 @@
                     participant_obj[v] = d[0][v];
                 });
 
+                //calculate the day difference between x and y
+                participant_obj.day_diff = Math.abs(
+                    participant_obj.days_x - participant_obj.days_y
+                );
+
                 return participant_obj;
             })
             .entries(sub);
@@ -1043,6 +1086,7 @@
 
             return m.values;
         });
+
         return flat_data;
     }
 
@@ -1185,6 +1229,12 @@
                 var raw = d.values.raw[0],
                     pointColor = chart.colorScale(raw[config.color_by]);
                 return disabled ? '#ccc' : pointColor;
+            })
+            .attr('fill', function(d) {
+                var disabled = d3.select(this).classed('disabled');
+                var raw = d.values.raw[0],
+                    pointColor = chart.colorScale(raw[config.color_by]);
+                return disabled ? 'white' : pointColor;
             })
             .attr('stroke-width', 1);
     }
@@ -1852,6 +1902,7 @@
             chart.config.quadrants.table.wrap.style('display', 'none'); //hide the quadrant summart
             points
                 .attr('stroke', '#ccc') //set all points to gray
+                .attr('fill', 'white')
                 .classed('disabled', true); //disable mouseover while viewing participant details
 
             d3
@@ -1872,22 +1923,35 @@
     function addTitle() {
         var config = this.config;
         var points = this.marks[0].circles;
-
+        points.select('title').remove();
         points.append('title').text(function(d) {
+            var xvar = config.measure_details.find(function(f) {
+                return f.axis == 'x';
+            }).label;
+            var yvar = config.measure_details.find(function(f) {
+                return f.axis == 'y';
+            }).label;
             var raw = d.values.raw[0],
                 xLabel =
                     config.x.label +
                     ': ' +
-                    d3.format('0.2f')(raw['ALT']) +
+                    d3.format('0.2f')(raw[xvar]) +
                     ' @ V' +
-                    raw['ALT_' + config.visitn_col],
+                    raw[xvar + '_' + config.visitn_col] +
+                    ' (Day ' +
+                    raw[xvar + '_' + config.studyday_col] +
+                    ')',
                 yLabel =
                     config.y.label +
                     ': ' +
-                    d3.format('0.2f')(raw['TB']) +
+                    d3.format('0.2f')(raw[yvar]) +
                     ' @ V' +
-                    raw['TB_' + config.visitn_col];
-            return xLabel + '\n' + yLabel;
+                    raw[yvar + '_' + config.visitn_col] +
+                    ' (Day ' +
+                    raw[yvar + '_' + config.studyday_col] +
+                    ')',
+                dayDiff = raw['day_diff'] + ' days apart';
+            return xLabel + '\n' + yLabel + '\n' + dayDiff;
         });
     }
 
@@ -2167,37 +2231,49 @@
         var chart = this;
         var config = this.config;
         var points = this.svg.selectAll('g.point').select('circle');
-
-        if (config.point_size == 'Time Between Measures' || config.point_size == 'Maximum ALP') {
-            //Set the size variable
-            var size_col = null;
-            if (config.point_size == 'Time Between Measures') {
-                size_col = 'day_diff';
-            } else if (config.point_size == 'Maximum ALP') {
-                size_col = 'ALP';
-            }
-
+        if (config.point_size != 'Uniform') {
             //create the scale
             var sizeScale = d3.scale
                 .linear()
-                .range(config.point_size == 'Time Between Measures' ? [10, 0] : [0, 10])
+                .range([1, 10])
                 .domain(
                     d3.extent(
                         chart.raw_data.map(function(m) {
-                            return m[size_col];
+                            return m[config.point_size];
                         })
                     )
                 );
-            console.log(sizeScale);
-            console.log(sizeScale.domain());
-            console.log(sizeScale.range());
+
+            //draw a legend (coming later?)
 
             //set the point radius
             points.transition().attr('r', function(d) {
-                console.log(d);
                 var raw = d.values.raw[0];
-                console.log(sizeScale(raw[size_col]));
-                return sizeScale(raw[size_col]);
+                return sizeScale(raw[config.point_size]);
+            });
+        }
+    }
+
+    function setPointOpacity() {
+        var chart = this;
+        var config = this.config;
+        var points = this.svg.selectAll('g.point').select('circle');
+        if (config.point_opacity) {
+            //create opacity scale
+            var opacityScale = d3.scale
+                .linear()
+                .range([1, 0])
+                .domain(
+                    d3.extent(
+                        chart.raw_data.map(function(m) {
+                            return m.day_diff;
+                        })
+                    )
+                );
+
+            //set the opacity
+            points.attr('fill-opacity', function(d) {
+                return opacityScale(d.values.raw[0].day_diff);
             });
         }
     }
@@ -2209,6 +2285,7 @@
         addTitle.call(this);
         formatPoints.call(this);
         setPointSize.call(this);
+        setPointOpacity.call(this);
 
         //draw the quadrants and add drag interactivity
         updateSummaryTable.call(this);

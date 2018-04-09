@@ -8,6 +8,7 @@ import { init as addLineDrag } from './onResize/addLineDrag/init';
 import { init as initBoxPlots } from './onResize/addBoxPlots/init';
 import { formatPoints } from './onResize/formatPoints';
 import { setPointSize } from './onResize/setPointSize';
+import { setPointOpacity } from './onResize/setPointOpacity';
 
 export default function onResize() {
     //add point interactivity, custom title and formatting
@@ -16,6 +17,7 @@ export default function onResize() {
     addTitle.call(this);
     formatPoints.call(this);
     setPointSize.call(this);
+    setPointOpacity.call(this);
 
     //draw the quadrants and add drag interactivity
     updateSummaryTable.call(this);

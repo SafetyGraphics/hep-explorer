@@ -10,5 +10,11 @@ export function formatPoints() {
                 pointColor = chart.colorScale(raw[config.color_by]);
             return disabled ? '#ccc' : pointColor;
         })
+        .attr('fill', function(d) {
+            var disabled = d3.select(this).classed('disabled');
+            var raw = d.values.raw[0],
+                pointColor = chart.colorScale(raw[config.color_by]);
+            return disabled ? 'white' : pointColor;
+        })
         .attr('stroke-width', 1);
 }

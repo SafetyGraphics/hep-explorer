@@ -4,6 +4,7 @@ const defaultSettings = {
     measure_col: 'TEST',
     visit_col: 'VISIT',
     visitn_col: 'VISITN',
+    studyday_col: 'DY',
     unit_col: 'STRESU',
     normal_col_low: 'STNRLO',
     normal_col_high: 'STNRHI',
@@ -24,6 +25,7 @@ const defaultSettings = {
         {
             label: 'ALP',
             measure: 'Alkaline phosphatase (ALP)',
+            axis: null,
             cut: {
                 relative: 1,
                 absolute: 1.0
@@ -45,7 +47,8 @@ const defaultSettings = {
     measureBounds: [0.01, 0.99],
     populationProfileURL: null,
     participantProfileURL: null,
-    point_size: null,
+    point_size: 'Uniform',
+    point_opacity: false,
 
     //Standard webcharts settings
     x: {
@@ -198,15 +201,23 @@ export function syncControlInputs(settings) {
         {
             type: 'dropdown',
             label: 'Point Size',
-            description: 'Parameter to set circle radius',
+            description: 'Parameter to set point radius',
             options: ['point_size'],
             start: 'None', // set in syncControlInputs()
-            values: ['None', 'Time Between Measures', 'Maximum ALP'],
+            values: ['Uniform'],
             require: true
+        },
+        {
+            type: 'checkbox',
+            label: 'Point Opacity using time between measures',
+            description: 'Darkest points collected on same day',
+            option: 'point_opacity'
+            //  start: false, // set in syncControlInputs()
+            //  require: true
         }
     ];
     //Sync group control.
-    const groupControl = defaultControls.filter(controlInput => controlInput.label === 'Group')[0];
+    const groupControl = defaultControls.find(controlInput => controlInput.label === 'Group');
     groupControl.start = settings.color_by;
     settings.group_cols.filter(group => group.value_col !== 'NONE').forEach(group => {
         groupControl.values.push(group.value_col);
@@ -215,6 +226,21 @@ export function syncControlInputs(settings) {
     //drop the group control if NONE is the only option
     if (settings.group_cols.length == 1) {
         defaultControls = defaultControls.filter(controlInput => controlInput.label != 'Group');
+    }
+
+    //Sync point size control.
+    const pointSizeControl = defaultControls.find(
+        controlInput => controlInput.label === 'Point Size'
+    );
+    settings.measure_details.filter(f => (f.axis != 'x') & (f.axis != 'y')).forEach(group => {
+        pointSizeControl.values.push(group.label);
+    });
+
+    //drop the pointSize control if NONE is the only option
+    if (settings.measure_details.length == 2) {
+        defaultControls = defaultControls.filter(
+            controlInput => controlInput.label != 'Point Size'
+        );
     }
 
     //Sync display control
