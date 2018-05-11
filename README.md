@@ -25,7 +25,7 @@ Just like the standard eDish plot, the default view for this chart shows one poi
 10. Click a point for participant details (see below)
 
 ### Details View
-<img width="599" alt="screen shot 2018-05-11 at 11 54 24 am" src="https://user-images.githubusercontent.com/3680095/39941806-92b15b46-5512-11e8-9a53-a06158d4ba8a.png">
+<img width="493" alt="screen shot 2018-05-11 at 12 20 03 pm" src="https://user-images.githubusercontent.com/3680095/39942873-c109a95a-5515-11e8-8ddc-95cb9b873c64.png">
 
 *Feature List*
 
