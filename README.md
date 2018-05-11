@@ -1,12 +1,17 @@
-# Safety eDISH Overview
+# Interactive Safety eDISH graphic
 
-Evaluation of Drug-Induced Serious Hepatotoxicity, or eDISH, plots are a key tool used to assess liver toxicity in clinical trials. This library contains a web-based implementation of the traditional eDISH plot that allows a user to interactively explore participant data in ways that are not possible in static plots. 
+# Background
 
-## Primary View
+Evaluation of Drug-Induced Serious Hepatotoxicity, or eDISH, plots are a key tool used to assess liver toxicity in clinical trials. Standard properties and workflows for static eDish plots are well documented  by [Watkins et al.](https://link.springer.com/article/10.2165%2F11586600-000000000-00000),  [Merz et al.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4212156/) and others. This library contains a web-based implementation of the traditional eDISH plot that allows a user to interactively explore participant data in ways that are not possible in static plots. 
 
-Just like the standard eDish plot, the primary view in this library shows one point per participant with maximal ALT and TB over the course of the study shown on the x and y axes as shown below. Features of the interactive chart are annotated and listed below.
+## Interactive Functionality
 
+Just like the standard eDish plot, the default view for this chart shows one point per participant with maximal ALT and TB over the course of the study plotted on the x and y axes respectively (see "Population View" below).  Clicking on a participant circle displays additional details for that individual (see "Details View").  
 
+### Population View
+<img width="686" alt="screen shot 2018-05-11 at 11 54 07 am" src="https://user-images.githubusercontent.com/3680095/39941805-928ff78a-5512-11e8-8d11-589f7616c807.png">
+
+*Feature List*
 
 1. Interactive Hy’s law quadrants + summary table
 2. Points filled based on baseline ALP
@@ -19,7 +24,12 @@ Just like the standard eDish plot, the primary view in this library shows one po
 9. Participant measures across time points on hover
 10. Click a point for participant details (see below)
 
-## References
-- [Watkins et al.](https://link.springer.com/article/10.2165%2F11586600-000000000-00000)
-- [Merz et al.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4212156/)
-- [Merz Slides re interactive](https://www.aasld.org/sites/default/files/documents/2013/2013%204B_3__M_Merz-n.pdf)
+### Details View
+<img width="599" alt="screen shot 2018-05-11 at 11 54 24 am" src="https://user-images.githubusercontent.com/3680095/39941806-92b15b46-5512-11e8-9a53-a06158d4ba8a.png">
+
+*Feature List*
+
+1. Hysteresis plot (“snake plot”) showing participant’s lab values over time. 
+2. Participant details section with link to external participant profile
+3. Demographic summary
+4. Lab summary table with spark lines
