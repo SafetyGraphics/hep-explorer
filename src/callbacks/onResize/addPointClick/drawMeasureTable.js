@@ -48,7 +48,6 @@ export function drawMeasureTable(d) {
         .sort(function(a, b) {
             var a_order = config.measure_details.map(m => m.measure).indexOf(a.key);
             var b_order = config.measure_details.map(m => m.measure).indexOf(b.key);
-            console.log(a_order);
             return b_order - a_order;
         });
 

@@ -1589,7 +1589,6 @@
                 .style('background', 'none')
                 .style('border-bottom', '.5px solid black')
                 .each(function(row_d) {
-                    console.log(row_d);
                     //Spark line cell
                     var cell = d3
                             .select(this)
@@ -1819,7 +1818,6 @@
                         return m.measure;
                     })
                     .indexOf(b.key);
-                console.log(a_order);
                 return b_order - a_order;
             });
 
