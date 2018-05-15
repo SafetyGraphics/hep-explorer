@@ -6,7 +6,7 @@ export function setPointSize() {
         //create the scale
         var sizeScale = d3.scale
             .linear()
-            .range([1, 10])
+            .range([2, 10])
             .domain(d3.extent(chart.raw_data.map(m => m[config.point_size])));
 
         //draw a legend (coming later?)
