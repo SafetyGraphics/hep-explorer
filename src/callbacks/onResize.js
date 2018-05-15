@@ -11,6 +11,8 @@ import { setPointSize } from './onResize/setPointSize';
 import { setPointOpacity } from './onResize/setPointOpacity';
 
 export default function onResize() {
+    console.log(this);
+
     //add point interactivity, custom title and formatting
     addPointMouseover.call(this);
     addPointClick.call(this);

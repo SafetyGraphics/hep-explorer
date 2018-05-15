@@ -21,16 +21,14 @@ export function drawVisitPath(d) {
             var x_match = matches
                 .filter(f => f[config.visitn_col] == m)
                 .filter(f => f[config.measure_col] == x_measure)[0];
-            visitObj.x =
-                config.display == 'relative' ? x_match.relative : x_match[config.value_col];
+            visitObj.x = x_match[config.display];
 
             //get y coordinate
             var y_match = matches
                 .filter(f => f[config.visitn_col] == m)
                 .filter(f => f[config.measure_col] == y_measure)[0];
 
-            visitObj.y =
-                config.display == 'relative' ? y_match.relative : y_match[config.value_col];
+            visitObj.y = y_match[config.display];
 
             return visitObj;
         })

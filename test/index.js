@@ -18,7 +18,7 @@ document.onreadystatechange = function () {
                   console.log(error);
 
                   let settings = {
-                    display:"relative",
+                    display:"relative_baseline",
                     group_cols:["ARM","RACE"]
                   }
 

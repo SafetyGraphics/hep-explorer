@@ -18,7 +18,8 @@ const defaultSettings = {
             measure: 'Aminotransferase, alanine (ALT)',
             axis: 'x',
             cut: {
-                relative: 3,
+                relative_baseline: 3,
+                relative_uln: 3,
                 absolute: 1.0
             }
         },
@@ -27,7 +28,8 @@ const defaultSettings = {
             measure: 'Alkaline phosphatase (ALP)',
             axis: null,
             cut: {
-                relative: 1,
+                relative_baseline: 3,
+                relative_uln: 1,
                 absolute: 1.0
             }
         },
@@ -36,13 +38,15 @@ const defaultSettings = {
             measure: 'Total Bilirubin',
             axis: 'y',
             cut: {
-                relative: 2,
+                relative_baseline: 3,
+                relative_uln: 2,
                 absolute: 40
             }
         }
     ],
     missingValues: ['', 'NA', 'N/A'],
-    display: 'relative', //or "absolute"
+    axis_options: ['relative_uln', 'relative_baseline', 'absolute'],
+    display: 'relative_uln', //or "relative_baseline" or "absolute"
     baseline_visitn: '1',
     measureBounds: [0.01, 0.99],
     populationProfileURL: null,
@@ -183,7 +187,8 @@ export function syncControlInputs(settings) {
             description: 'Relative or Absolute Axes',
             options: ['display', 'quadrants.cut_data.displayChange'],
             start: null, // set in syncControlInputs()
-            values: ['relative', 'absolute'],
+            values: null, // set in syncControlInputs()
+            //    labels: ['Proportion of ULN', 'Proportion of Baseline', 'Raw Values'],
             require: true
         },
         {
@@ -247,7 +252,8 @@ export function syncControlInputs(settings) {
     const displayControl = defaultControls.filter(
         controlInput => controlInput.label === 'Display Type'
     )[0];
-    groupControl.start = settings.display;
+    displayControl.values = settings.axis_options;
+    displayControl.start = settings.display;
 
     //Add custom filters to control inputs.
     if (settings.filters && settings.filters.length > 0) {

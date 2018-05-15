@@ -7,10 +7,16 @@ export function updateAxisSettings() {
         yMeasure = config.measure_details.find(f => f.axis == 'y');
 
     config.x.column = xMeasure.label;
-    config.x.label =
-        xMeasure.measure + (config.display == 'relative' ? ' (xULN)' : ' (raw values)');
+
+    var unit =
+        config.display == 'relative_uln'
+            ? ' (xULN)'
+            : config.display == 'relative_baseline'
+                ? ' (xBaseline)'
+                : config.display == 'absolute' ? ' (raw values)' : null;
+
+    config.x.label = xMeasure.measure + unit;
 
     config.y.column = yMeasure.label;
-    config.y.label =
-        yMeasure.measure + (config.display == 'relative' ? ' (xULN)' : ' (raw values)');
+    config.y.label = yMeasure.measure + unit;
 }

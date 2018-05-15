@@ -281,7 +281,8 @@
                 measure: 'Aminotransferase, alanine (ALT)',
                 axis: 'x',
                 cut: {
-                    relative: 3,
+                    relative_baseline: 3,
+                    relative_uln: 3,
                     absolute: 1.0
                 }
             },
@@ -290,7 +291,8 @@
                 measure: 'Alkaline phosphatase (ALP)',
                 axis: null,
                 cut: {
-                    relative: 1,
+                    relative_baseline: 3,
+                    relative_uln: 1,
                     absolute: 1.0
                 }
             },
@@ -299,13 +301,15 @@
                 measure: 'Total Bilirubin',
                 axis: 'y',
                 cut: {
-                    relative: 2,
+                    relative_baseline: 3,
+                    relative_uln: 2,
                     absolute: 40
                 }
             }
         ],
         missingValues: ['', 'NA', 'N/A'],
-        display: 'relative', //or "absolute"
+        axis_options: ['relative_uln', 'relative_baseline', 'absolute'],
+        display: 'relative_uln', //or "relative_baseline" or "absolute"
         baseline_visitn: '1',
         measureBounds: [0.01, 0.99],
         populationProfileURL: null,
@@ -469,7 +473,8 @@
                 description: 'Relative or Absolute Axes',
                 options: ['display', 'quadrants.cut_data.displayChange'],
                 start: null, // set in syncControlInputs()
-                values: ['relative', 'absolute'],
+                values: null, // set in syncControlInputs()
+                //    labels: ['Proportion of ULN', 'Proportion of Baseline', 'Raw Values'],
                 require: true
             },
             {
@@ -545,7 +550,8 @@
         var displayControl = defaultControls.filter(function(controlInput) {
             return controlInput.label === 'Display Type';
         })[0];
-        groupControl.start = settings.display;
+        displayControl.values = settings.axis_options;
+        displayControl.start = settings.display;
 
         //Add custom filters to control inputs.
         if (settings.filters && settings.filters.length > 0) {
@@ -960,16 +966,50 @@
                 return true;
             }); //add a filter on selected visits here
 
-        //get the relative value (% of the upper limit of normal) for the measure
+        var missingBaseline = 0;
         sub.forEach(function(d) {
+            //coerce numeric values to number
             var numerics = ['value_col', 'visitn_col', 'normal_col_low', 'normal_col_high'];
-
             numerics.forEach(function(col) {
                 d[config[col]] = +d[config[col]];
             });
 
-            d.relative = d[config.value_col] / d[config.normal_col_high];
+            //map the raw value to a variable called 'absolute'
+            d.absolute = d[config.value_col];
+
+            //get the value relative to the ULN (% of the upper limit of normal) for the measure
+            d.relative_uln = d[config.value_col] / d[config.normal_col_high];
+
+            //get the value relative to baseline for the measure
+            var baseline_record = sub
+                .filter(function(f) {
+                    return d[config.id_col] == f[config.id_col];
+                })
+                .filter(function(f) {
+                    return d[config.measure_col] == f[config.measure_col];
+                })
+                .filter(function(f) {
+                    return f[config.visitn_col] == +config.baseline_visitn;
+                });
+
+            if (baseline_record.length > 0) {
+                d.baseline_absolute = baseline_record[0][config.value_col];
+                if (d.baseline_absolute > 0) {
+                    d.relative_baseline = d.absolute / d.baseline_absolute;
+                } else {
+                    d.relative_baseline = null;
+                }
+            } else {
+                missingBaseline = missingBaseline + 1;
+                d.baseline_absolute = null;
+                d.relative_baseline = null;
+            }
         });
+
+        if (missingBaseline > 0)
+            console.log(
+                'No baseline value found for ' + missingBaseline + ' of ' + sub.length + ' records.'
+            );
 
         //get list of columns to flatten
         var colList = [];
@@ -996,7 +1036,11 @@
             }
         });
 
-        colList.push('relative');
+        //merge in the absolute and relative values
+        colList = d3.merge([
+            colList,
+            ['absolute', 'relative_uln', 'relative_baseline', 'baseline_raw']
+        ]);
 
         //get maximum values for each measure type
         var flat_data = d3
@@ -1008,33 +1052,44 @@
                 var participant_obj = {};
                 participant_obj.days_x = null;
                 participant_obj.days_y = null;
-
                 config.measure_details.forEach(function(m) {
                     //get all raw data for the current measure
                     var matches = d.filter(function(f) {
                         return m.measure == f[config.measure_col];
                     }); //get matching measures
 
+                    if (matches.length == 0) {
+                        console.log('No matches found');
+                        participant_obj.drop_participant = true;
+                        return participant_obj;
+                    } else {
+                        participant_obj.drop_participant = false;
+                    }
+
                     //get record with maximum value for the current display type
                     participant_obj[m.label] = d3.max(matches, function(d) {
-                        return config.display == 'absolute' ? d[config.value_col] : d.relative;
-                    });
-                    var maxRecord = matches.find(function(d) {
-                        return (
-                            participant_obj[m.label] ==
-                            (config.display == 'absolute' ? d[config.value_col] : d.relative)
-                        );
+                        return +d[config.display];
                     });
 
+                    var maxRecord = matches.find(function(d) {
+                        return participant_obj[m.label] == +d[config.display];
+                    });
                     //map all measure specific values
                     colList.forEach(function(col) {
                         participant_obj[m.label + '_' + col] = maxRecord[col];
                     });
 
                     //determine whether the value is above the specified threshold
-                    participant_obj[m.label + '_cut'] = m.cut[config.display];
-                    participant_obj[m.label + '_flagged'] =
-                        participant_obj[m.label] >= participant_obj[m.label + '_cut'];
+                    if (m.cut[config.display]) {
+                        config.show_quadrants = true;
+                        participant_obj[m.label + '_cut'] = m.cut[config.display];
+                        participant_obj[m.label + '_flagged'] =
+                            participant_obj[m.label] >= participant_obj[m.label + '_cut'];
+                    } else {
+                        config.show_quadrants = false;
+                        participant_obj[m.label + '_cut'] = null;
+                        participant_obj[m.label + '_flagged'] = null;
+                    }
 
                     //save study days for each axis;
                     if (m.axis == 'x') participant_obj.days_x = maxRecord[config.studyday_col];
@@ -1075,17 +1130,21 @@
             })
             .entries(sub);
 
-        var flat_data = flat_data.map(function(m) {
-            m.values[config.id_col] = m.key;
+        var flat_data = flat_data
+            .filter(function(f) {
+                return f.values.drop_participant == false;
+            })
+            .map(function(m) {
+                m.values[config.id_col] = m.key;
 
-            //link the raw data to the flattened object
-            var allMatches = chart.initial_data.filter(function(f) {
-                return f[config.id_col] == m.key;
+                //link the raw data to the flattened object
+                var allMatches = chart.initial_data.filter(function(f) {
+                    return f[config.id_col] == m.key;
+                });
+                m.values.raw = allMatches;
+
+                return m.values;
             });
-            m.values.raw = allMatches;
-
-            return m.values;
-        });
 
         return flat_data;
     }
@@ -1102,12 +1161,18 @@
             });
 
         config.x.column = xMeasure.label;
-        config.x.label =
-            xMeasure.measure + (config.display == 'relative' ? ' (xULN)' : ' (raw values)');
+
+        var unit =
+            config.display == 'relative_uln'
+                ? ' (xULN)'
+                : config.display == 'relative_baseline'
+                    ? ' (xBaseline)'
+                    : config.display == 'absolute' ? ' (raw values)' : null;
+
+        config.x.label = xMeasure.measure + unit;
 
         config.y.column = yMeasure.label;
-        config.y.label =
-            yMeasure.measure + (config.display == 'relative' ? ' (xULN)' : ' (raw values)');
+        config.y.label = yMeasure.measure + unit;
     }
 
     function setLegendLabel() {
@@ -1367,18 +1432,10 @@
             .append('text')
             .attr('class', 'rug-tick')
             .attr('x', function(d) {
-                return axis == 'x'
-                    ? config.display == 'relative'
-                        ? chart.x(d.relative)
-                        : chart.x(d[config.value_col])
-                    : chart.x(min_value);
+                return axis == 'x' ? chart.x(d[config.display]) : chart.x(min_value);
             })
             .attr('y', function(d) {
-                return axis == 'y'
-                    ? config.display == 'relative'
-                        ? chart.y(d.relative)
-                        : chart.y(d[config.value_col])
-                    : chart.y(min_value);
+                return axis == 'y' ? chart.y(d[config.display]) : chart.y(min_value);
             })
             //        .attr('dy', axis == 'x' ? '-0.2em' : null)
             .attr('text-anchor', axis == 'y' ? 'end' : null)
@@ -1395,7 +1452,7 @@
                 return (
                     d[config.measure_col] +
                     '=' +
-                    d3.format('.2f')(d[config.value_col]) +
+                    d3.format('.2f')(d.absolute) +
                     ' (' +
                     d3.format('.2f')(d.relative) +
                     ' xULN) @ ' +
@@ -1469,8 +1526,7 @@
                     .filter(function(f) {
                         return f[config.measure_col] == x_measure;
                     })[0];
-                visitObj.x =
-                    config.display == 'relative' ? x_match.relative : x_match[config.value_col];
+                visitObj.x = x_match[config.display];
 
                 //get y coordinate
                 var y_match = matches
@@ -1481,8 +1537,7 @@
                         return f[config.measure_col] == y_measure;
                     })[0];
 
-                visitObj.y =
-                    config.display == 'relative' ? y_match.relative : y_match[config.value_col];
+                visitObj.y = y_match[config.display];
 
                 return visitObj;
             })
@@ -2277,6 +2332,8 @@
     }
 
     function onResize() {
+        console.log(this);
+
         //add point interactivity, custom title and formatting
         addPointMouseover.call(this);
         addPointClick.call(this);
