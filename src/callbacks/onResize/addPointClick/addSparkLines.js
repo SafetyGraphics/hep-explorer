@@ -6,7 +6,6 @@ export function addSparkLines(d) {
             .style('background', 'none')
             .style('border-bottom', '.5px solid black')
             .each(function(row_d) {
-                console.log(row_d);
                 //Spark line cell
                 const cell = d3
                         .select(this)

@@ -30,6 +30,7 @@ export function flattenData() {
         'value_col',
         'visit_col',
         'visitn_col',
+        'studyday_col',
         'unit_col',
         'normal_col_low',
         'normal_col_high'
@@ -53,6 +54,9 @@ export function flattenData() {
         .key(f => f[config.id_col])
         .rollup(function(d) {
             var participant_obj = {};
+            participant_obj.days_x = null;
+            participant_obj.days_y = null;
+
             config.measure_details.forEach(function(m) {
                 //get all raw data for the current measure
                 var matches = d.filter(f => m.measure == f[config.measure_col]); //get matching measures
@@ -77,6 +81,10 @@ export function flattenData() {
                 participant_obj[m.label + '_cut'] = m.cut[config.display];
                 participant_obj[m.label + '_flagged'] =
                     participant_obj[m.label] >= participant_obj[m.label + '_cut'];
+
+                //save study days for each axis;
+                if (m.axis == 'x') participant_obj.days_x = maxRecord[config.studyday_col];
+                if (m.axis == 'y') participant_obj.days_y = maxRecord[config.studyday_col];
             });
 
             //Add participant level metadata
@@ -104,6 +112,9 @@ export function flattenData() {
                 participant_obj[v] = d[0][v];
             });
 
+            //calculate the day difference between x and y
+            participant_obj.day_diff = Math.abs(participant_obj.days_x - participant_obj.days_y);
+
             return participant_obj;
         })
         .entries(sub);
@@ -117,5 +128,6 @@ export function flattenData() {
 
         return m.values;
     });
+
     return flat_data;
 }

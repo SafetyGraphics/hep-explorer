@@ -15,6 +15,7 @@ export function addPointClick() {
         chart.config.quadrants.table.wrap.style('display', 'none'); //hide the quadrant summart
         points
             .attr('stroke', '#ccc') //set all points to gray
+            .attr('fill', 'white')
             .classed('disabled', true); //disable mouseover while viewing participant details
 
         d3
