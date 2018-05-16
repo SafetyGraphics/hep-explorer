@@ -18,7 +18,7 @@ const defaultSettings = {
             measure: 'Aminotransferase, alanine (ALT)',
             axis: 'x',
             cut: {
-                relative_baseline: 3,
+                relative_baseline: 3.8,
                 relative_uln: 3,
                 absolute: 1.0
             }
@@ -28,7 +28,7 @@ const defaultSettings = {
             measure: 'Alkaline phosphatase (ALP)',
             axis: null,
             cut: {
-                relative_baseline: 3,
+                relative_baseline: 3.8,
                 relative_uln: 1,
                 absolute: 1.0
             }
@@ -38,7 +38,7 @@ const defaultSettings = {
             measure: 'Total Bilirubin',
             axis: 'y',
             cut: {
-                relative_baseline: 3,
+                relative_baseline: 4.8,
                 relative_uln: 2,
                 absolute: 40
             }
