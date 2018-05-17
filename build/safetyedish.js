@@ -281,7 +281,7 @@
                 measure: 'Aminotransferase, alanine (ALT)',
                 axis: 'x',
                 cut: {
-                    relative_baseline: 3,
+                    relative_baseline: 3.8,
                     relative_uln: 3,
                     absolute: 1.0
                 }
@@ -291,7 +291,7 @@
                 measure: 'Alkaline phosphatase (ALP)',
                 axis: null,
                 cut: {
-                    relative_baseline: 3,
+                    relative_baseline: 3.8,
                     relative_uln: 1,
                     absolute: 1.0
                 }
@@ -301,14 +301,18 @@
                 measure: 'Total Bilirubin',
                 axis: 'y',
                 cut: {
-                    relative_baseline: 3,
+                    relative_baseline: 4.8,
                     relative_uln: 2,
                     absolute: 40
                 }
             }
         ],
         missingValues: ['', 'NA', 'N/A'],
-        axis_options: ['relative_uln', 'relative_baseline', 'absolute'],
+        axis_options: [
+            { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
+            { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' },
+            { label: 'Raw Values', value: 'absolute' }
+        ],
         display: 'relative_uln', //or "relative_baseline" or "absolute"
         baseline_visitn: '1',
         measureBounds: [0.01, 0.99],
@@ -471,7 +475,7 @@
                 type: 'dropdown',
                 label: 'Display Type',
                 description: 'Relative or Absolute Axes',
-                options: ['display', 'quadrants.cut_data.displayChange'],
+                options: ['displayLabel'],
                 start: null, // set in syncControlInputs()
                 values: null, // set in syncControlInputs()
                 //    labels: ['Proportion of ULN', 'Proportion of Baseline', 'Raw Values'],
@@ -550,8 +554,12 @@
         var displayControl = defaultControls.filter(function(controlInput) {
             return controlInput.label === 'Display Type';
         })[0];
-        displayControl.values = settings.axis_options;
-        displayControl.start = settings.display;
+        displayControl.values = settings.axis_options.map(function(m) {
+            return m.label;
+        });
+        displayControl.start = settings.axis_options.find(function(f) {
+            return f.value == settings.display;
+        }).label;
 
         //Add custom filters to control inputs.
         if (settings.filters && settings.filters.length > 0) {
@@ -939,12 +947,36 @@
             });
     }
 
+    function initDisplayControlLabels() {
+        var chart = this;
+        var config = this.config;
+
+        var displayControl = this.controls.wrap
+            .selectAll('div')
+            .filter(function(controlInput) {
+                return controlInput.label === 'Display Type';
+            })
+            .select('select');
+
+        displayControl.on('change', function(d) {
+            var currentLabel = this.value;
+            var currentValue = config.axis_options.find(function(f) {
+                return f.label == currentLabel;
+            }).value;
+            config.display = currentValue;
+            config.quadrants.cut_data.displayChange = currentValue;
+
+            chart.draw();
+        });
+    }
+
     function onLayout() {
         initQuadrants.call(this);
         initRugs.call(this);
         initVisitPath.call(this);
         initParticipantDetails.call(this);
         initResetButton.call(this);
+        initDisplayControlLabels.call(this);
     }
 
     //Converts a one record per measure data object to a one record per participant objects
