@@ -17,6 +17,7 @@ const defaultSettings = {
             label: 'ALT',
             measure: 'Aminotransferase, alanine (ALT)',
             axis: 'x',
+            imputation: 'data-driven',
             cut: {
                 relative_baseline: 3.8,
                 relative_uln: 3,
@@ -27,6 +28,7 @@ const defaultSettings = {
             label: 'ALP',
             measure: 'Alkaline phosphatase (ALP)',
             axis: null,
+            imputation: 'data-driven',
             cut: {
                 relative_baseline: 3.8,
                 relative_uln: 1,
@@ -37,6 +39,7 @@ const defaultSettings = {
             label: 'TB',
             measure: 'Total Bilirubin',
             axis: 'y',
+            imputation: 'data-driven',
             cut: {
                 relative_baseline: 4.8,
                 relative_uln: 2,
@@ -214,6 +217,15 @@ export function syncControlInputs(settings) {
             options: ['point_size'],
             start: 'None', // set in syncControlInputs()
             values: ['Uniform'],
+            require: true
+        },
+        {
+            type: 'dropdown',
+            label: 'Axis Type',
+            description: 'Linear or Log Axes',
+            options: ['x.type', 'y.type'],
+            start: null, // set in syncControlInputs()
+            values: ['linear', 'log'],
             require: true
         },
         {

@@ -280,6 +280,7 @@
                 label: 'ALT',
                 measure: 'Aminotransferase, alanine (ALT)',
                 axis: 'x',
+                imputation: 'data-driven',
                 cut: {
                     relative_baseline: 3.8,
                     relative_uln: 3,
@@ -290,6 +291,7 @@
                 label: 'ALP',
                 measure: 'Alkaline phosphatase (ALP)',
                 axis: null,
+                imputation: 'data-driven',
                 cut: {
                     relative_baseline: 3.8,
                     relative_uln: 1,
@@ -300,6 +302,7 @@
                 label: 'TB',
                 measure: 'Total Bilirubin',
                 axis: 'y',
+                imputation: 'data-driven',
                 cut: {
                     relative_baseline: 4.8,
                     relative_uln: 2,
@@ -500,6 +503,15 @@
                 options: ['point_size'],
                 start: 'None', // set in syncControlInputs()
                 values: ['Uniform'],
+                require: true
+            },
+            {
+                type: 'dropdown',
+                label: 'Axis Type',
+                description: 'Linear or Log Axes',
+                options: ['x.type', 'y.type'],
+                start: null, // set in syncControlInputs()
+                values: ['linear', 'log'],
                 require: true
             },
             {
@@ -1222,7 +1234,88 @@
                 : '';
     }
 
+    function imputeColumn(data, measure_column, value_column, measure, llod, imputed_value, drop) {
+        //returns a data set with imputed values (or drops records) for records at or below a lower threshold for a given measure
+        //data = the data set for imputation
+        //measure_column = the column with the text measure names
+        //value_column = the column with the numeric values to be changed via imputation
+        //measure = the measure to be imputed
+        //llod = the lower limit of detection - values at or below the llod are imputed
+        //imputed_value = value for imputed records
+        //drop = boolean flag indicating whether values at or below the llod should be dropped (default = false)
+
+        if (drop == undefined) drop = false;
+
+        data.forEach(function(d) {
+            if ((d[measure_column] == measure) & (d[value_column] <= llod)) {
+                d.impute_flag = true;
+                d[value_column] = imputed_value;
+            }
+        });
+
+        if (drop) {
+            return data.filter(function(f) {
+                return !f.impute_flag;
+            });
+        } else {
+            return data;
+        }
+    }
+
+    function imputeData() {
+        var chart = this,
+            config = this.config;
+
+        this.raw_data.forEach(function(d) {
+            d.impute_flag = false;
+        });
+
+        config.measure_details.forEach(function(measure_settings) {
+            var values = chart.raw_data
+                    .filter(function(f) {
+                        return f[config.measure_col] == measure_settings.measure;
+                    })
+                    .map(function(m) {
+                        return m[config.value_col];
+                    }),
+                minValue = d3.min(
+                    values.filter(function(f) {
+                        return f > 0;
+                    })
+                ),
+                //minimum value > 0
+                llod = null,
+                imputed_value = null,
+                drop = null;
+
+            if (measure_settings.imputation == 'data-driven') {
+                llod = minValue;
+                imputed_value = minValue / 2;
+                drop = false;
+            } else if (measure_settings.imputation == 'user-defined') {
+                llod = measure_settings.imputation_value;
+                imputed_value = measure_settings.imputation_value / 2;
+                drop = false;
+            } else if (measure_settings.imputation == 'drop') {
+                llod = 0;
+                imputed_value = null;
+                drop = true;
+            }
+
+            chart.raw_data = imputeColumn(
+                chart.raw_data,
+                config.measure_col,
+                config.value_col,
+                measure_settings.measure,
+                llod,
+                imputed_value,
+                drop
+            );
+        });
+    }
+
     function onPreprocess() {
+        imputeData.call(this); //clean up values < llod
         this.raw_data = flattenData.call(this); //update flattened data
         setLegendLabel.call(this); //update legend label based on group variable
         updateAxisSettings.call(this); //update axis label based on display type
