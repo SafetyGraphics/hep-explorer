@@ -1,5 +1,8 @@
 export function drawQuadrants() {
     var config = this.config;
+
+    console.log(config.quadrants.cut_data.x);
+    console.log(this.x(config.quadrants.cut_data.x));
     //position for cut-point lines
     this.config.quadrants.cut_lines
         .filter(d => d.dimension == 'x')

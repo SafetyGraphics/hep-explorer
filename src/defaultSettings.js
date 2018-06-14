@@ -67,16 +67,16 @@ const defaultSettings = {
         label: null, // set in onPreprocess/updateAxisSettings,
         type: 'linear',
         behavior: 'raw',
-        format: '.1f',
-        domain: [0, null]
+        format: '.1f'
+        //domain: [0, null]
     },
     y: {
         column: null, // set in onPreprocess/updateAxisSettings,
         label: null, // set in onPreprocess/updateAxisSettings,
         type: 'linear',
         behavior: 'raw',
-        format: '.1f',
-        domain: [0, null]
+        format: '.1f'
+        //domain: [0, null]
     },
     marks: [
         {
