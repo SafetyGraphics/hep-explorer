@@ -8,7 +8,7 @@ export function flattenData() {
     //filter the lab data to only the required measures
     var included_measures = config.measure_details.map(m => m.measure);
 
-    var sub = this.initial_data
+    var sub = this.imputed_data
         .filter(f => included_measures.indexOf(f[config.measure_col]) > -1)
         .filter(f => true); //add a filter on selected visits here
 
@@ -162,7 +162,7 @@ export function flattenData() {
         m.values[config.id_col] = m.key;
 
         //link the raw data to the flattened object
-        var allMatches = chart.initial_data.filter(f => f[config.id_col] == m.key);
+        var allMatches = chart.imputed_data.filter(f => f[config.id_col] == m.key);
         m.values.raw = allMatches;
 
         return m.values;

@@ -1002,7 +1002,7 @@
             return m.measure;
         });
 
-        var sub = this.initial_data
+        var sub = this.imputed_data
             .filter(function(f) {
                 return included_measures.indexOf(f[config.measure_col]) > -1;
             })
@@ -1182,7 +1182,7 @@
                 m.values[config.id_col] = m.key;
 
                 //link the raw data to the flattened object
-                var allMatches = chart.initial_data.filter(function(f) {
+                var allMatches = chart.imputed_data.filter(function(f) {
                     return f[config.id_col] == m.key;
                 });
                 m.values.raw = allMatches;
@@ -1243,21 +1243,57 @@
         //llod = the lower limit of detection - values at or below the llod are imputed
         //imputed_value = value for imputed records
         //drop = boolean flag indicating whether values at or below the llod should be dropped (default = false)
-
+        /*
+    console.log(
+        'Starting imputation for ' +
+            measure +
+            ' with llod of ' +
+            llod +
+            ' and imputed value of ' +
+            imputed_value +
+            ' and drop =' +
+            drop
+    );
+    */
         if (drop == undefined) drop = false;
-
-        data.forEach(function(d) {
-            if ((d[measure_column] == measure) & (d[value_column] <= llod)) {
+        var sub = data.filter(function(f) {
+            return f[measure_column] == measure;
+        });
+        sub.forEach(function(d) {
+            if (+d[value_column] <= +llod) {
                 d.impute_flag = true;
+                d[value_column + '_original'] = d[value_column];
                 d[value_column] = imputed_value;
             }
         });
-
+        var impute_count = d3.sum(sub, function(f) {
+            return f.impute_flag ? 1 : 0;
+        });
         if (drop) {
+            if (impute_count > 0)
+                console.warn(
+                    '' +
+                        impute_count +
+                        ' value(s) less than ' +
+                        llod +
+                        ' were dropped for ' +
+                        measure
+                );
             return data.filter(function(f) {
                 return !f.impute_flag;
             });
         } else {
+            if (impute_count > 0)
+                console.warn(
+                    '' +
+                        impute_count +
+                        ' value(s) less than ' +
+                        llod +
+                        ' were imputed to ' +
+                        imputed_value +
+                        ' for ' +
+                        measure
+                );
             return data;
         }
     }
@@ -1266,17 +1302,21 @@
         var chart = this,
             config = this.config;
 
-        this.raw_data.forEach(function(d) {
+        this.imputed_data = this.initial_data;
+        this.imputed_data.forEach(function(d) {
             d.impute_flag = false;
         });
 
         config.measure_details.forEach(function(measure_settings) {
-            var values = chart.raw_data
+            var values = chart.imputed_data
                     .filter(function(f) {
                         return f[config.measure_col] == measure_settings.measure;
                     })
                     .map(function(m) {
-                        return m[config.value_col];
+                        return +m[config.value_col];
+                    })
+                    .sort(function(a, b) {
+                        return a - b;
                     }),
                 minValue = d3.min(
                     values.filter(function(f) {
@@ -1301,9 +1341,8 @@
                 imputed_value = null;
                 drop = true;
             }
-
-            chart.raw_data = imputeColumn(
-                chart.raw_data,
+            chart.imputed_data = imputeColumn(
+                chart.imputed_data,
                 config.measure_col,
                 config.value_col,
                 measure_settings.measure,
@@ -1311,6 +1350,10 @@
                 imputed_value,
                 drop
             );
+
+            var total_imputed = d3.sum(chart.raw_data, function(f) {
+                return f.impute_flag ? 1 : 0;
+            });
         });
     }
 

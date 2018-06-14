@@ -4,14 +4,16 @@ export function imputeData() {
     var chart = this,
         config = this.config;
 
-    this.raw_data.forEach(function(d) {
+    this.imputed_data = this.initial_data;
+    this.imputed_data.forEach(function(d) {
         d.impute_flag = false;
     });
 
     config.measure_details.forEach(function(measure_settings) {
-        var values = chart.raw_data
+        var values = chart.imputed_data
                 .filter(f => f[config.measure_col] == measure_settings.measure)
-                .map(m => m[config.value_col]),
+                .map(m => +m[config.value_col])
+                .sort((a, b) => a - b),
             minValue = d3.min(values.filter(f => f > 0)), //minimum value > 0
             llod = null,
             imputed_value = null,
@@ -30,9 +32,8 @@ export function imputeData() {
             imputed_value = null;
             drop = true;
         }
-
-        chart.raw_data = imputeColumn(
-            chart.raw_data,
+        chart.imputed_data = imputeColumn(
+            chart.imputed_data,
             config.measure_col,
             config.value_col,
             measure_settings.measure,
@@ -40,5 +41,7 @@ export function imputeData() {
             imputed_value,
             drop
         );
+
+        var total_imputed = d3.sum(chart.raw_data, f => (f.impute_flag ? 1 : 0));
     });
 }

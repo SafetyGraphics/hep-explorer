@@ -15,19 +15,46 @@ export function imputeColumn(
     //llod = the lower limit of detection - values at or below the llod are imputed
     //imputed_value = value for imputed records
     //drop = boolean flag indicating whether values at or below the llod should be dropped (default = false)
-
+    /*
+    console.log(
+        'Starting imputation for ' +
+            measure +
+            ' with llod of ' +
+            llod +
+            ' and imputed value of ' +
+            imputed_value +
+            ' and drop =' +
+            drop
+    );
+    */
     if (drop == undefined) drop = false;
-
-    data.forEach(function(d) {
-        if ((d[measure_column] == measure) & (d[value_column] <= llod)) {
+    var sub = data.filter(f => f[measure_column] == measure);
+    sub.forEach(function(d) {
+        if (+d[value_column] <= +llod) {
             d.impute_flag = true;
+            d[value_column + '_original'] = d[value_column];
             d[value_column] = imputed_value;
         }
     });
-
+    var impute_count = d3.sum(sub, f => (f.impute_flag ? 1 : 0));
     if (drop) {
+        if (impute_count > 0)
+            console.warn(
+                '' + impute_count + ' value(s) less than ' + llod + ' were dropped for ' + measure
+            );
         return data.filter(f => !f.impute_flag);
     } else {
+        if (impute_count > 0)
+            console.warn(
+                '' +
+                    impute_count +
+                    ' value(s) less than ' +
+                    llod +
+                    ' were imputed to ' +
+                    imputed_value +
+                    ' for ' +
+                    measure
+            );
         return data;
     }
 }
