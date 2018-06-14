@@ -523,6 +523,7 @@
                 //  require: true
             }
         ];
+
         //Sync group control.
         var groupControl = defaultControls.find(function(controlInput) {
             return controlInput.label === 'Group';
@@ -569,9 +570,6 @@
         displayControl.values = settings.axis_options.map(function(m) {
             return m.label;
         });
-        displayControl.start = settings.axis_options.find(function(f) {
-            return f.value == settings.display;
-        }).label;
 
         //Add custom filters to control inputs.
         if (settings.filters && settings.filters.length > 0) {
@@ -969,6 +967,14 @@
                 return controlInput.label === 'Display Type';
             })
             .select('select');
+
+        //set the start value
+        var start_value = config.axis_options.find(function(f) {
+            return f.value == config.display;
+        }).label;
+        displayControl.selectAll('option').attr('selected', function(d) {
+            return d == start_value ? 'selected' : null;
+        });
 
         displayControl.on('change', function(d) {
             var currentLabel = this.value;
@@ -1452,7 +1458,6 @@
         // make sure the domain lower limit captures all of the raw Values
         if (this.config[dimension].type == 'linear') {
             // just use the lower limit of 0 for continuous
-            console.log(dimension + '-axis lower limit set to 0');
             domain[0] = 0;
         } else if (this.config[dimension].type == 'log') {
             // use the smallest raw value for a log axis
@@ -1470,10 +1475,8 @@
                         return a - b;
                     }),
                 minValue = d3.min(values);
-            console.log(minValue + ' is the min for ' + measure + ':' + dimension);
             if (minValue < domain[0]) {
                 domain[0] = minValue;
-                console.log(dimension + '-axis lower limit set to ' + minValue);
             }
             //throw a warning if the domain is > 0 if using log scale
             if (this[dimension].type == 'log' && domain[0] <= 0) {
@@ -1482,7 +1485,6 @@
                 );
             }
         }
-        console.log(domain);
         this[dimension + '_dom'] = domain;
     }
 
@@ -1554,8 +1556,6 @@
 
         var config = this.config;
 
-        console.log(config.quadrants.cut_data.x);
-        console.log(this.x(config.quadrants.cut_data.x));
         //position for cut-point lines
         this.config.quadrants.cut_lines
             .filter(function(d) {
@@ -1768,7 +1768,6 @@
             .sort(function(a, b) {
                 return a.visitn - b.visitn;
             });
-        console.log(visit_data);
         //draw the path
         var myLine = d3.svg
             .line()
@@ -2556,8 +2555,6 @@
     }
 
     function onResize() {
-        console.log(this);
-
         //add point interactivity, custom title and formatting
         addPointMouseover.call(this);
         addPointClick.call(this);

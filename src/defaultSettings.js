@@ -237,6 +237,7 @@ export function syncControlInputs(settings) {
             //  require: true
         }
     ];
+
     //Sync group control.
     const groupControl = defaultControls.find(controlInput => controlInput.label === 'Group');
     groupControl.start = settings.color_by;
@@ -269,7 +270,6 @@ export function syncControlInputs(settings) {
         controlInput => controlInput.label === 'Display Type'
     )[0];
     displayControl.values = settings.axis_options.map(m => m.label);
-    displayControl.start = settings.axis_options.find(f => f.value == settings.display).label;
 
     //Add custom filters to control inputs.
     if (settings.filters && settings.filters.length > 0) {
