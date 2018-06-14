@@ -22,6 +22,7 @@ export function setDomain(dimension) {
             values = this.imputed_data
                 .filter(f => f[config.measure_col] == measure)
                 .map(m => +m[config.display])
+                .filter(m => m > 0)
                 .sort((a, b) => a - b),
             minValue = d3.min(values);
         if (minValue < domain[0]) {

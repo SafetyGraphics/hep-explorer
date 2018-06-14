@@ -1471,6 +1471,9 @@
                     .map(function(m) {
                         return +m[config.display];
                     })
+                    .filter(function(m) {
+                        return m > 0;
+                    })
                     .sort(function(a, b) {
                         return a - b;
                     }),
