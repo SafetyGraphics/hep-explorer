@@ -67,7 +67,7 @@ const defaultSettings = {
         label: null, // set in onPreprocess/updateAxisSettings,
         type: 'linear',
         behavior: 'raw',
-        format: '.1f'
+        format: '.2f'
         //domain: [0, null]
     },
     y: {
@@ -75,7 +75,7 @@ const defaultSettings = {
         label: null, // set in onPreprocess/updateAxisSettings,
         type: 'linear',
         behavior: 'raw',
-        format: '.1f'
+        format: '.2f'
         //domain: [0, null]
     },
     marks: [

@@ -330,7 +330,7 @@
             label: null, // set in onPreprocess/updateAxisSettings,
             type: 'linear',
             behavior: 'raw',
-            format: '.1f'
+            format: '.2f'
             //domain: [0, null]
         },
         y: {
@@ -338,7 +338,7 @@
             label: null, // set in onPreprocess/updateAxisSettings,
             type: 'linear',
             behavior: 'raw',
-            format: '.1f'
+            format: '.2f'
             //domain: [0, null]
         },
         marks: [
@@ -1041,6 +1041,7 @@
                 if (d.baseline_absolute > 0) {
                     d.relative_baseline = d.absolute / d.baseline_absolute;
                 } else {
+                    missingBaseline = missingBaseline + 1;
                     d.relative_baseline = null;
                 }
             } else {
@@ -1189,7 +1190,6 @@
 
                 return m.values;
             });
-
         return flat_data;
     }
 
@@ -1256,33 +1256,24 @@
     );
     */
         if (drop == undefined) drop = false;
-        var sub = data.filter(function(f) {
-            return f[measure_column] == measure;
-        });
-        sub.forEach(function(d) {
-            if (+d[value_column] <= +llod) {
-                d.impute_flag = true;
-                d[value_column + '_original'] = d[value_column];
-                d[value_column] = imputed_value;
-            }
-        });
-        var impute_count = d3.sum(sub, function(f) {
-            return f.impute_flag ? 1 : 0;
-        });
         if (drop) {
-            if (impute_count > 0)
-                console.warn(
-                    '' +
-                        impute_count +
-                        ' value(s) less than ' +
-                        llod +
-                        ' were dropped for ' +
-                        measure
-                );
             return data.filter(function(f) {
-                return !f.impute_flag;
+                dropFlag = (d[measure_column] == measure) & (+d[value_column] <= 0);
+                return !dropFlag;
             });
         } else {
+            data.forEach(function(d) {
+                if ((d[measure_column] == measure) & (+d[value_column] < +llod)) {
+                    d.impute_flag = true;
+                    d[value_column + '_original'] = d[value_column];
+                    d[value_column] = imputed_value;
+                }
+            });
+
+            var impute_count = d3.sum(data, function(f) {
+                return f.impute_flag;
+            });
+
             if (impute_count > 0)
                 console.warn(
                     '' +
@@ -1337,7 +1328,7 @@
                 imputed_value = measure_settings.imputation_value / 2;
                 drop = false;
             } else if (measure_settings.imputation == 'drop') {
-                llod = 0;
+                llod = null;
                 imputed_value = null;
                 drop = true;
             }
@@ -1357,11 +1348,36 @@
         });
     }
 
+    function dropMissingValues() {
+        var config = this.config;
+        //drop records with missing or invalid (negative) values
+        var missing_count = d3.sum(this.raw_data, function(f) {
+            return f[config.x.column] <= 0 || f[config.y.column] <= 0;
+        });
+
+        if (missing_count > 0) {
+            this.wrap
+                .append('span.footnote')
+                .text(
+                    'Data not shown for ' +
+                        missing_count +
+                        ' participant(s) with invalid data. This could be due to negative or 0 lab values or to missing baseline values when viewing mDish.'
+                );
+
+            this.raw_data = this.raw_data.filter(function(f) {
+                return (f[config.x.column] > 0) & (f[config.y.column] > 0);
+            });
+        } else {
+            this.wrap.select('span.footnote').remove();
+        }
+    }
+
     function onPreprocess() {
         imputeData.call(this); //clean up values < llod
         this.raw_data = flattenData.call(this); //update flattened data
         setLegendLabel.call(this); //update legend label based on group variable
         updateAxisSettings.call(this); //update axis label based on display type
+        dropMissingValues.call(this);
     }
 
     function onDataTransform() {}
@@ -1434,11 +1450,11 @@
         }
 
         // make sure the domain lower limit captures all of the raw Values
-
-        if (this[dimension].type == 'linear') {
+        if (this.config[dimension].type == 'linear') {
             // just use the lower limit of 0 for continuous
+            console.log(dimension + '-axis lower limit set to 0');
             domain[0] = 0;
-        } else if (this[dimension].type == 'log') {
+        } else if (this.config[dimension].type == 'log') {
             // use the smallest raw value for a log axis
             var measure = config.measure_details.find(function(f) {
                     return f.axis == dimension;
@@ -1448,15 +1464,17 @@
                         return f[config.measure_col] == measure;
                     })
                     .map(function(m) {
-                        return +m[config.value_col];
+                        return +m[config.display];
                     })
                     .sort(function(a, b) {
                         return a - b;
                     }),
                 minValue = d3.min(values);
             console.log(minValue + ' is the min for ' + measure + ':' + dimension);
-            if (minValue < domain[0]) domain[0] = minValue;
-
+            if (minValue < domain[0]) {
+                domain[0] = minValue;
+                console.log(dimension + '-axis lower limit set to ' + minValue);
+            }
             //throw a warning if the domain is > 0 if using log scale
             if (this[dimension].type == 'log' && domain[0] <= 0) {
                 console.warn(
@@ -1464,7 +1482,7 @@
                 );
             }
         }
-
+        console.log(domain);
         this[dimension + '_dom'] = domain;
     }
 
@@ -1695,7 +1713,6 @@
     function drawVisitPath(d) {
         var chart = this;
         var config = chart.config;
-
         var allMatches = d.values.raw[0].raw,
             x_measure = config.measure_details.find(function(f) {
                 return config.x.column.search(f.label) > -1;
@@ -1732,6 +1749,7 @@
                         return f[config.measure_col] == x_measure;
                     })[0];
                 visitObj.x = x_match[config.display];
+                visitObj.xMatch = x_match;
 
                 //get y coordinate
                 var y_match = matches
@@ -1743,13 +1761,14 @@
                     })[0];
 
                 visitObj.y = y_match[config.display];
+                visitObj.yMatch = y_match;
 
                 return visitObj;
             })
             .sort(function(a, b) {
                 return a.visitn - b.visitn;
             });
-
+        console.log(visit_data);
         //draw the path
         var myLine = d3.svg
             .line()

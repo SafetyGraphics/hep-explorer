@@ -1,7 +1,6 @@
 export function drawVisitPath(d) {
     var chart = this;
     var config = chart.config;
-
     var allMatches = d.values.raw[0].raw,
         x_measure = config.measure_details.find(f => config.x.column.search(f.label) > -1).measure,
         y_measure = config.measure_details.find(f => config.y.column.search(f.label) > -1).measure,
@@ -22,6 +21,7 @@ export function drawVisitPath(d) {
                 .filter(f => f[config.visitn_col] == m)
                 .filter(f => f[config.measure_col] == x_measure)[0];
             visitObj.x = x_match[config.display];
+            visitObj.xMatch = x_match;
 
             //get y coordinate
             var y_match = matches
@@ -29,13 +29,13 @@ export function drawVisitPath(d) {
                 .filter(f => f[config.measure_col] == y_measure)[0];
 
             visitObj.y = y_match[config.display];
+            visitObj.yMatch = y_match;
 
             return visitObj;
         })
         .sort(function(a, b) {
             return a.visitn - b.visitn;
         });
-
     //draw the path
     var myLine = d3.svg
         .line()

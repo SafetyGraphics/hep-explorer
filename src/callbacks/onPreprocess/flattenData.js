@@ -37,6 +37,7 @@ export function flattenData() {
             if (d.baseline_absolute > 0) {
                 d.relative_baseline = d.absolute / d.baseline_absolute;
             } else {
+                missingBaseline = missingBaseline + 1;
                 d.relative_baseline = null;
             }
         } else {
@@ -167,6 +168,5 @@ export function flattenData() {
 
         return m.values;
     });
-
     return flat_data;
 }

@@ -28,22 +28,22 @@ export function imputeColumn(
     );
     */
     if (drop == undefined) drop = false;
-    var sub = data.filter(f => f[measure_column] == measure);
-    sub.forEach(function(d) {
-        if (+d[value_column] <= +llod) {
-            d.impute_flag = true;
-            d[value_column + '_original'] = d[value_column];
-            d[value_column] = imputed_value;
-        }
-    });
-    var impute_count = d3.sum(sub, f => (f.impute_flag ? 1 : 0));
     if (drop) {
-        if (impute_count > 0)
-            console.warn(
-                '' + impute_count + ' value(s) less than ' + llod + ' were dropped for ' + measure
-            );
-        return data.filter(f => !f.impute_flag);
+        return data.filter(function(f) {
+            dropFlag = (d[measure_column] == measure) & (+d[value_column] <= 0);
+            return !dropFlag;
+        });
     } else {
+        data.forEach(function(d) {
+            if ((d[measure_column] == measure) & (+d[value_column] < +llod)) {
+                d.impute_flag = true;
+                d[value_column + '_original'] = d[value_column];
+                d[value_column] = imputed_value;
+            }
+        });
+
+        var impute_count = d3.sum(data, f => f.impute_flag);
+
         if (impute_count > 0)
             console.warn(
                 '' +

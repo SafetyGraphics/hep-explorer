@@ -28,7 +28,7 @@ export function imputeData() {
             imputed_value = measure_settings.imputation_value / 2;
             drop = false;
         } else if (measure_settings.imputation == 'drop') {
-            llod = 0;
+            llod = null;
             imputed_value = null;
             drop = true;
         }
