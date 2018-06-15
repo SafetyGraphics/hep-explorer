@@ -352,7 +352,7 @@
         ],
         gridlines: 'xy',
         color_by: null, //set in syncSettings
-        max_width: 600,
+        max_width: 900,
         aspect: 1,
         legend: { location: 'top' },
         margin: { right: 25, top: 25, bottom: 75 }
@@ -988,7 +988,23 @@
         });
     }
 
+    function layoutPanels() {
+        this.wrap.style('display', 'inline-block').style('width', '75%');
+
+        this.controls.wrap
+            .style('display', 'inline-block')
+            .style('width', '25%')
+            .style('vertical-align', 'top');
+
+        this.controls.wrap.selectAll('div.control-group').style('display', 'block');
+        this.controls.wrap
+            .selectAll('div.control-group')
+            .select('select')
+            .style('width', '200px');
+    }
+
     function onLayout() {
+        layoutPanels.call(this);
         initQuadrants.call(this);
         initRugs.call(this);
         initVisitPath.call(this);
