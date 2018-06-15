@@ -1033,43 +1033,48 @@
             }); //add a filter on selected visits here
 
         var missingBaseline = 0;
-        sub.forEach(function(d) {
+        this.imputed_data.forEach(function(d) {
             //coerce numeric values to number
             var numerics = ['value_col', 'visitn_col', 'normal_col_low', 'normal_col_high'];
             numerics.forEach(function(col) {
                 d[config[col]] = +d[config[col]];
             });
+            //standardize key variables
+            d.key_measure = false;
+            if (included_measures.indexOf(d[config.measure_col]) > -1) {
+                d.key_measure = true;
 
-            //map the raw value to a variable called 'absolute'
-            d.absolute = d[config.value_col];
+                //map the raw value to a variable called 'absolute'
+                d.absolute = d[config.value_col];
 
-            //get the value relative to the ULN (% of the upper limit of normal) for the measure
-            d.relative_uln = d[config.value_col] / d[config.normal_col_high];
+                //get the value relative to the ULN (% of the upper limit of normal) for the measure
+                d.relative_uln = d[config.value_col] / d[config.normal_col_high];
 
-            //get the value relative to baseline for the measure
-            var baseline_record = sub
-                .filter(function(f) {
-                    return d[config.id_col] == f[config.id_col];
-                })
-                .filter(function(f) {
-                    return d[config.measure_col] == f[config.measure_col];
-                })
-                .filter(function(f) {
-                    return f[config.visitn_col] == +config.baseline_visitn;
-                });
+                //get the value relative to baseline for the measure
+                var baseline_record = sub
+                    .filter(function(f) {
+                        return d[config.id_col] == f[config.id_col];
+                    })
+                    .filter(function(f) {
+                        return d[config.measure_col] == f[config.measure_col];
+                    })
+                    .filter(function(f) {
+                        return f[config.visitn_col] == +config.baseline_visitn;
+                    });
 
-            if (baseline_record.length > 0) {
-                d.baseline_absolute = baseline_record[0][config.value_col];
-                if (d.baseline_absolute > 0) {
-                    d.relative_baseline = d.absolute / d.baseline_absolute;
+                if (baseline_record.length > 0) {
+                    d.baseline_absolute = baseline_record[0][config.value_col];
+                    if (d.baseline_absolute > 0) {
+                        d.relative_baseline = d.absolute / d.baseline_absolute;
+                    } else {
+                        missingBaseline = missingBaseline + 1;
+                        d.relative_baseline = null;
+                    }
                 } else {
                     missingBaseline = missingBaseline + 1;
+                    d.baseline_absolute = null;
                     d.relative_baseline = null;
                 }
-            } else {
-                missingBaseline = missingBaseline + 1;
-                d.baseline_absolute = null;
-                d.relative_baseline = null;
             }
         });
 
@@ -1195,7 +1200,11 @@
 
                 return participant_obj;
             })
-            .entries(sub);
+            .entries(
+                this.imputed_data.filter(function(f) {
+                    return f.key_measure;
+                })
+            );
 
         var flat_data = flat_data
             .filter(function(f) {
@@ -2186,6 +2195,53 @@
             .attr('div', 'value');
     }
 
+    var defaultSettings$2 = {
+        max_width: 500,
+        x: {
+            column: null,
+            type: 'ordinal',
+            label: 'Visit'
+        },
+        y: {
+            column: 'relative_uln',
+            type: 'linear',
+            label: 'Lab Value (x ULN)'
+        },
+        marks: [
+            {
+                type: 'line',
+                per: []
+            },
+            {
+                type: 'circle',
+                per: []
+            }
+        ],
+        color_by: null,
+        aspect: 2
+    };
+
+    function draw(d) {
+        var chart = this;
+        var config = this.config;
+
+        console.log('spaghetti time!');
+        var allMatches = d.values.raw[0].raw.filter(function(f) {
+            return f.key_measure;
+        });
+
+        //sync settings
+        defaultSettings$2.x.column = config.visitn_col;
+        defaultSettings$2.color_by = config.measure_col;
+        defaultSettings$2.marks[0].per = [config.id_col, config.measure_col];
+        defaultSettings$2.marks[1].per = [config.id_col, config.visitn_col, config.measure_col];
+
+        //draw that chart
+        chart.wrap.append('div').attr('class', 'spaghetti');
+        chart.spaghetti = webcharts.createChart('.spaghetti', defaultSettings$2);
+        chart.spaghetti.init(allMatches);
+    }
+
     function addPointClick() {
         var chart = this;
         var config = this.config;
@@ -2209,6 +2265,7 @@
 
             drawVisitPath.call(chart, d); //draw the path showing participant's pattern over time
             drawMeasureTable.call(chart, d); //draw table showing measure values with sparklines
+            draw.call(chart, d);
             makeParticipantHeader.call(chart, d);
             drawRugs.call(chart, d, 'x');
             drawRugs.call(chart, d, 'y');
