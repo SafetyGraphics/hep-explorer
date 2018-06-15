@@ -9,7 +9,19 @@ export function init() {
         return d.values.y;
     });
     var ybox = this.svg.append('g').attr('class', 'yMargin');
-    addBoxPlot(ybox, yValues, this.plot_height, 1, this.y_dom, 10, '#bbb', 'white');
+    addBoxPlot(
+        ybox,
+        yValues,
+        this.plot_height,
+        1,
+        this.y_dom,
+        10,
+        '#bbb',
+        'white',
+        '0.2f',
+        true,
+        this.config.y.type == 'log'
+    );
     ybox
         .select('g.boxplot')
         .attr('transform', 'translate(' + (this.plot_width + this.config.margin.right / 2) + ',0)');
@@ -29,7 +41,8 @@ export function init() {
         '#bbb', //box color
         'white', //detail color
         '0.2f', //format
-        false // horizontal?
+        false, // horizontal?
+        this.config.y.type == 'log' // log?
     );
     xbox
         .select('g.boxplot')

@@ -2328,7 +2328,8 @@
         boxColor,
         boxInsideColor,
         fmt,
-        horizontal
+        horizontal,
+        log
     ) {
         //set default orientation to "horizontal"
         var horizontal = horizontal == undefined ? true : horizontal;
@@ -2341,14 +2342,14 @@
             .sort(d3$1.ascending);
 
         //set up scales
-        var y = d3$1.scale.linear().range([height, 0]);
-
-        var x = d3$1.scale.linear().range([0, width]);
-
         if (horizontal) {
-            y.domain(domain);
+            var y = log ? d3$1.scale.log() : d3$1.scale.linear();
+            y.range([height, 0]).domain(domain);
+            var x = d3$1.scale.linear().range([0, width]);
         } else {
-            x.domain(domain);
+            var x = log ? d3$1.scale.log() : d3$1.scale.linear();
+            x.range([0, width]).domain(domain);
+            var y = d3$1.scale.linear().range([height, 0]);
         }
 
         var probs = [0.05, 0.25, 0.5, 0.75, 0.95];
@@ -2476,7 +2477,19 @@
             return d.values.y;
         });
         var ybox = this.svg.append('g').attr('class', 'yMargin');
-        addBoxPlot(ybox, yValues, this.plot_height, 1, this.y_dom, 10, '#bbb', 'white');
+        addBoxPlot(
+            ybox,
+            yValues,
+            this.plot_height,
+            1,
+            this.y_dom,
+            10,
+            '#bbb',
+            'white',
+            '0.2f',
+            true,
+            this.config.y.type == 'log'
+        );
         ybox
             .select('g.boxplot')
             .attr(
@@ -2499,7 +2512,8 @@
             '#bbb', //box color
             'white', //detail color
             '0.2f', //format
-            false // horizontal?
+            false, // horizontal?
+            this.config.y.type == 'log' // log?
         );
         xbox
             .select('g.boxplot')
