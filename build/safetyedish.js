@@ -355,7 +355,7 @@
         max_width: 600,
         aspect: 1,
         legend: { location: 'top' },
-        margin: { right: 25, top: 25 }
+        margin: { right: 25, top: 25, bottom: 75 }
     };
 
     //Replicate settings in multiple places in the settings object
@@ -2557,6 +2557,17 @@
         }
     }
 
+    function adjustTicks() {
+        this.svg
+            .selectAll('.x.axis .tick text')
+            .attr({
+                transform: 'rotate(-45)',
+                dx: -10,
+                dy: 10
+            })
+            .style('text-anchor', 'end');
+    }
+
     function onResize() {
         //add point interactivity, custom title and formatting
         addPointMouseover.call(this);
@@ -2576,6 +2587,9 @@
 
         // add boxplots
         init$2.call(this);
+
+        //axis formatting
+        adjustTicks.call(this);
     }
 
     function safetyedish$1(element, settings) {

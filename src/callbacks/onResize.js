@@ -9,6 +9,7 @@ import { init as initBoxPlots } from './onResize/addBoxPlots/init';
 import { formatPoints } from './onResize/formatPoints';
 import { setPointSize } from './onResize/setPointSize';
 import { setPointOpacity } from './onResize/setPointOpacity';
+import { adjustTicks } from './onResize/adjustTicks';
 
 export default function onResize() {
     //add point interactivity, custom title and formatting
@@ -29,4 +30,7 @@ export default function onResize() {
 
     // add boxplots
     initBoxPlots.call(this);
+
+    //axis formatting
+    adjustTicks.call(this);
 }

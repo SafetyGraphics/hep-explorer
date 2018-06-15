@@ -92,7 +92,7 @@ const defaultSettings = {
     max_width: 600,
     aspect: 1,
     legend: { location: 'top' },
-    margin: { right: 25, top: 25 }
+    margin: { right: 25, top: 25, bottom: 75 }
 };
 
 //Replicate settings in multiple places in the settings object
