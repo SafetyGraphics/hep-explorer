@@ -2582,6 +2582,71 @@
             .style('text-anchor', 'end');
     }
 
+    // Reposition any exisiting participant marks when the chart is resized
+    function updateParticipantMarks() {
+        var chart = this;
+        var config = this.config;
+
+        //reposition participant visit path
+        var myNewLine = d3.svg
+            .line()
+            .x(function(d) {
+                return chart.x(d.x);
+            })
+            .y(function(d) {
+                return chart.y(d.y);
+            });
+
+        chart.visitPath
+            .select('path')
+            .transition()
+            .attr('d', myNewLine);
+
+        //reposition participant visit circles and labels
+        chart.visitPath
+            .selectAll('g.visit-point')
+            .select('circle')
+            .transition()
+            .attr('cx', function(d) {
+                return chart.x(d.x);
+            })
+            .attr('cy', function(d) {
+                return chart.y(d.y);
+            });
+
+        chart.visitPath
+            .selectAll('g.visit-point')
+            .select('text.participant-visits')
+            .transition()
+            .attr('x', function(d) {
+                return chart.x(d.x);
+            })
+            .attr('y', function(d) {
+                return chart.y(d.y);
+            });
+
+        //reposition axis rugs
+        chart.x_rug
+            .selectAll('text')
+            .transition()
+            .attr('x', function(d) {
+                return chart.x(d[config.display]);
+            })
+            .attr('y', function(d) {
+                return chart.y(chart.y.domain()[0]);
+            });
+
+        chart.y_rug
+            .selectAll('text')
+            .transition()
+            .attr('x', function(d) {
+                return chart.x(chart.x.domain()[0]);
+            })
+            .attr('y', function(d) {
+                return chart.y(d[config.display]);
+            });
+    }
+
     function onResize() {
         //add point interactivity, custom title and formatting
         addPointMouseover.call(this);
@@ -2590,6 +2655,7 @@
         formatPoints.call(this);
         setPointSize.call(this);
         setPointOpacity.call(this);
+        updateParticipantMarks.call(this);
 
         //draw the quadrants and add drag interactivity
         updateSummaryTable.call(this);
