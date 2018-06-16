@@ -29,7 +29,7 @@ export function updateQuadrantData() {
     //add "eDISH_quadrant" column to raw_data
     const x_var = this.config.x.column;
     const y_var = this.config.y.column;
-    this.raw_data.forEach(function(d) {
+    this.imputed_data.forEach(function(d) {
         var x_cat = d[x_var] >= config.quadrants.cut_data.x ? 'xHigh' : 'xNormal';
         var y_cat = d[y_var] >= config.quadrants.cut_data.y ? 'yHigh' : 'yNormal';
         d['eDISH_quadrant'] = x_cat + ':' + y_cat;

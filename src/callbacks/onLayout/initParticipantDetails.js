@@ -8,6 +8,7 @@ export function initParticipantDetails() {
     this.participantDetails.header = this.participantDetails.wrap
         .append('div')
         .attr('class', 'participantHeader');
+    this.participantDetails.wrap.append('div').attr('class', 'spaghettiPlot');
     this.participantDetails.wrap.append('div').attr('class', 'measureTable');
 
     //initialize the measureTable

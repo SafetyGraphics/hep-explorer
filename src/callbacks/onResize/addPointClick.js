@@ -3,7 +3,7 @@ import { drawVisitPath } from './addPointClick/drawVisitPath';
 import { drawMeasureTable } from './addPointClick/drawMeasureTable';
 import { makeParticipantHeader } from './addPointClick/makeParticipantHeader';
 import { drawRugs } from './addPointMouseover/drawRugs';
-import { draw as drawSpaghettiPlot } from './addPointClick/spaghettiPlot/draw';
+import { init as initSpaghettiPlot } from './addPointClick/spaghettiPlot/init';
 
 export function addPointClick() {
     var chart = this;
@@ -26,7 +26,7 @@ export function addPointClick() {
 
         drawVisitPath.call(chart, d); //draw the path showing participant's pattern over time
         drawMeasureTable.call(chart, d); //draw table showing measure values with sparklines
-        drawSpaghettiPlot.call(chart, d);
+        initSpaghettiPlot.call(chart, d);
         makeParticipantHeader.call(chart, d);
         drawRugs.call(chart, d, 'x');
         drawRugs.call(chart, d, 'y');

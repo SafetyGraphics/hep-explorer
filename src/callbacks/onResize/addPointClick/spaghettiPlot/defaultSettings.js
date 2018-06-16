@@ -7,8 +7,10 @@ export const defaultSettings = {
     },
     y: {
         column: 'relative_uln',
-        type: 'linear',
-        label: 'Lab Value (x ULN)'
+        type: 'log',
+        label: 'Lab Value (x ULN)',
+        domain: null,
+        format: '.1f'
     },
     marks: [
         {
@@ -17,9 +19,11 @@ export const defaultSettings = {
         },
         {
             type: 'circle',
+            radius: 4,
             per: []
         }
     ],
     color_by: null,
+    colors: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33', '#a65628'],
     aspect: 2
 };
