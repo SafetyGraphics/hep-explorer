@@ -35,7 +35,7 @@ export function imputeColumn(
         });
     } else {
         data.forEach(function(d) {
-            if ((d[measure_column] == measure) & (+d[value_column] < +llod)) {
+            if (d[measure_column] == measure && +d[value_column] < +llod && d[value_column >= 0]) {
                 d.impute_flag = true;
                 d[value_column + '_original'] = d[value_column];
                 d[value_column] = imputed_value;
