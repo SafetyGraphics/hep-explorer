@@ -10,7 +10,8 @@ export function addBoxPlot(
     boxColor,
     boxInsideColor,
     fmt,
-    horizontal
+    horizontal,
+    log
 ) {
     //set default orientation to "horizontal"
     var horizontal = horizontal == undefined ? true : horizontal;
@@ -23,14 +24,14 @@ export function addBoxPlot(
         .sort(ascending);
 
     //set up scales
-    var y = scale.linear().range([height, 0]);
-
-    var x = scale.linear().range([0, width]);
-
     if (horizontal) {
-        y.domain(domain);
+        var y = log ? scale.log() : scale.linear();
+        y.range([height, 0]).domain(domain);
+        var x = scale.linear().range([0, width]);
     } else {
-        x.domain(domain);
+        var x = log ? scale.log() : scale.linear();
+        x.range([0, width]).domain(domain);
+        var y = scale.linear().range([height, 0]);
     }
 
     var probs = [0.05, 0.25, 0.5, 0.75, 0.95];

@@ -3,11 +3,15 @@ import { initRugs } from './onLayout/initRugs';
 import { initVisitPath } from './onLayout/initVisitPath';
 import { initParticipantDetails } from './onLayout/initParticipantDetails';
 import { initResetButton } from './onLayout/initResetButton';
+import { initDisplayControlLabels } from './onLayout/initDisplayControlLabels';
+import { layoutPanels } from './onLayout/layoutPanels';
 
 export default function onLayout() {
+    layoutPanels.call(this);
     initQuadrants.call(this);
     initRugs.call(this);
     initVisitPath.call(this);
     initParticipantDetails.call(this);
     initResetButton.call(this);
+    initDisplayControlLabels.call(this);
 }

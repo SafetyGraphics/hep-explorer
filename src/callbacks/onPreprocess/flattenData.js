@@ -8,20 +8,49 @@ export function flattenData() {
     //filter the lab data to only the required measures
     var included_measures = config.measure_details.map(m => m.measure);
 
-    var sub = this.initial_data
+    var sub = this.imputed_data
         .filter(f => included_measures.indexOf(f[config.measure_col]) > -1)
         .filter(f => true); //add a filter on selected visits here
 
-    //get the relative value (% of the upper limit of normal) for the measure
+    var missingBaseline = 0;
     sub.forEach(function(d) {
+        //coerce numeric values to number
         var numerics = ['value_col', 'visitn_col', 'normal_col_low', 'normal_col_high'];
-
         numerics.forEach(function(col) {
             d[config[col]] = +d[config[col]];
         });
 
-        d.relative = d[config.value_col] / d[config.normal_col_high];
+        //map the raw value to a variable called 'absolute'
+        d.absolute = d[config.value_col];
+
+        //get the value relative to the ULN (% of the upper limit of normal) for the measure
+        d.relative_uln = d[config.value_col] / d[config.normal_col_high];
+
+        //get the value relative to baseline for the measure
+        var baseline_record = sub
+            .filter(f => d[config.id_col] == f[config.id_col])
+            .filter(f => d[config.measure_col] == f[config.measure_col])
+            .filter(f => f[config.visitn_col] == +config.baseline_visitn);
+
+        if (baseline_record.length > 0) {
+            d.baseline_absolute = baseline_record[0][config.value_col];
+            if (d.baseline_absolute > 0) {
+                d.relative_baseline = d.absolute / d.baseline_absolute;
+            } else {
+                missingBaseline = missingBaseline + 1;
+                d.relative_baseline = null;
+            }
+        } else {
+            missingBaseline = missingBaseline + 1;
+            d.baseline_absolute = null;
+            d.relative_baseline = null;
+        }
     });
+
+    if (missingBaseline > 0)
+        console.log(
+            'No baseline value found for ' + missingBaseline + ' of ' + sub.length + ' records.'
+        );
 
     //get list of columns to flatten
     var colList = [];
@@ -46,7 +75,11 @@ export function flattenData() {
         }
     });
 
-    colList.push('relative');
+    //merge in the absolute and relative values
+    colList = d3.merge([
+        colList,
+        ['absolute', 'relative_uln', 'relative_baseline', 'baseline_raw']
+    ]);
 
     //get maximum values for each measure type
     var flat_data = d3
@@ -56,31 +89,38 @@ export function flattenData() {
             var participant_obj = {};
             participant_obj.days_x = null;
             participant_obj.days_y = null;
-
             config.measure_details.forEach(function(m) {
                 //get all raw data for the current measure
                 var matches = d.filter(f => m.measure == f[config.measure_col]); //get matching measures
 
-                //get record with maximum value for the current display type
-                participant_obj[m.label] = d3.max(
-                    matches,
-                    d => (config.display == 'absolute' ? d[config.value_col] : d.relative)
-                );
-                var maxRecord = matches.find(
-                    d =>
-                        participant_obj[m.label] ==
-                        (config.display == 'absolute' ? d[config.value_col] : d.relative)
-                );
+                if (matches.length == 0) {
+                    console.log('No matches found');
+                    participant_obj.drop_participant = true;
+                    return participant_obj;
+                } else {
+                    participant_obj.drop_participant = false;
+                }
 
+                //get record with maximum value for the current display type
+                participant_obj[m.label] = d3.max(matches, d => +d[config.display]);
+
+                var maxRecord = matches.find(d => participant_obj[m.label] == +d[config.display]);
                 //map all measure specific values
                 colList.forEach(function(col) {
                     participant_obj[m.label + '_' + col] = maxRecord[col];
                 });
 
                 //determine whether the value is above the specified threshold
-                participant_obj[m.label + '_cut'] = m.cut[config.display];
-                participant_obj[m.label + '_flagged'] =
-                    participant_obj[m.label] >= participant_obj[m.label + '_cut'];
+                if (m.cut[config.display]) {
+                    config.show_quadrants = true;
+                    participant_obj[m.label + '_cut'] = m.cut[config.display];
+                    participant_obj[m.label + '_flagged'] =
+                        participant_obj[m.label] >= participant_obj[m.label + '_cut'];
+                } else {
+                    config.show_quadrants = false;
+                    participant_obj[m.label + '_cut'] = null;
+                    participant_obj[m.label + '_flagged'] = null;
+                }
 
                 //save study days for each axis;
                 if (m.axis == 'x') participant_obj.days_x = maxRecord[config.studyday_col];
@@ -119,15 +159,14 @@ export function flattenData() {
         })
         .entries(sub);
 
-    var flat_data = flat_data.map(function(m) {
+    var flat_data = flat_data.filter(f => f.values.drop_participant == false).map(function(m) {
         m.values[config.id_col] = m.key;
 
         //link the raw data to the flattened object
-        var allMatches = chart.initial_data.filter(f => f[config.id_col] == m.key);
+        var allMatches = chart.imputed_data.filter(f => f[config.id_col] == m.key);
         m.values.raw = allMatches;
 
         return m.values;
     });
-
     return flat_data;
 }

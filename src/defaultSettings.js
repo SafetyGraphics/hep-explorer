@@ -17,8 +17,10 @@ const defaultSettings = {
             label: 'ALT',
             measure: 'Aminotransferase, alanine (ALT)',
             axis: 'x',
+            imputation: 'data-driven',
             cut: {
-                relative: 3,
+                relative_baseline: 3.8,
+                relative_uln: 3,
                 absolute: 1.0
             }
         },
@@ -26,8 +28,10 @@ const defaultSettings = {
             label: 'ALP',
             measure: 'Alkaline phosphatase (ALP)',
             axis: null,
+            imputation: 'data-driven',
             cut: {
-                relative: 1,
+                relative_baseline: 3.8,
+                relative_uln: 1,
                 absolute: 1.0
             }
         },
@@ -35,14 +39,21 @@ const defaultSettings = {
             label: 'TB',
             measure: 'Total Bilirubin',
             axis: 'y',
+            imputation: 'data-driven',
             cut: {
-                relative: 2,
+                relative_baseline: 4.8,
+                relative_uln: 2,
                 absolute: 40
             }
         }
     ],
     missingValues: ['', 'NA', 'N/A'],
-    display: 'relative', //or "absolute"
+    axis_options: [
+        { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
+        { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' },
+        { label: 'Raw Values', value: 'absolute' }
+    ],
+    display: 'relative_uln', //or "relative_baseline" or "absolute"
     baseline_visitn: '1',
     measureBounds: [0.01, 0.99],
     populationProfileURL: null,
@@ -56,16 +67,16 @@ const defaultSettings = {
         label: null, // set in onPreprocess/updateAxisSettings,
         type: 'linear',
         behavior: 'raw',
-        format: '.1f',
-        domain: [0, null]
+        format: '.2f'
+        //domain: [0, null]
     },
     y: {
         column: null, // set in onPreprocess/updateAxisSettings,
         label: null, // set in onPreprocess/updateAxisSettings,
         type: 'linear',
         behavior: 'raw',
-        format: '.1f',
-        domain: [0, null]
+        format: '.2f'
+        //domain: [0, null]
     },
     marks: [
         {
@@ -78,10 +89,10 @@ const defaultSettings = {
     ],
     gridlines: 'xy',
     color_by: null, //set in syncSettings
-    max_width: 600,
+    max_width: 900,
     aspect: 1,
     legend: { location: 'top' },
-    margin: { right: 25, top: 25 }
+    margin: { right: 25, top: 25, bottom: 75 }
 };
 
 //Replicate settings in multiple places in the settings object
@@ -181,9 +192,10 @@ export function syncControlInputs(settings) {
             type: 'dropdown',
             label: 'Display Type',
             description: 'Relative or Absolute Axes',
-            options: ['display', 'quadrants.cut_data.displayChange'],
+            options: ['displayLabel'],
             start: null, // set in syncControlInputs()
-            values: ['relative', 'absolute'],
+            values: null, // set in syncControlInputs()
+            //    labels: ['Proportion of ULN', 'Proportion of Baseline', 'Raw Values'],
             require: true
         },
         {
@@ -208,6 +220,15 @@ export function syncControlInputs(settings) {
             require: true
         },
         {
+            type: 'dropdown',
+            label: 'Axis Type',
+            description: 'Linear or Log Axes',
+            options: ['x.type', 'y.type'],
+            start: null, // set in syncControlInputs()
+            values: ['linear', 'log'],
+            require: true
+        },
+        {
             type: 'checkbox',
             label: 'Point Opacity using time between measures',
             description: 'Darkest points collected on same day',
@@ -216,6 +237,7 @@ export function syncControlInputs(settings) {
             //  require: true
         }
     ];
+
     //Sync group control.
     const groupControl = defaultControls.find(controlInput => controlInput.label === 'Group');
     groupControl.start = settings.color_by;
@@ -247,7 +269,7 @@ export function syncControlInputs(settings) {
     const displayControl = defaultControls.filter(
         controlInput => controlInput.label === 'Display Type'
     )[0];
-    groupControl.start = settings.display;
+    displayControl.values = settings.axis_options.map(m => m.label);
 
     //Add custom filters to control inputs.
     if (settings.filters && settings.filters.length > 0) {

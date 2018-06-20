@@ -9,6 +9,8 @@ import { init as initBoxPlots } from './onResize/addBoxPlots/init';
 import { formatPoints } from './onResize/formatPoints';
 import { setPointSize } from './onResize/setPointSize';
 import { setPointOpacity } from './onResize/setPointOpacity';
+import { adjustTicks } from './onResize/adjustTicks';
+import { updateParticipantMarks } from './onResize/updateParticipantMarks';
 
 export default function onResize() {
     //add point interactivity, custom title and formatting
@@ -18,6 +20,7 @@ export default function onResize() {
     formatPoints.call(this);
     setPointSize.call(this);
     setPointOpacity.call(this);
+    updateParticipantMarks.call(this);
 
     //draw the quadrants and add drag interactivity
     updateSummaryTable.call(this);
@@ -29,4 +32,7 @@ export default function onResize() {
 
     // add boxplots
     initBoxPlots.call(this);
+
+    //axis formatting
+    adjustTicks.call(this);
 }

@@ -17,24 +17,8 @@ export function drawRugs(d, axis) {
         .enter()
         .append('text')
         .attr('class', 'rug-tick')
-        .attr(
-            'x',
-            d =>
-                axis == 'x'
-                    ? config.display == 'relative'
-                        ? chart.x(d.relative)
-                        : chart.x(d[config.value_col])
-                    : chart.x(min_value)
-        )
-        .attr(
-            'y',
-            d =>
-                axis == 'y'
-                    ? config.display == 'relative'
-                        ? chart.y(d.relative)
-                        : chart.y(d[config.value_col])
-                    : chart.y(min_value)
-        )
+        .attr('x', d => (axis == 'x' ? chart.x(d[config.display]) : chart.x(min_value)))
+        .attr('y', d => (axis == 'y' ? chart.y(d[config.display]) : chart.y(min_value)))
         //        .attr('dy', axis == 'x' ? '-0.2em' : null)
         .attr('text-anchor', axis == 'y' ? 'end' : null)
         .attr('alignment-baseline', axis == 'x' ? 'hanging' : null)
@@ -46,7 +30,7 @@ export function drawRugs(d, axis) {
             d =>
                 d[config.measure_col] +
                 '=' +
-                d3.format('.2f')(d[config.value_col]) +
+                d3.format('.2f')(d.absolute) +
                 ' (' +
                 d3.format('.2f')(d.relative) +
                 ' xULN) @ ' +
