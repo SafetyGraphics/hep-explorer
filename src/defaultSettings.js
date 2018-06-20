@@ -59,7 +59,7 @@ const defaultSettings = {
     populationProfileURL: null,
     participantProfileURL: null,
     point_size: 'Uniform',
-    point_opacity: false,
+    visit_window: 30,
 
     //Standard webcharts settings
     x: {
@@ -229,10 +229,10 @@ export function syncControlInputs(settings) {
             require: true
         },
         {
-            type: 'checkbox',
-            label: 'Point Opacity using time between measures',
-            description: 'Darkest points collected on same day',
-            option: 'point_opacity'
+            type: 'number',
+            label: 'Highlight Points Based on Timing',
+            description: 'Fill points with max values less than X days apart',
+            option: 'visit_window'
             //  start: false, // set in syncControlInputs()
             //  require: true
         }

@@ -322,7 +322,7 @@
         populationProfileURL: null,
         participantProfileURL: null,
         point_size: 'Uniform',
-        point_opacity: false,
+        visit_window: 30,
 
         //Standard webcharts settings
         x: {
@@ -515,10 +515,10 @@
                 require: true
             },
             {
-                type: 'checkbox',
-                label: 'Point Opacity using time between measures',
-                description: 'Darkest points collected on same day',
-                option: 'point_opacity'
+                type: 'number',
+                label: 'Highlight Points Based on Timing',
+                description: 'Fill points with max values less than X days apart',
+                option: 'visit_window'
                 //  start: false, // set in syncControlInputs()
                 //  require: true
             }
@@ -2578,27 +2578,11 @@
     }
 
     function setPointOpacity() {
-        var chart = this;
         var config = this.config;
         var points = this.svg.selectAll('g.point').select('circle');
-        if (config.point_opacity) {
-            //create opacity scale
-            var opacityScale = d3.scale
-                .linear()
-                .range([1, 0])
-                .domain(
-                    d3.extent(
-                        chart.raw_data.map(function(m) {
-                            return m.day_diff;
-                        })
-                    )
-                );
-
-            //set the opacity
-            points.attr('fill-opacity', function(d) {
-                return opacityScale(d.values.raw[0].day_diff);
-            });
-        }
+        points.attr('fill-opacity', function(d) {
+            return d.values.raw[0].day_diff <= config.visit_window ? 1 : 0;
+        }); //fill points in visit_window
     }
 
     function adjustTicks() {
