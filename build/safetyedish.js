@@ -2197,7 +2197,7 @@
     }
 
     var defaultSettings$2 = {
-        max_width: 500,
+        max_width: 600,
         x: {
             column: null,
             type: 'ordinal',
