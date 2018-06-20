@@ -2541,6 +2541,8 @@
     }
 
     function setPointSize() {
+        var _this = this;
+
         var chart = this;
         var config = this.config;
         var points = this.svg.selectAll('g.point').select('circle');
@@ -2560,10 +2562,18 @@
             //draw a legend (coming later?)
 
             //set the point radius
-            points.transition().attr('r', function(d) {
-                var raw = d.values.raw[0];
-                return sizeScale(raw[config.point_size]);
-            });
+            points
+                .transition()
+                .attr('r', function(d) {
+                    var raw = d.values.raw[0];
+                    return sizeScale(raw[config.point_size]);
+                })
+                .attr('cx', function(d) {
+                    return _this.x(d.values.x);
+                })
+                .attr('cy', function(d) {
+                    return _this.y(d.values.y);
+                });
         }
     }
 

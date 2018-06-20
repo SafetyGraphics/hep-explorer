@@ -12,9 +12,13 @@ export function setPointSize() {
         //draw a legend (coming later?)
 
         //set the point radius
-        points.transition().attr('r', function(d) {
-            var raw = d.values.raw[0];
-            return sizeScale(raw[config.point_size]);
-        });
+        points
+            .transition()
+            .attr('r', function(d) {
+                var raw = d.values.raw[0];
+                return sizeScale(raw[config.point_size]);
+            })
+            .attr('cx', d => this.x(d.values.x))
+            .attr('cy', d => this.y(d.values.y));
     }
 }
