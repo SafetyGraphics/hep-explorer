@@ -53,7 +53,7 @@ export function flattenData() {
     });
 
     if (missingBaseline > 0)
-        console.log(
+        console.warn(
             'No baseline value found for ' + missingBaseline + ' of ' + sub.length + ' records.'
         );
 
