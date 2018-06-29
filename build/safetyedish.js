@@ -1080,7 +1080,7 @@
         });
 
         if (missingBaseline > 0)
-            console.log(
+            console.warn(
                 'No baseline value found for ' + missingBaseline + ' of ' + sub.length + ' records.'
             );
 
@@ -1275,18 +1275,7 @@
         //llod = the lower limit of detection - values at or below the llod are imputed
         //imputed_value = value for imputed records
         //drop = boolean flag indicating whether values at or below the llod should be dropped (default = false)
-        /*
-    console.log(
-        'Starting imputation for ' +
-            measure +
-            ' with llod of ' +
-            llod +
-            ' and imputed value of ' +
-            imputed_value +
-            ' and drop =' +
-            drop
-    );
-    */
+
         if (drop == undefined) drop = false;
         if (drop) {
             return data.filter(function(f) {
@@ -2209,7 +2198,7 @@
         },
         y: {
             column: 'relative_uln',
-            type: 'log',
+            type: 'linear',
             label: 'Lab Value (x ULN)',
             domain: null,
             format: '.1f'
@@ -2232,7 +2221,6 @@
 
     function onResize$1() {
         this.marks[1].circles.attr('fill-opacity', function(d) {
-            console.log(d);
             return d.values.raw[0].flagged ? 1 : 0;
         });
     }

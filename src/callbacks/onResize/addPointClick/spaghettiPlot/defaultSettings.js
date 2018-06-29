@@ -7,7 +7,7 @@ export const defaultSettings = {
     },
     y: {
         column: 'relative_uln',
-        type: 'log',
+        type: 'linear',
         label: 'Lab Value (x ULN)',
         domain: null,
         format: '.1f'
