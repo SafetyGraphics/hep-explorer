@@ -16,7 +16,9 @@ export function init(d) {
         d.flagged = d.relative_uln >= d.cut;
     });
 
-    if ('spaghetti' in chart) chart.spaghetti.destroy();
+    if ('spaghetti' in chart) {
+        chart.spaghetti.destroy();
+    }
 
     //sync settings
     spaghettiSettings.x.column = config.visitn_col;
@@ -27,6 +29,7 @@ export function init(d) {
     spaghettiSettings.marks[1].per = [config.id_col, config.visitn_col, config.measure_col];
 
     //draw that chart
+
     chart.spaghetti = createChart(
         this.element + ' .participantDetails .spaghettiPlot',
         spaghettiSettings

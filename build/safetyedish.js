@@ -906,8 +906,23 @@
         this.participantDetails.header = this.participantDetails.wrap
             .append('div')
             .attr('class', 'participantHeader');
-        this.participantDetails.wrap.append('div').attr('class', 'spaghettiPlot');
-        this.participantDetails.wrap.append('div').attr('class', 'measureTable');
+        var splot = this.participantDetails.wrap.append('div').attr('class', 'spaghettiPlot');
+        splot
+            .append('h3')
+            .attr('class', 'id')
+            .html('Lab Values vs. Upper Limit of Normal by Visit')
+            .style('border-top', '2px solid black')
+            .style('border-bottom', '2px solid black')
+            .style('padding', '.2em');
+
+        var mtable = this.participantDetails.wrap.append('div').attr('class', 'measureTable');
+        mtable
+            .append('h3')
+            .attr('class', 'id')
+            .html('Lab Summary Table')
+            .style('border-top', '2px solid black')
+            .style('border-bottom', '2px solid black')
+            .style('padding', '.2em');
 
         //initialize the measureTable
         var settings = {
@@ -2240,7 +2255,9 @@
             d.flagged = d.relative_uln >= d.cut;
         });
 
-        if ('spaghetti' in chart) chart.spaghetti.destroy();
+        if ('spaghetti' in chart) {
+            chart.spaghetti.destroy();
+        }
 
         //sync settings
         defaultSettings$2.x.column = config.visitn_col;
@@ -2253,6 +2270,7 @@
         defaultSettings$2.marks[1].per = [config.id_col, config.visitn_col, config.measure_col];
 
         //draw that chart
+
         chart.spaghetti = webcharts.createChart(
             this.element + ' .participantDetails .spaghettiPlot',
             defaultSettings$2
