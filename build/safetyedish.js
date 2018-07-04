@@ -1444,7 +1444,8 @@
         //add "eDISH_quadrant" column to raw_data
         var x_var = this.config.x.column;
         var y_var = this.config.y.column;
-        this.imputed_data.forEach(function(d) {
+
+        this.raw_data.forEach(function(d) {
             var x_cat = d[x_var] >= config.quadrants.cut_data.x ? 'xHigh' : 'xNormal';
             var y_cat = d[y_var] >= config.quadrants.cut_data.y ? 'yHigh' : 'yNormal';
             d['eDISH_quadrant'] = x_cat + ':' + y_cat;
@@ -1452,10 +1453,10 @@
 
         //update Quadrant data
         config.quadrants.quadrant_data.forEach(function(quad) {
-            quad.count = chart.filtered_data.filter(function(d) {
+            quad.count = chart.raw_data.filter(function(d) {
                 return d.eDISH_quadrant == quad.dataValue;
             }).length;
-            quad.total = chart.filtered_data.length;
+            quad.total = chart.raw_data.length;
             quad.percent = d3.format('0.1%')(quad.count / quad.total);
         });
     }
@@ -1646,9 +1647,7 @@
 
         this.config.quadrants.group_labels
             .selectAll('text')
-            .attr('display', function(d) {
-                return d.count == 0 ? 'none' : null;
-            })
+            //    .attr('display', d => (d.count == 0 ? 'none' : null))
             .text(function(d) {
                 return d.label + ' (' + d.percent + ')';
             });

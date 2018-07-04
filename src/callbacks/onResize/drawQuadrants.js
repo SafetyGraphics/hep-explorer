@@ -53,6 +53,6 @@ export function drawQuadrants() {
 
     this.config.quadrants.group_labels
         .selectAll('text')
-        .attr('display', d => (d.count == 0 ? 'none' : null))
+        //    .attr('display', d => (d.count == 0 ? 'none' : null))
         .text(d => d.label + ' (' + d.percent + ')');
 }
