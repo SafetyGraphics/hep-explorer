@@ -588,8 +588,11 @@
     }
 
     function onInit() {
+        var _this = this;
+
         this.raw_data.forEach(function(d) {
             d.NONE = 'All Participants'; // placeholder variable for non-grouped comparisons
+            d[_this.config.value_col] = d[_this.config.value_col].replace(/\s/g, ''); // remove space characters
         });
     }
 
@@ -873,7 +876,7 @@
 
         //removing the interactivity for now, but could add it back in later if desired
         /*
-         .on('mouseover', function(d) {
+          .on('mouseover', function(d) {
             highlight.call(this, d, chart);
         })
         .on('mouseout', function() {
@@ -1294,7 +1297,7 @@
         if (drop == undefined) drop = false;
         if (drop) {
             return data.filter(function(f) {
-                dropFlag = (d[measure_column] == measure) & (+d[value_column] <= 0);
+                dropFlag = d[measure_column] == measure && +d[value_column] <= 0;
                 return !dropFlag;
             });
         } else {
@@ -1302,7 +1305,7 @@
                 if (
                     d[measure_column] == measure &&
                     +d[value_column] < +llod &&
-                    d[value_column >= 0]
+                    d[value_column] >= 0
                 ) {
                     d.impute_flag = true;
                     d[value_column + '_original'] = d[value_column];
@@ -1310,9 +1313,14 @@
                 }
             });
 
-            var impute_count = d3.sum(data, function(f) {
-                return f.impute_flag;
-            });
+            var impute_count = d3.sum(
+                data.filter(function(d) {
+                    return d[measure_column] === measure;
+                }),
+                function(f) {
+                    return f.impute_flag;
+                }
+            );
 
             if (impute_count > 0)
                 console.warn(
@@ -1330,10 +1338,15 @@
     }
 
     function imputeData() {
+        var _this = this;
+
         var chart = this,
             config = this.config;
 
-        this.imputed_data = this.initial_data;
+        //Remove missing values via the ultimate number regular expression.
+        this.imputed_data = this.initial_data.filter(function(d) {
+            return /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(d[_this.config.value_col]);
+        });
         this.imputed_data.forEach(function(d) {
             d.impute_flag = false;
         });

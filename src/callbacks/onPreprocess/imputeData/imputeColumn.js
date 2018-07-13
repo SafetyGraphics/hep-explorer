@@ -19,19 +19,22 @@ export function imputeColumn(
     if (drop == undefined) drop = false;
     if (drop) {
         return data.filter(function(f) {
-            dropFlag = (d[measure_column] == measure) & (+d[value_column] <= 0);
+            dropFlag = d[measure_column] == measure && +d[value_column] <= 0;
             return !dropFlag;
         });
     } else {
         data.forEach(function(d) {
-            if (d[measure_column] == measure && +d[value_column] < +llod && d[value_column >= 0]) {
+            if (d[measure_column] == measure && +d[value_column] < +llod && d[value_column] >= 0) {
                 d.impute_flag = true;
                 d[value_column + '_original'] = d[value_column];
                 d[value_column] = imputed_value;
             }
         });
 
-        var impute_count = d3.sum(data, f => f.impute_flag);
+        var impute_count = d3.sum(
+            data.filter(d => d[measure_column] === measure),
+            f => f.impute_flag
+        );
 
         if (impute_count > 0)
             console.warn(
