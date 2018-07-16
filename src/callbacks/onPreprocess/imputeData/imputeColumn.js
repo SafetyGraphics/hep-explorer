@@ -15,18 +15,7 @@ export function imputeColumn(
     //llod = the lower limit of detection - values at or below the llod are imputed
     //imputed_value = value for imputed records
     //drop = boolean flag indicating whether values at or below the llod should be dropped (default = false)
-    /*
-    console.log(
-        'Starting imputation for ' +
-            measure +
-            ' with llod of ' +
-            llod +
-            ' and imputed value of ' +
-            imputed_value +
-            ' and drop =' +
-            drop
-    );
-    */
+
     if (drop == undefined) drop = false;
     if (drop) {
         return data.filter(function(f) {

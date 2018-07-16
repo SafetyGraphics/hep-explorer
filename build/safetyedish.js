@@ -322,7 +322,7 @@
         populationProfileURL: null,
         participantProfileURL: null,
         point_size: 'Uniform',
-        point_opacity: false,
+        visit_window: 30,
 
         //Standard webcharts settings
         x: {
@@ -515,10 +515,10 @@
                 require: true
             },
             {
-                type: 'checkbox',
-                label: 'Point Opacity using time between measures',
-                description: 'Darkest points collected on same day',
-                option: 'point_opacity'
+                type: 'number',
+                label: 'Highlight Points Based on Timing',
+                description: 'Fill points with max values less than X days apart',
+                option: 'visit_window'
                 //  start: false, // set in syncControlInputs()
                 //  require: true
             }
@@ -909,7 +909,23 @@
         this.participantDetails.header = this.participantDetails.wrap
             .append('div')
             .attr('class', 'participantHeader');
-        this.participantDetails.wrap.append('div').attr('class', 'measureTable');
+        var splot = this.participantDetails.wrap.append('div').attr('class', 'spaghettiPlot');
+        splot
+            .append('h3')
+            .attr('class', 'id')
+            .html('Lab Values vs. Upper Limit of Normal by Visit')
+            .style('border-top', '2px solid black')
+            .style('border-bottom', '2px solid black')
+            .style('padding', '.2em');
+
+        var mtable = this.participantDetails.wrap.append('div').attr('class', 'measureTable');
+        mtable
+            .append('h3')
+            .attr('class', 'id')
+            .html('Lab Summary Table')
+            .style('border-top', '2px solid black')
+            .style('border-bottom', '2px solid black')
+            .style('padding', '.2em');
 
         //initialize the measureTable
         var settings = {
@@ -1036,48 +1052,53 @@
             }); //add a filter on selected visits here
 
         var missingBaseline = 0;
-        sub.forEach(function(d) {
+        this.imputed_data.forEach(function(d) {
             //coerce numeric values to number
             var numerics = ['value_col', 'visitn_col', 'normal_col_low', 'normal_col_high'];
             numerics.forEach(function(col) {
                 d[config[col]] = +d[config[col]];
             });
+            //standardize key variables
+            d.key_measure = false;
+            if (included_measures.indexOf(d[config.measure_col]) > -1) {
+                d.key_measure = true;
 
-            //map the raw value to a variable called 'absolute'
-            d.absolute = d[config.value_col];
+                //map the raw value to a variable called 'absolute'
+                d.absolute = d[config.value_col];
 
-            //get the value relative to the ULN (% of the upper limit of normal) for the measure
-            d.relative_uln = d[config.value_col] / d[config.normal_col_high];
+                //get the value relative to the ULN (% of the upper limit of normal) for the measure
+                d.relative_uln = d[config.value_col] / d[config.normal_col_high];
 
-            //get the value relative to baseline for the measure
-            var baseline_record = sub
-                .filter(function(f) {
-                    return d[config.id_col] == f[config.id_col];
-                })
-                .filter(function(f) {
-                    return d[config.measure_col] == f[config.measure_col];
-                })
-                .filter(function(f) {
-                    return f[config.visitn_col] == +config.baseline_visitn;
-                });
+                //get the value relative to baseline for the measure
+                var baseline_record = sub
+                    .filter(function(f) {
+                        return d[config.id_col] == f[config.id_col];
+                    })
+                    .filter(function(f) {
+                        return d[config.measure_col] == f[config.measure_col];
+                    })
+                    .filter(function(f) {
+                        return f[config.visitn_col] == +config.baseline_visitn;
+                    });
 
-            if (baseline_record.length > 0) {
-                d.baseline_absolute = baseline_record[0][config.value_col];
-                if (d.baseline_absolute > 0) {
-                    d.relative_baseline = d.absolute / d.baseline_absolute;
+                if (baseline_record.length > 0) {
+                    d.baseline_absolute = baseline_record[0][config.value_col];
+                    if (d.baseline_absolute > 0) {
+                        d.relative_baseline = d.absolute / d.baseline_absolute;
+                    } else {
+                        missingBaseline = missingBaseline + 1;
+                        d.relative_baseline = null;
+                    }
                 } else {
                     missingBaseline = missingBaseline + 1;
+                    d.baseline_absolute = null;
                     d.relative_baseline = null;
                 }
-            } else {
-                missingBaseline = missingBaseline + 1;
-                d.baseline_absolute = null;
-                d.relative_baseline = null;
             }
         });
 
         if (missingBaseline > 0)
-            console.log(
+            console.warn(
                 'No baseline value found for ' + missingBaseline + ' of ' + sub.length + ' records.'
             );
 
@@ -1198,7 +1219,11 @@
 
                 return participant_obj;
             })
-            .entries(sub);
+            .entries(
+                this.imputed_data.filter(function(f) {
+                    return f.key_measure;
+                })
+            );
 
         var flat_data = flat_data
             .filter(function(f) {
@@ -1268,18 +1293,7 @@
         //llod = the lower limit of detection - values at or below the llod are imputed
         //imputed_value = value for imputed records
         //drop = boolean flag indicating whether values at or below the llod should be dropped (default = false)
-        /*
-    console.log(
-        'Starting imputation for ' +
-            measure +
-            ' with llod of ' +
-            llod +
-            ' and imputed value of ' +
-            imputed_value +
-            ' and drop =' +
-            drop
-    );
-    */
+
         if (drop == undefined) drop = false;
         if (drop) {
             return data.filter(function(f) {
@@ -1458,6 +1472,7 @@
         //add "eDISH_quadrant" column to raw_data
         var x_var = this.config.x.column;
         var y_var = this.config.y.column;
+
         this.raw_data.forEach(function(d) {
             var x_cat = d[x_var] >= config.quadrants.cut_data.x ? 'xHigh' : 'xNormal';
             var y_cat = d[y_var] >= config.quadrants.cut_data.y ? 'yHigh' : 'yNormal';
@@ -1466,10 +1481,10 @@
 
         //update Quadrant data
         config.quadrants.quadrant_data.forEach(function(quad) {
-            quad.count = chart.filtered_data.filter(function(d) {
+            quad.count = chart.raw_data.filter(function(d) {
                 return d.eDISH_quadrant == quad.dataValue;
             }).length;
-            quad.total = chart.filtered_data.length;
+            quad.total = chart.raw_data.length;
             quad.percent = d3.format('0.1%')(quad.count / quad.total);
         });
     }
@@ -1660,9 +1675,7 @@
 
         this.config.quadrants.group_labels
             .selectAll('text')
-            .attr('display', function(d) {
-                return d.count == 0 ? 'none' : null;
-            })
+            //    .attr('display', d => (d.count == 0 ? 'none' : null))
             .text(function(d) {
                 return d.label + ' (' + d.percent + ')';
             });
@@ -2203,6 +2216,82 @@
             .attr('div', 'value');
     }
 
+    var defaultSettings$2 = {
+        max_width: 600,
+        x: {
+            column: null,
+            type: 'ordinal',
+            label: 'Visit'
+        },
+        y: {
+            column: 'relative_uln',
+            type: 'linear',
+            label: 'Lab Value (x ULN)',
+            domain: null,
+            format: '.1f'
+        },
+        marks: [
+            {
+                type: 'line',
+                per: []
+            },
+            {
+                type: 'circle',
+                radius: 4,
+                per: []
+            }
+        ],
+        color_by: null,
+        colors: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33', '#a65628'],
+        aspect: 2
+    };
+
+    function onResize$1() {
+        this.marks[1].circles.attr('fill-opacity', function(d) {
+            return d.values.raw[0].flagged ? 1 : 0;
+        });
+    }
+
+    function init$1(d) {
+        var chart = this;
+        var config = this.config;
+
+        var matches = d.values.raw[0].raw.filter(function(f) {
+            return f.key_measure;
+        });
+        //flag variables above the cut-off
+        matches.forEach(function(d) {
+            d.cut = config.measure_details.find(function(f) {
+                return f.measure == d[config['measure_col']];
+            }).cut.relative_uln;
+
+            d.flagged = d.relative_uln >= d.cut;
+        });
+
+        if ('spaghetti' in chart) {
+            chart.spaghetti.destroy();
+        }
+
+        //sync settings
+        defaultSettings$2.x.column = config.visitn_col;
+        defaultSettings$2.y.domain = d3.extent(chart.imputed_data, function(f) {
+            return f.relative_uln;
+        });
+
+        defaultSettings$2.color_by = config.measure_col;
+        defaultSettings$2.marks[0].per = [config.id_col, config.measure_col];
+        defaultSettings$2.marks[1].per = [config.id_col, config.visitn_col, config.measure_col];
+
+        //draw that chart
+
+        chart.spaghetti = webcharts.createChart(
+            this.element + ' .participantDetails .spaghettiPlot',
+            defaultSettings$2
+        );
+        chart.spaghetti.on('resize', onResize$1);
+        chart.spaghetti.init(matches);
+    }
+
     function addPointClick() {
         var chart = this;
         var config = this.config;
@@ -2226,6 +2315,7 @@
 
             drawVisitPath.call(chart, d); //draw the path showing participant's pattern over time
             drawMeasureTable.call(chart, d); //draw table showing measure values with sparklines
+            init$1.call(chart, d);
             makeParticipantHeader.call(chart, d);
             drawRugs.call(chart, d, 'x');
             drawRugs.call(chart, d, 'y');
@@ -2337,7 +2427,7 @@
 
     // credit to https://bl.ocks.org/dimitardanailov/99950eee511375b97de749b597147d19
 
-    function init$1() {
+    function init$2() {
         var drag = d3.behavior
             .drag()
             .origin(function(d) {
@@ -2501,7 +2591,7 @@
             });
     }
 
-    function init$2() {
+    function init$3() {
         // Draw box plots
         this.svg.selectAll('g.boxplot').remove();
 
@@ -2591,27 +2681,11 @@
     }
 
     function setPointOpacity() {
-        var chart = this;
         var config = this.config;
         var points = this.svg.selectAll('g.point').select('circle');
-        if (config.point_opacity) {
-            //create opacity scale
-            var opacityScale = d3.scale
-                .linear()
-                .range([1, 0])
-                .domain(
-                    d3.extent(
-                        chart.raw_data.map(function(m) {
-                            return m.day_diff;
-                        })
-                    )
-                );
-
-            //set the opacity
-            points.attr('fill-opacity', function(d) {
-                return opacityScale(d.values.raw[0].day_diff);
-            });
-        }
+        points.attr('fill-opacity', function(d) {
+            return d.values.raw[0].day_diff <= config.visit_window ? 1 : 0;
+        }); //fill points in visit_window
     }
 
     function adjustTicks() {
@@ -2703,13 +2777,13 @@
         //draw the quadrants and add drag interactivity
         updateSummaryTable.call(this);
         drawQuadrants.call(this);
-        init$1.call(this);
+        init$2.call(this);
 
         // hide the legend if no group options are given
         toggleLegend.call(this);
 
         // add boxplots
-        init$2.call(this);
+        init$3.call(this);
 
         //axis formatting
         adjustTicks.call(this);

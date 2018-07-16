@@ -8,7 +8,23 @@ export function initParticipantDetails() {
     this.participantDetails.header = this.participantDetails.wrap
         .append('div')
         .attr('class', 'participantHeader');
-    this.participantDetails.wrap.append('div').attr('class', 'measureTable');
+    var splot = this.participantDetails.wrap.append('div').attr('class', 'spaghettiPlot');
+    splot
+        .append('h3')
+        .attr('class', 'id')
+        .html('Lab Values vs. Upper Limit of Normal by Visit')
+        .style('border-top', '2px solid black')
+        .style('border-bottom', '2px solid black')
+        .style('padding', '.2em');
+
+    var mtable = this.participantDetails.wrap.append('div').attr('class', 'measureTable');
+    mtable
+        .append('h3')
+        .attr('class', 'id')
+        .html('Lab Summary Table')
+        .style('border-top', '2px solid black')
+        .style('border-bottom', '2px solid black')
+        .style('padding', '.2em');
 
     //initialize the measureTable
     var settings = {
