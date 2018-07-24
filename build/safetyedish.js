@@ -592,7 +592,9 @@
 
         this.raw_data.forEach(function(d) {
             d.NONE = 'All Participants'; // placeholder variable for non-grouped comparisons
-            d[_this.config.value_col] = d[_this.config.value_col].replace(/\s/g, ''); // remove space characters
+            if (typeof d[_this.config.value_col] == 'string') {
+                d[_this.config.value_col] = d[_this.config.value_col].replace(/\s/g, ''); // remove space characters
+            }
         });
     }
 
