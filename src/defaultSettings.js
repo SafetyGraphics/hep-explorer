@@ -60,6 +60,7 @@ const defaultSettings = {
     participantProfileURL: null,
     point_size: 'Uniform',
     visit_window: 30,
+    showTitle: true,
 
     //Standard webcharts settings
     x: {

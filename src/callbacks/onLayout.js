@@ -5,9 +5,11 @@ import { initParticipantDetails } from './onLayout/initParticipantDetails';
 import { initResetButton } from './onLayout/initResetButton';
 import { initDisplayControlLabels } from './onLayout/initDisplayControlLabels';
 import { layoutPanels } from './onLayout/layoutPanels';
+import { initTitle } from './onLayout/initTitle';
 
 export default function onLayout() {
     layoutPanels.call(this);
+    initTitle.call(this);
     initQuadrants.call(this);
     initRugs.call(this);
     initVisitPath.call(this);
