@@ -352,7 +352,7 @@
         ],
         gridlines: 'xy',
         color_by: null, //set in syncSettings
-        max_width: 900,
+        max_width: 600,
         aspect: 1,
         legend: { location: 'top' },
         margin: { right: 25, top: 25, bottom: 75 }
@@ -592,7 +592,9 @@
 
         this.raw_data.forEach(function(d) {
             d.NONE = 'All Participants'; // placeholder variable for non-grouped comparisons
-            d[_this.config.value_col] = d[_this.config.value_col].replace(/\s/g, ''); // remove space characters
+            if (typeof d[_this.config.value_col] == 'string') {
+                d[_this.config.value_col] = d[_this.config.value_col].replace(/\s/g, ''); // remove space characters
+            }
         });
     }
 
@@ -876,7 +878,7 @@
 
         //removing the interactivity for now, but could add it back in later if desired
         /*
-          .on('mouseover', function(d) {
+         .on('mouseover', function(d) {
             highlight.call(this, d, chart);
         })
         .on('mouseout', function() {
@@ -1588,6 +1590,7 @@
         clearRugs.call(this, 'y');
         hideMeasureTable.call(this); //remove the detail table
         formatPoints.call(this);
+        this.participantDetails.wrap.selectAll('*').style('display', 'none');
     }
 
     function onDraw() {
@@ -1762,6 +1765,7 @@
     function drawVisitPath(d) {
         var chart = this;
         var config = chart.config;
+
         var allMatches = d.values.raw[0].raw,
             x_measure = config.measure_details.find(function(f) {
                 return config.x.column.search(f.label) > -1;
@@ -1796,9 +1800,15 @@
                     })
                     .filter(function(f) {
                         return f[config.measure_col] == x_measure;
-                    })[0];
-                visitObj.x = x_match[config.display];
-                visitObj.xMatch = x_match;
+                    });
+
+                if (x_match.length) {
+                    visitObj.x = x_match[0][config.display];
+                    visitObj.xMatch = x_match[0];
+                } else {
+                    visitObj.x = null;
+                    visitObj.xMatch = null;
+                }
 
                 //get y coordinate
                 var y_match = matches
@@ -1807,15 +1817,22 @@
                     })
                     .filter(function(f) {
                         return f[config.measure_col] == y_measure;
-                    })[0];
-
-                visitObj.y = y_match[config.display];
-                visitObj.yMatch = y_match;
+                    });
+                if (y_match.length) {
+                    visitObj.y = y_match[0][config.display];
+                    visitObj.yMatch = y_match[0];
+                } else {
+                    visitObj.y = null;
+                    visitObj.yMatch = null;
+                }
 
                 return visitObj;
             })
             .sort(function(a, b) {
                 return a.visitn - b.visitn;
+            })
+            .filter(function(f) {
+                return (f.x > 0) & (f.y > 0);
             });
         //draw the path
         var myLine = d3.svg

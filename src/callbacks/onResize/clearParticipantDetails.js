@@ -17,4 +17,5 @@ export function clearParticipantDetails() {
     clearRugs.call(this, 'y');
     hideMeasureTable.call(this); //remove the detail table
     formatPoints.call(this);
+    this.participantDetails.wrap.selectAll('*').style('display', 'none');
 }
