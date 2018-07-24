@@ -352,7 +352,7 @@
         ],
         gridlines: 'xy',
         color_by: null, //set in syncSettings
-        max_width: 900,
+        max_width: 600,
         aspect: 1,
         legend: { location: 'top' },
         margin: { right: 25, top: 25, bottom: 75 }
@@ -876,7 +876,7 @@
 
         //removing the interactivity for now, but could add it back in later if desired
         /*
-          .on('mouseover', function(d) {
+         .on('mouseover', function(d) {
             highlight.call(this, d, chart);
         })
         .on('mouseout', function() {
@@ -1588,6 +1588,7 @@
         clearRugs.call(this, 'y');
         hideMeasureTable.call(this); //remove the detail table
         formatPoints.call(this);
+        this.participantDetails.wrap.selectAll('*').style('display', 'none');
     }
 
     function onDraw() {
