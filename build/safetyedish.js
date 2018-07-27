@@ -599,6 +599,31 @@
         });
     }
 
+    function setCutpointMinimums() {
+        var chart = this;
+
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return /.-axis cut/i.test(d.description);
+            })
+            .attr('min', 0)
+            .on('change', function(d) {
+                var input = d3.select(this).select('input');
+
+                //Prevent a negative input.
+                if (input.property('value') < 0) input.property('value', 0);
+
+                //Update chart setting.
+                chart.config.quadrants.cut_data[
+                    d.description.split('-')[0].toLowerCase()
+                ] = input.property('value');
+
+                //Redraw.
+                chart.draw();
+            });
+    }
+
     var defaultCutData = [
         {
             dimension: 'x',
@@ -1062,6 +1087,7 @@
     }
 
     function onLayout() {
+        setCutpointMinimums.call(this);
         layoutPanels.call(this);
         initTitle.call(this);
         initQuadrants.call(this);
@@ -2449,7 +2475,6 @@
             y1: Math.min(chart.plot_height, parseInt(line.attr('y1')) + (dimension == 'y' ? y : 0)),
             y2: Math.min(chart.plot_height, parseInt(line.attr('y2')) + (dimension == 'y' ? y : 0))
         };
-        console.log(attributes);
 
         line.attr(attributes);
         lineBack.attr(attributes);

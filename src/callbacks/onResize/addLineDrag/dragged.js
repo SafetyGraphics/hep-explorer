@@ -16,7 +16,6 @@ export function dragged() {
         y1: Math.min(chart.plot_height, parseInt(line.attr('y1')) + (dimension == 'y' ? y : 0)),
         y2: Math.min(chart.plot_height, parseInt(line.attr('y2')) + (dimension == 'y' ? y : 0))
     };
-    console.log(attributes);
 
     line.attr(attributes);
     lineBack.attr(attributes);
