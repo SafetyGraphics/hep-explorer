@@ -1,5 +1,3 @@
-import { extent } from 'd3';
-
 export function setDomain(dimension) {
     var config = this.config;
     var domain = this[dimension].domain();
