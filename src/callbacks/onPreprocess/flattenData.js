@@ -1,60 +1,12 @@
+import addParticipantLevelMetadata from './flattenData/addParticipantLevelMetadata';
+import calculateRatios from './flattenData/calculateRatios';
+
 //Converts a one record per measure data object to a one record per participant objects
 export function flattenData() {
     var chart = this;
     var config = this.config;
+
     //make a data set with one row per ID
-
-    //filter the lab data to only the required measures
-    var included_measures = config.measure_details.map(m => m.measure);
-
-    var sub = this.imputed_data
-        .filter(f => included_measures.indexOf(f[config.measure_col]) > -1)
-        .filter(f => true); //add a filter on selected visits here
-
-    var missingBaseline = 0;
-    this.imputed_data.forEach(function(d) {
-        //coerce numeric values to number
-        var numerics = ['value_col', 'visitn_col', 'normal_col_low', 'normal_col_high'];
-        numerics.forEach(function(col) {
-            d[config[col]] = +d[config[col]];
-        });
-        //standardize key variables
-        d.key_measure = false;
-        if (included_measures.indexOf(d[config.measure_col]) > -1) {
-            d.key_measure = true;
-
-            //map the raw value to a variable called 'absolute'
-            d.absolute = d[config.value_col];
-
-            //get the value relative to the ULN (% of the upper limit of normal) for the measure
-            d.relative_uln = d[config.value_col] / d[config.normal_col_high];
-
-            //get the value relative to baseline for the measure
-            var baseline_record = sub
-                .filter(f => d[config.id_col] == f[config.id_col])
-                .filter(f => d[config.measure_col] == f[config.measure_col])
-                .filter(f => f[config.visitn_col] == +config.baseline_visitn);
-
-            if (baseline_record.length > 0) {
-                d.baseline_absolute = baseline_record[0][config.value_col];
-                if (d.baseline_absolute > 0) {
-                    d.relative_baseline = d.absolute / d.baseline_absolute;
-                } else {
-                    missingBaseline = missingBaseline + 1;
-                    d.relative_baseline = null;
-                }
-            } else {
-                missingBaseline = missingBaseline + 1;
-                d.baseline_absolute = null;
-                d.relative_baseline = null;
-            }
-        }
-    });
-
-    if (missingBaseline > 0)
-        console.warn(
-            'No baseline value found for ' + missingBaseline + ' of ' + sub.length + ' records.'
-        );
 
     //get list of columns to flatten
     var colList = [];
@@ -132,29 +84,10 @@ export function flattenData() {
             });
 
             //Add participant level metadata
-            var varList = [];
-            if (chart.config.filters) {
-                var filterVars = chart.config.filters.map(
-                    d => (d.hasOwnProperty('value_col') ? d.value_col : d)
-                );
-                varList = d3.merge([varList, filterVars]);
-            }
-            if (chart.config.group_cols) {
-                var groupVars = chart.config.group_cols.map(
-                    d => (d.hasOwnProperty('value_col') ? d.value_col : d)
-                );
-                varList = d3.merge([varList, groupVars]);
-            }
-            if (chart.config.details) {
-                var detailVars = chart.config.details.map(
-                    d => (d.hasOwnProperty('value_col') ? d.value_col : d)
-                );
-                varList = d3.merge([varList, detailVars]);
-            }
+            addParticipantLevelMetadata.call(chart, d, participant_obj);
 
-            varList.forEach(function(v) {
-                participant_obj[v] = d[0][v];
-            });
+            //Calculate ratios between measures.
+            calculateRatios.call(chart, d, participant_obj);
 
             //calculate the day difference between x and y
             participant_obj.day_diff = Math.abs(participant_obj.days_x - participant_obj.days_y);
