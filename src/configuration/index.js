@@ -7,5 +7,5 @@ export default {
     settings,
     syncSettings,
     controlInputs,
-    syncControlInputs,
-}
+    syncControlInputs
+};

@@ -22,9 +22,7 @@ export default function syncControlInputs(controlInputs, settings) {
 
     //drop the pointSize control if NONE is the only option
     if (settings.measure_details.length == 2) {
-        controlInputs = controlInputs.filter(
-            controlInput => controlInput.label != 'Point Size'
-        );
+        controlInputs = controlInputs.filter(controlInput => controlInput.label != 'Point Size');
     }
 
     //Sync display control

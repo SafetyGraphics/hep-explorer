@@ -12,7 +12,8 @@ document.onreadystatechange = function () {
       }
 
       d3.csv(
-          'https://rawgit.com/RhoInc/viz-library/master//data/safetyData-queries/ADBDS.csv',
+          //'https://rawgit.com/RhoInc/viz-library/master//data/safetyData-queries/ADBDS.csv',
+          '../../viz-library/data/safetyData-queries/ADBDS.csv', // local copy loads faster
           function(error,data) {
               if (error)
                   console.log(error);
