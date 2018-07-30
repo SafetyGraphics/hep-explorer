@@ -20,7 +20,7 @@ export function init() {
     ///////////////////////////////////////////////////////////
     // set initial values
     //////////////////////////////////////////////////////////
-    quadrants.cut_data.x = config.measure_details.find(f => f.axis == 'x').cut[config.display];
+    quadrants.cut_data.x = config.x.measure_detail.cut[config.display];
 
     chart.controls.wrap
         .selectAll('div.control-group')
@@ -29,7 +29,7 @@ export function init() {
         .node().value =
         quadrants.cut_data.x;
 
-    quadrants.cut_data.y = config.measure_details.find(f => f.axis == 'y').cut[config.display];
+    quadrants.cut_data.y = config.y.measure_detail.cut[config.display];
 
     chart.controls.wrap
         .selectAll('div.control-group')

@@ -4,10 +4,9 @@ export function drawRugs(d, axis) {
     var config = this.config;
 
     //get matching measures
-    var allMatches = d.values.raw[0].raw,
-        measure = config.measure_details.find(f => config[axis].column.search(f.label) > -1)
-            .measure,
-        matches = allMatches.filter(f => f[config.measure_col] == measure);
+    var allMatches = d.values.raw[0].raw;
+    var measure = config[axis].measure_detail.measure;
+    var matches = allMatches.filter(f => f[config.measure_col] == measure);
 
     //draw the rug
     var min_value = axis == 'x' ? chart.y.domain()[0] : chart.x.domain()[0];

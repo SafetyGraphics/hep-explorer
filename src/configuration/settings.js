@@ -4,7 +4,7 @@ export default function settings() {
         value_col: 'STRESN',
         measure_col: 'TEST',
         visit_col: 'VISIT',
-        visitn_col: 'VISITN',
+        visitn_col: 'VISITNUM',
         studyday_col: 'DY',
         unit_col: 'STRESU',
         normal_col_low: 'STNRLO',
@@ -27,13 +27,13 @@ export default function settings() {
                 }
             },
             {
-                label: 'ALP',
-                measure: 'Alkaline phosphatase (ALP)',
-                axis: null,
+                label: 'AST',
+                measure: 'Aminotransferase, aspartate (AST)',
+                axis: 'x',
                 imputation: 'data-driven',
                 cut: {
                     relative_baseline: 3.8,
-                    relative_uln: 1,
+                    relative_uln: 3,
                     absolute: 1.0
                 }
             },
@@ -47,7 +47,18 @@ export default function settings() {
                     relative_uln: 2,
                     absolute: 40
                 }
-            }
+            },
+            {
+                label: 'ALP',
+                measure: 'Alkaline phosphatase (ALP)',
+                axis: 'z',
+                imputation: 'data-driven',
+                cut: {
+                    relative_baseline: 3.8,
+                    relative_uln: 1,
+                    absolute: 1.0
+                }
+            },
         ],
         missingValues: ['', 'NA', 'N/A'],
         axis_options: [

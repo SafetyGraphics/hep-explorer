@@ -12,11 +12,41 @@ export default function syncControlInputs(controlInputs, settings) {
         controlInputs = controlInputs.filter(controlInput => controlInput.label != 'Group');
     }
 
+    //Sync x-axis measure control.
+    const xAxisMeasures = settings.measure_details
+        .filter(measure_detail => measure_detail.axis === 'x');
+
+    if (xAxisMeasures.length === 1)
+        controlInputs = controlInputs
+            .filter(controlInput => controlInput.option !== 'x.measure_index');
+    else {
+        const xAxisMeasureControl = controlInputs
+            .find(controlInput => controlInput.option === 'x.measure_index');
+        xAxisMeasureControl.start = xAxisMeasures[0].label;
+        xAxisMeasureControl.values = xAxisMeasures
+            .map(xAxisMeasure => xAxisMeasure.label);
+    }
+
+    //Sync y-axis measure control.
+    const yAxisMeasures = settings.measure_details
+        .filter(measure_detail => measure_detail.axis === 'y');
+
+    if (yAxisMeasures.length === 1)
+        controlInputs = controlInputs
+            .filter(controlInput => controlInput.option !== 'y.measure_index');
+    else {
+        const yAxisMeasureControl = controlInputs
+            .find(controlInput => controlInput.option === 'y.measure_index');
+        yAxisMeasureControl.start = yAxisMeasures[0].label;
+        yAxisMeasureControl.values = yAxisMeasures
+            .map(yAxisMeasure => yAxisMeasure.label);
+    }
+
     //Sync point size control.
     const pointSizeControl = controlInputs.find(
         controlInput => controlInput.label === 'Point Size'
     );
-    settings.measure_details.filter(f => (f.axis != 'x') & (f.axis != 'y')).forEach(group => {
+    settings.measure_details.filter(f => (f.axis != 'x') && (f.axis != 'y')).forEach(group => {
         pointSizeControl.values.push(group.label);
     });
 

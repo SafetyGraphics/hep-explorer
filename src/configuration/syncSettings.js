@@ -76,5 +76,9 @@ export default function syncSettings(settings) {
         settings.details = defaultDetails;
     }
 
+    //Attach measure details to axis settings.
+    settings.x.measure_detail = settings.measure_details.find(measure_detail => measure_detail.axis === 'x');
+    settings.y.measure_detail = settings.measure_details.find(measure_detail => measure_detail.axis === 'y');
+
     return settings;
 }

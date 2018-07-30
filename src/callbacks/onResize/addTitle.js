@@ -4,8 +4,8 @@ export function addTitle() {
     var points = this.marks[0].circles;
     points.select('title').remove();
     points.append('title').text(function(d) {
-        var xvar = config.measure_details.find(f => f.axis == 'x').label;
-        var yvar = config.measure_details.find(f => f.axis == 'y').label;
+        var xvar = config.x.measure_detail.label;
+        var yvar = config.y.measure_detail.label;
         var raw = d.values.raw[0],
             xLabel =
                 config.x.label +

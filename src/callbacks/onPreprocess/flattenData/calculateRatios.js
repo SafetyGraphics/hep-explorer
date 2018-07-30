@@ -11,7 +11,7 @@ export default function calculateRatios(d, participant_obj) {
     participant_obj.rRatio =
         participant_obj[
             `${
-                this.config.measure_details.find(measure_detail => measure_detail.axis === 'x')
+                this.config.x.measure_detail
                     .label
             }_relative_uln/${
                 this.config.measure_details.find(measure_detail => measure_detail.axis === 'z')
@@ -21,5 +21,4 @@ export default function calculateRatios(d, participant_obj) {
 
     //Define flag given r-ratio minimum.
     participant_obj.rRatioFlag = participant_obj.rRatio > this.config.r_ratio ? 'Y' : 'N';
-    console.log(participant_obj);
 }
