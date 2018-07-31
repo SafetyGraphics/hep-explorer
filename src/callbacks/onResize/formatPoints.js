@@ -1,7 +1,7 @@
 export function formatPoints() {
     var chart = this;
     var config = this.config;
-    var points = this.svg.selectAll('g.point').select('circle');
+    var points = this.marks[0].circles;
 
     points
         .attr('stroke', function(d) {
@@ -16,5 +16,5 @@ export function formatPoints() {
                 pointColor = chart.colorScale(raw[config.color_by]);
             return disabled ? 'white' : pointColor;
         })
-        .attr('stroke-width', 1);
+        .attr('stroke-width', this.marks[0].attributes['stroke-width']);
 }

@@ -1,6 +1,8 @@
 //Replicate settings in multiple places in the settings object
 export default function syncSettings(settings) {
     settings.marks[0].per[0] = settings.id_col;
+    settings.marks[1].per[0] = settings.id_col;
+    settings.marks[1].per[1] = settings.visit_col;
 
     //set grouping config
     if (!(settings.group_cols instanceof Array && settings.group_cols.length)) {

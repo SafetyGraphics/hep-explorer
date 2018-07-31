@@ -20,10 +20,24 @@ export default function webcharts() {
             {
                 per: [], // set in syncSettings()
                 type: 'circle',
-                summarizeY: 'mean',
                 summarizeX: 'mean',
-                attributes: { 'fill-opacity': 0 }
-            }
+                summarizeY: 'mean',
+                attributes: {
+                    'fill-opacity': 0,
+                    'stroke-width': 1.5,
+                },
+            },
+            {
+                per: [], // set in syncSettings()
+                type: 'circle',
+                summarizeX: 'mean',
+                summarizeY: 'mean',
+                attributes: {
+                    'fill-opacity': .1,
+                    'stroke-width': .5,
+                },
+                radius: 1,
+            },
         ],
         gridlines: 'xy',
         color_by: null, //set in syncSettings

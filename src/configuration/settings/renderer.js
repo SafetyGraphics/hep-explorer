@@ -13,7 +13,7 @@ export default function renderer() {
         filters: null,
         details: null,
         r_ratio: 0,
-        visit_level_points: false,
+        visit_level_points: true,
         measure_details: [
             {
                 label: 'ALT',
