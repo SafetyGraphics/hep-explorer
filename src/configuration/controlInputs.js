@@ -60,7 +60,7 @@ export default function controlInputs() {
         {
             type: 'dropdown',
             label: 'Axis Type',
-            description: 'Linear or Log Axes',
+            description: 'Linear or log axes',
             options: ['x.type', 'y.type'],
             start: null, // set in syncControlInputs()
             values: ['linear', 'log'],
@@ -77,6 +77,12 @@ export default function controlInputs() {
             label: 'Minimum R Ratio',
             description: 'Display points with R ratios greater or equal to X',
             option: 'r_ratio'
-        }
+        },
+        {
+            type: 'checkbox',
+            label: 'Visit-level Results',
+            description: 'Display visit-level data points',
+            option: 'visit_level_points'
+        },
     ];
 }
