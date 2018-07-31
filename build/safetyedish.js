@@ -329,7 +329,7 @@
             filters: null,
             details: null,
             r_ratio: 0,
-            visit_level_points: true,
+            visit_level_points: false,
             measure_details: [
                 {
                     label: 'ALT',
