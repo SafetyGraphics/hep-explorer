@@ -58,7 +58,7 @@ export default function settings() {
                     relative_uln: 1,
                     absolute: 1.0
                 }
-            },
+            }
         ],
         missingValues: ['', 'NA', 'N/A'],
         axis_options: [

@@ -70,16 +70,22 @@ export default function syncSettings(settings) {
                     value_col: detail.value_col ? detail.value_col : detail,
                     label: detail.label
                         ? detail.label
-                        : detail.value_col ? detail.value_col : detail
+                        : detail.value_col
+                            ? detail.value_col
+                            : detail
                 });
         });
         settings.details = defaultDetails;
     }
 
     //Attach measure details to axis settings.
-    settings.x.measure_detail = settings.measure_details.find(measure_detail => measure_detail.axis === 'x');
+    settings.x.measure_detail = settings.measure_details.find(
+        measure_detail => measure_detail.axis === 'x'
+    );
     settings.x.column = settings.x.measure_detail.label;
-    settings.y.measure_detail = settings.measure_details.find(measure_detail => measure_detail.axis === 'y');
+    settings.y.measure_detail = settings.measure_details.find(
+        measure_detail => measure_detail.axis === 'y'
+    );
     settings.y.column = settings.y.measure_detail.label;
 
     return settings;

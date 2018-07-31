@@ -16,10 +16,10 @@ export function setDomain(dimension) {
         // use the smallest raw value for a log axis
         var measure = config[dimension].measure_detail['measure'];
         var values = this.imputed_data
-                .filter(f => f[config.measure_col] == measure)
-                .map(m => +m[config.display])
-                .filter(m => m > 0)
-                .sort((a, b) => a - b);
+            .filter(f => f[config.measure_col] == measure)
+            .map(m => +m[config.display])
+            .filter(m => m > 0)
+            .sort((a, b) => a - b);
         var minValue = d3.min(values);
 
         if (minValue < domain[0]) {

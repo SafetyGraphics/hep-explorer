@@ -12,56 +12,56 @@ export default function syncControlInputs(controlInputs, settings) {
         controlInputs = controlInputs.filter(controlInput => controlInput.label != 'Group');
 
     //Sync x-axis measure control.
-    const xAxisMeasures = settings.measure_details
-        .filter(measure_detail => measure_detail.axis === 'x');
+    const xAxisMeasures = settings.measure_details.filter(
+        measure_detail => measure_detail.axis === 'x'
+    );
 
     if (xAxisMeasures.length === 1)
-        controlInputs = controlInputs
-            .filter(controlInput => controlInput.option !== 'x.column');
+        controlInputs = controlInputs.filter(controlInput => controlInput.option !== 'x.column');
     else {
-        const xAxisMeasureControl = controlInputs
-            .find(controlInput => controlInput.option === 'x.column');
+        const xAxisMeasureControl = controlInputs.find(
+            controlInput => controlInput.option === 'x.column'
+        );
         xAxisMeasureControl.description = xAxisMeasures
             .map(xAxisMeasure => xAxisMeasure.label)
             .join(', ');
         xAxisMeasureControl.start = xAxisMeasures[0].label;
-        xAxisMeasureControl.values = xAxisMeasures
-            .map(xAxisMeasure => xAxisMeasure.label);
+        xAxisMeasureControl.values = xAxisMeasures.map(xAxisMeasure => xAxisMeasure.label);
     }
 
     //Sync x-axis cut control.
-    controlInputs
-        .find(controlInput => controlInput.option === 'quadrants.cut_data.x')
-        .label = `${xAxisMeasures[0].label} Cutpoint`;
+    controlInputs.find(controlInput => controlInput.option === 'quadrants.cut_data.x').label = `${
+        xAxisMeasures[0].label
+    } Cutpoint`;
 
     //Sync y-axis measure control.
-    const yAxisMeasures = settings.measure_details
-        .filter(measure_detail => measure_detail.axis === 'y');
+    const yAxisMeasures = settings.measure_details.filter(
+        measure_detail => measure_detail.axis === 'y'
+    );
 
     if (yAxisMeasures.length === 1)
-        controlInputs = controlInputs
-            .filter(controlInput => controlInput.option !== 'y.column');
+        controlInputs = controlInputs.filter(controlInput => controlInput.option !== 'y.column');
     else {
-        const yAxisMeasureControl = controlInputs
-            .find(controlInput => controlInput.option === 'y.column');
+        const yAxisMeasureControl = controlInputs.find(
+            controlInput => controlInput.option === 'y.column'
+        );
         yAxisMeasureControl.description = yAxisMeasures
             .map(yAxisMeasure => yAxisMeasure.label)
             .join(', ');
         yAxisMeasureControl.start = yAxisMeasures[0].label;
-        yAxisMeasureControl.values = yAxisMeasures
-            .map(yAxisMeasure => yAxisMeasure.label);
+        yAxisMeasureControl.values = yAxisMeasures.map(yAxisMeasure => yAxisMeasure.label);
     }
 
     //Sync y-axis cut control.
-    controlInputs
-        .find(controlInput => controlInput.option === 'quadrants.cut_data.y')
-        .label = `${yAxisMeasures[0].label} Cutpoint`;
+    controlInputs.find(controlInput => controlInput.option === 'quadrants.cut_data.y').label = `${
+        yAxisMeasures[0].label
+    } Cutpoint`;
 
     //Sync point size control.
     const pointSizeControl = controlInputs.find(
         controlInput => controlInput.label === 'Point Size'
     );
-    settings.measure_details.filter(f => (f.axis != 'x') && (f.axis != 'y')).forEach(group => {
+    settings.measure_details.filter(f => f.axis != 'x' && f.axis != 'y').forEach(group => {
         pointSizeControl.values.push(group.label);
     });
 
@@ -70,9 +70,9 @@ export default function syncControlInputs(controlInputs, settings) {
         controlInputs = controlInputs.filter(controlInput => controlInput.label != 'Point Size');
 
     //Sync display control
-    controlInputs
-        .find(controlInput => controlInput.label === 'Display Type')
-        .values = settings.axis_options.map(m => m.label);
+    controlInputs.find(
+        controlInput => controlInput.label === 'Display Type'
+    ).values = settings.axis_options.map(m => m.label);
 
     //Add custom filters to control inputs.
     if (settings.filters && settings.filters.length > 0) {

@@ -7,7 +7,7 @@ export default function controlInputs() {
             options: ['color_by'],
             start: null, // set in syncControlInputs()
             values: ['NONE'], // set in syncControlInputs()
-            require: true,
+            require: true
         },
         {
             type: 'dropdown',
@@ -16,7 +16,7 @@ export default function controlInputs() {
             options: ['displayLabel'],
             start: null, // set in syncControlInputs()
             values: null, // set in syncControlInputs()
-            require: true,
+            require: true
         },
         {
             type: 'dropdown',
@@ -25,13 +25,13 @@ export default function controlInputs() {
             option: 'x.column',
             start: null, // set in syncControlInputs()
             values: null, //set in syncControlInptus()
-            require: true,
+            require: true
         },
         {
             type: 'number',
             label: null, // set in syncControlInputs
             description: 'X-axis cut',
-            option: 'quadrants.cut_data.x',
+            option: 'quadrants.cut_data.x'
         },
         {
             type: 'dropdown',
@@ -40,13 +40,13 @@ export default function controlInputs() {
             option: 'y.column',
             start: null, // set in syncControlInputs()
             values: null, //set in syncControlInptus()
-            require: true,
+            require: true
         },
         {
             type: 'number',
             label: null, // set in syncControlInputs
             description: 'Y-axis cut',
-            option: 'quadrants.cut_data.y',
+            option: 'quadrants.cut_data.y'
         },
         {
             type: 'dropdown',
@@ -55,7 +55,7 @@ export default function controlInputs() {
             options: ['point_size'],
             start: 'None', // set in syncControlInputs()
             values: ['Uniform'],
-            require: true,
+            require: true
         },
         {
             type: 'dropdown',
@@ -64,19 +64,19 @@ export default function controlInputs() {
             options: ['x.type', 'y.type'],
             start: null, // set in syncControlInputs()
             values: ['linear', 'log'],
-            require: true,
+            require: true
         },
         {
             type: 'number',
             label: 'Highlight Points Based on Timing',
             description: 'Fill points with max values less than X days apart',
-            option: 'visit_window',
+            option: 'visit_window'
         },
         {
             type: 'number',
             label: 'Minimum R Ratio',
             description: 'Display points with R ratios greater or equal to X',
-            option: 'r_ratio',
+            option: 'r_ratio'
         }
     ];
 }

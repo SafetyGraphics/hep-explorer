@@ -22,9 +22,10 @@ export function init() {
         true,
         this.config.y.type == 'log'
     );
-    ybox
-        .select('g.boxplot')
-        .attr('transform', 'translate(' + (this.plot_width + this.config.margin.right / 2) + ',0)');
+    ybox.select('g.boxplot').attr(
+        'transform',
+        'translate(' + (this.plot_width + this.config.margin.right / 2) + ',0)'
+    );
 
     //X-axis box plot
     var xValues = this.current_data.map(function(d) {
@@ -44,7 +45,8 @@ export function init() {
         false, // horizontal?
         this.config.y.type == 'log' // log?
     );
-    xbox
-        .select('g.boxplot')
-        .attr('transform', 'translate(0,' + -(this.config.margin.top / 2) + ')');
+    xbox.select('g.boxplot').attr(
+        'transform',
+        'translate(0,' + -(this.config.margin.top / 2) + ')'
+    );
 }

@@ -7,7 +7,8 @@ export function updateQuadrantData() {
     dimensions.forEach(function(dimension) {
         //change to the stored cut point if the display changed
         if (config.quadrants.cut_data.displayChange) {
-            config.quadrants.cut_data[dimension] = config[dimension].measure_detail.cut[config.display];
+            config.quadrants.cut_data[dimension] =
+                config[dimension].measure_detail.cut[config.display];
             chart.controls.wrap
                 .selectAll('div.control-group')
                 .filter(f => f.option == 'quadrants.cut_data.' + dimension)
