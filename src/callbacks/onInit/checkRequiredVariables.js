@@ -18,8 +18,9 @@ export default function checkRequiredVariables() {
             .filter(detail => (detail.value_col || detail) !== this.config.id_col);
         this.varList = d3.merge([this.varList, detailVars]);
     }
-    const missingVariables = this.varList
-        .filter(variable => Object.keys(this.raw_data[0]).indexOf(variable) < 0);
+    const missingVariables = this.varList.filter(
+        variable => Object.keys(this.raw_data[0]).indexOf(variable) < 0
+    );
     if (missingVariables.length > 0)
         alert(
             `The data are missing ${

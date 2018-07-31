@@ -83,6 +83,6 @@ export default function controlInputs() {
             label: 'Visit-level Results',
             description: 'Display visit-level data points',
             option: 'visit_level_points'
-        },
+        }
     ];
 }

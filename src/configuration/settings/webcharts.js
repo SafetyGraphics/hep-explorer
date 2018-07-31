@@ -24,8 +24,8 @@ export default function webcharts() {
                 summarizeY: 'mean',
                 attributes: {
                     'fill-opacity': 0,
-                    'stroke-width': 1.5,
-                },
+                    'stroke-width': 1.5
+                }
             },
             {
                 per: [], // set in syncSettings()
@@ -33,11 +33,11 @@ export default function webcharts() {
                 summarizeX: 'mean',
                 summarizeY: 'mean',
                 attributes: {
-                    'fill-opacity': .1,
-                    'stroke-width': .5,
+                    'fill-opacity': 0.1,
+                    'stroke-width': 0.5
                 },
-                radius: 1,
-            },
+                radius: 1
+            }
         ],
         gridlines: 'xy',
         color_by: null, //set in syncSettings

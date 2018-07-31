@@ -19,7 +19,8 @@ export function addPointClick() {
             .attr('fill', 'white')
             .classed('disabled', true); //disable mouseover while viewing participant details
 
-        d3.select(this)
+        d3
+            .select(this)
             .attr('stroke', d => chart.colorScale(d.values.raw[0][config.color_by])) //highlight selected point
             .attr('stroke-width', 3);
 

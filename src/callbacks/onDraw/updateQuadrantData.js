@@ -30,12 +30,11 @@ export function updateQuadrantData() {
     const y_var = this.config.y.column;
 
     const participantData = this.raw_data.filter(d => d.level === 'participant');
-    participantData
-        .forEach(function(d) {
-            var x_cat = d[x_var] >= config.quadrants.cut_data.x ? 'xHigh' : 'xNormal';
-            var y_cat = d[y_var] >= config.quadrants.cut_data.y ? 'yHigh' : 'yNormal';
-            d['eDISH_quadrant'] = x_cat + ':' + y_cat;
-        });
+    participantData.forEach(function(d) {
+        var x_cat = d[x_var] >= config.quadrants.cut_data.x ? 'xHigh' : 'xNormal';
+        var y_cat = d[y_var] >= config.quadrants.cut_data.y ? 'yHigh' : 'yNormal';
+        d['eDISH_quadrant'] = x_cat + ':' + y_cat;
+    });
 
     //update Quadrant data
     config.quadrants.quadrant_data.forEach(function(quad) {

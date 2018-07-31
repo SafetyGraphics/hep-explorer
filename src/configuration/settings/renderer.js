@@ -73,6 +73,6 @@ export default function renderer() {
         participantProfileURL: null,
         point_size: 'Uniform',
         visit_window: 30,
-        showTitle: true,
+        showTitle: true
     };
 }
