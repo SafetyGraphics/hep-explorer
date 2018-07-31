@@ -8,9 +8,8 @@ export default function syncControlInputs(controlInputs, settings) {
     });
 
     //drop the group control if NONE is the only option
-    if (settings.group_cols.length == 1) {
+    if (settings.group_cols.length == 1)
         controlInputs = controlInputs.filter(controlInput => controlInput.label != 'Group');
-    }
 
     //Sync x-axis measure control.
     const xAxisMeasures = settings.measure_details
@@ -18,14 +17,22 @@ export default function syncControlInputs(controlInputs, settings) {
 
     if (xAxisMeasures.length === 1)
         controlInputs = controlInputs
-            .filter(controlInput => controlInput.option !== 'x.measure_index');
+            .filter(controlInput => controlInput.option !== 'x.column');
     else {
         const xAxisMeasureControl = controlInputs
-            .find(controlInput => controlInput.option === 'x.measure_index');
+            .find(controlInput => controlInput.option === 'x.column');
+        xAxisMeasureControl.description = xAxisMeasures
+            .map(xAxisMeasure => xAxisMeasure.label)
+            .join(', ');
         xAxisMeasureControl.start = xAxisMeasures[0].label;
         xAxisMeasureControl.values = xAxisMeasures
             .map(xAxisMeasure => xAxisMeasure.label);
     }
+
+    //Sync x-axis cut control.
+    controlInputs
+        .find(controlInput => controlInput.option === 'quadrants.cut_data.x')
+        .label = `${xAxisMeasures[0].label} Cutpoint`;
 
     //Sync y-axis measure control.
     const yAxisMeasures = settings.measure_details
@@ -33,14 +40,22 @@ export default function syncControlInputs(controlInputs, settings) {
 
     if (yAxisMeasures.length === 1)
         controlInputs = controlInputs
-            .filter(controlInput => controlInput.option !== 'y.measure_index');
+            .filter(controlInput => controlInput.option !== 'y.column');
     else {
         const yAxisMeasureControl = controlInputs
-            .find(controlInput => controlInput.option === 'y.measure_index');
+            .find(controlInput => controlInput.option === 'y.column');
+        yAxisMeasureControl.description = yAxisMeasures
+            .map(yAxisMeasure => yAxisMeasure.label)
+            .join(', ');
         yAxisMeasureControl.start = yAxisMeasures[0].label;
         yAxisMeasureControl.values = yAxisMeasures
             .map(yAxisMeasure => yAxisMeasure.label);
     }
+
+    //Sync y-axis cut control.
+    controlInputs
+        .find(controlInput => controlInput.option === 'quadrants.cut_data.y')
+        .label = `${yAxisMeasures[0].label} Cutpoint`;
 
     //Sync point size control.
     const pointSizeControl = controlInputs.find(
@@ -51,15 +66,13 @@ export default function syncControlInputs(controlInputs, settings) {
     });
 
     //drop the pointSize control if NONE is the only option
-    if (settings.measure_details.length == 2) {
+    if (settings.measure_details.length == 2)
         controlInputs = controlInputs.filter(controlInput => controlInput.label != 'Point Size');
-    }
 
     //Sync display control
-    const displayControl = controlInputs.filter(
-        controlInput => controlInput.label === 'Display Type'
-    )[0];
-    displayControl.values = settings.axis_options.map(m => m.label);
+    controlInputs
+        .find(controlInput => controlInput.label === 'Display Type')
+        .values = settings.axis_options.map(m => m.label);
 
     //Add custom filters to control inputs.
     if (settings.filters && settings.filters.length > 0) {

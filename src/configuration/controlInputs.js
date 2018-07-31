@@ -21,30 +21,30 @@ export default function controlInputs() {
         {
             type: 'dropdown',
             label: 'X-axis Measure',
-            description: 'ALT or AST',
-            option: 'x.measure_index',
+            description: null, // set in syncControlInputs()
+            option: 'x.column',
             start: null, // set in syncControlInputs()
             values: null, //set in syncControlInptus()
             require: true,
         },
         {
             type: 'number',
-            label: 'ALT Cutpoint',
+            label: null, // set in syncControlInputs
             description: 'X-axis cut',
             option: 'quadrants.cut_data.x',
         },
         {
             type: 'dropdown',
             label: 'Y-axis Measure',
-            description: 'TB',
-            option: 'y.measure_index',
+            description: null, // set in syncControlInputs()
+            option: 'y.column',
             start: null, // set in syncControlInputs()
             values: null, //set in syncControlInptus()
             require: true,
         },
         {
             type: 'number',
-            label: 'TB Cutpoint',
+            label: null, // set in syncControlInputs
             description: 'Y-axis cut',
             option: 'quadrants.cut_data.y',
         },

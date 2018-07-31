@@ -1,6 +1,5 @@
-import './util/object-assign';
-import './polyfills/array-find.js';
-import './polyfills/moveTo.js';
+import './util/polyfills';
+import './util/moveTo.js';
 import clone from './util/clone.js';
 
 import configuration from './configuration/index';

@@ -5,28 +5,37 @@
 }(this, (function (webcharts) { 'use strict';
 
 if (typeof Object.assign != 'function') {
-    (function () {
-        Object.assign = function (target) {
+    Object.defineProperty(Object, 'assign', {
+        value: function assign(target, varArgs) {
+            // .length of function is 2
             'use strict';
 
-            if (target === undefined || target === null) {
+            if (target == null) {
+                // TypeError if undefined or null
                 throw new TypeError('Cannot convert undefined or null to object');
             }
 
-            var output = Object(target);
+            var to = Object(target);
+
             for (var index = 1; index < arguments.length; index++) {
-                var source = arguments[index];
-                if (source !== undefined && source !== null) {
-                    for (var nextKey in source) {
-                        if (source.hasOwnProperty(nextKey)) {
-                            output[nextKey] = source[nextKey];
+                var nextSource = arguments[index];
+
+                if (nextSource != null) {
+                    // Skip over if undefined or null
+                    for (var nextKey in nextSource) {
+                        // Avoid bugs when hasOwnProperty is shadowed
+                        if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                            to[nextKey] = nextSource[nextKey];
                         }
                     }
                 }
             }
-            return output;
-        };
-    })();
+
+            return to;
+        },
+        writable: true,
+        configurable: true
+    });
 }
 
 if (!Array.prototype.find) {
@@ -69,6 +78,50 @@ if (!Array.prototype.find) {
 
             // 7. Return undefined.
             return undefined;
+        }
+    });
+}
+
+if (!Array.prototype.findIndex) {
+    Object.defineProperty(Array.prototype, 'findIndex', {
+        value: function value(predicate) {
+            // 1. Let O be ? ToObject(this value).
+            if (this == null) {
+                throw new TypeError('"this" is null or not defined');
+            }
+
+            var o = Object(this);
+
+            // 2. Let len be ? ToLength(? Get(O, "length")).
+            var len = o.length >>> 0;
+
+            // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+            if (typeof predicate !== 'function') {
+                throw new TypeError('predicate must be a function');
+            }
+
+            // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+            var thisArg = arguments[1];
+
+            // 5. Let k be 0.
+            var k = 0;
+
+            // 6. Repeat, while k < len
+            while (k < len) {
+                // a. Let Pk be ! ToString(k).
+                // b. Let kValue be ? Get(O, Pk).
+                // c. Let testResult be ToBoolean(? Call(predicate, T, � kValue, k, O �)).
+                // d. If testResult is true, return k.
+                var kValue = o[k];
+                if (predicate.call(thisArg, kValue, k, o)) {
+                    return k;
+                }
+                // e. Increase k by 1.
+                k++;
+            }
+
+            // 7. Return -1.
+            return -1;
         }
     });
 }
@@ -433,9 +486,11 @@ function syncSettings(settings) {
     settings.x.measure_detail = settings.measure_details.find(function (measure_detail) {
         return measure_detail.axis === 'x';
     });
+    settings.x.column = settings.x.measure_detail.label;
     settings.y.measure_detail = settings.measure_details.find(function (measure_detail) {
         return measure_detail.axis === 'y';
     });
+    settings.y.column = settings.y.measure_detail.label;
 
     return settings;
 }
@@ -460,27 +515,27 @@ function controlInputs() {
     }, {
         type: 'dropdown',
         label: 'X-axis Measure',
-        description: 'ALT or AST',
-        option: 'x.measure_index',
+        description: null, // set in syncControlInputs()
+        option: 'x.column',
         start: null, // set in syncControlInputs()
         values: null, //set in syncControlInptus()
         require: true
     }, {
         type: 'number',
-        label: 'ALT Cutpoint',
+        label: null, // set in syncControlInputs
         description: 'X-axis cut',
         option: 'quadrants.cut_data.x'
     }, {
         type: 'dropdown',
         label: 'Y-axis Measure',
-        description: 'TB',
-        option: 'y.measure_index',
+        description: null, // set in syncControlInputs()
+        option: 'y.column',
         start: null, // set in syncControlInputs()
         values: null, //set in syncControlInptus()
         require: true
     }, {
         type: 'number',
-        label: 'TB Cutpoint',
+        label: null, // set in syncControlInputs
         description: 'Y-axis cut',
         option: 'quadrants.cut_data.y'
     }, {
@@ -526,11 +581,9 @@ function syncControlInputs(controlInputs, settings) {
     });
 
     //drop the group control if NONE is the only option
-    if (settings.group_cols.length == 1) {
-        controlInputs = controlInputs.filter(function (controlInput) {
-            return controlInput.label != 'Group';
-        });
-    }
+    if (settings.group_cols.length == 1) controlInputs = controlInputs.filter(function (controlInput) {
+        return controlInput.label != 'Group';
+    });
 
     //Sync x-axis measure control.
     var xAxisMeasures = settings.measure_details.filter(function (measure_detail) {
@@ -538,16 +591,24 @@ function syncControlInputs(controlInputs, settings) {
     });
 
     if (xAxisMeasures.length === 1) controlInputs = controlInputs.filter(function (controlInput) {
-        return controlInput.option !== 'x.measure_index';
+        return controlInput.option !== 'x.column';
     });else {
         var xAxisMeasureControl = controlInputs.find(function (controlInput) {
-            return controlInput.option === 'x.measure_index';
+            return controlInput.option === 'x.column';
         });
+        xAxisMeasureControl.description = xAxisMeasures.map(function (xAxisMeasure) {
+            return xAxisMeasure.label;
+        }).join(', ');
         xAxisMeasureControl.start = xAxisMeasures[0].label;
         xAxisMeasureControl.values = xAxisMeasures.map(function (xAxisMeasure) {
             return xAxisMeasure.label;
         });
     }
+
+    //Sync x-axis cut control.
+    controlInputs.find(function (controlInput) {
+        return controlInput.option === 'quadrants.cut_data.x';
+    }).label = xAxisMeasures[0].label + ' Cutpoint';
 
     //Sync y-axis measure control.
     var yAxisMeasures = settings.measure_details.filter(function (measure_detail) {
@@ -555,16 +616,24 @@ function syncControlInputs(controlInputs, settings) {
     });
 
     if (yAxisMeasures.length === 1) controlInputs = controlInputs.filter(function (controlInput) {
-        return controlInput.option !== 'y.measure_index';
+        return controlInput.option !== 'y.column';
     });else {
         var yAxisMeasureControl = controlInputs.find(function (controlInput) {
-            return controlInput.option === 'y.measure_index';
+            return controlInput.option === 'y.column';
         });
+        yAxisMeasureControl.description = yAxisMeasures.map(function (yAxisMeasure) {
+            return yAxisMeasure.label;
+        }).join(', ');
         yAxisMeasureControl.start = yAxisMeasures[0].label;
         yAxisMeasureControl.values = yAxisMeasures.map(function (yAxisMeasure) {
             return yAxisMeasure.label;
         });
     }
+
+    //Sync y-axis cut control.
+    controlInputs.find(function (controlInput) {
+        return controlInput.option === 'quadrants.cut_data.y';
+    }).label = yAxisMeasures[0].label + ' Cutpoint';
 
     //Sync point size control.
     var pointSizeControl = controlInputs.find(function (controlInput) {
@@ -577,17 +646,14 @@ function syncControlInputs(controlInputs, settings) {
     });
 
     //drop the pointSize control if NONE is the only option
-    if (settings.measure_details.length == 2) {
-        controlInputs = controlInputs.filter(function (controlInput) {
-            return controlInput.label != 'Point Size';
-        });
-    }
+    if (settings.measure_details.length == 2) controlInputs = controlInputs.filter(function (controlInput) {
+        return controlInput.label != 'Point Size';
+    });
 
     //Sync display control
-    var displayControl = controlInputs.filter(function (controlInput) {
+    controlInputs.find(function (controlInput) {
         return controlInput.label === 'Display Type';
-    })[0];
-    displayControl.values = settings.axis_options.map(function (m) {
+    }).values = settings.axis_options.map(function (m) {
         return m.label;
     });
 
@@ -618,22 +684,31 @@ function checkMeasureDetails() {
     this.measures = d3.set(this.raw_data.map(function (d) {
         return d[_this.config.measure_col];
     })).values().sort();
-    var missingMeasures = this.config.measure_details.map(function (measure_detail) {
+    var specifiedMeasures = this.config.measure_details.map(function (measure_detail) {
         return measure_detail.measure;
-    }).filter(function (measure) {
+    });
+    this.config.measure_details = this.config.measure_details.filter(function (measure) {
         return _this.measures.indexOf(measure) < 0;
     });
-    if (missingMeasures.length) alert('The data are missing ' + (missingMeasures.length === 1 ? 'this measure' : 'these measures') + ': ' + missingMeasures.join(', ') + '.');
+    var missingMeasures = specifiedMeasures.filter(function (measure) {
+        return _this.config.measure_details.map(function (measure_detail) {
+            return measure_detail.measure;
+        }).indexOf(measure) < 0;
+    });
+    var nMeasuresRemoved = missingMeasures.length;
+    if (nMeasuresRemoved > 0) alert('The data are missing ' + (nMeasuresRemoved === 1 ? 'this measure' : 'these measures') + ': ' + missingMeasures.join(', ') + '.');
 }
 
 function iterateOverData() {
     var _this = this;
 
     this.raw_data.forEach(function (d) {
+        d[_this.config.x.column] = null; // placeholder variable for x-axis
+        d[_this.config.y.column] = null; // placeholder variable for y-axis
         d.NONE = 'All Participants'; // placeholder variable for non-grouped comparisons
-        if (typeof d[_this.config.value_col] == 'string') {
-            d[_this.config.value_col] = d[_this.config.value_col].replace(/\s/g, ''); // remove space characters
-        }
+
+        //Remove space characters from result variable.
+        if (typeof d[_this.config.value_col] == 'string') d[_this.config.value_col] = d[_this.config.value_col].replace(/\s/g, ''); // remove space characters
     });
 }
 
@@ -1027,6 +1102,38 @@ function onLayout() {
     initDisplayControlLabels.call(this);
 }
 
+function updateAxisSettings() {
+    var config = this.config;
+
+    //note: doing this in preprocess so that we can (theoretically have a control to change the variable on each axis later on)
+    var unit = config.display == 'relative_uln' ? ' (xULN)' : config.display == 'relative_baseline' ? ' (xBaseline)' : config.display == 'absolute' ? ' (raw values)' : null;
+
+    //Update x-axis settings.
+    config.x.measure_detail = config.measure_details.find(function (measure_detail) {
+        return measure_detail.label === config.x.column;
+    });
+    config.x.label = config.x.measure_detail.measure + unit;
+
+    //Update y-axis settings.
+    config.y.measure_detail = config.measure_details.find(function (measure_detail) {
+        return measure_detail.label === config.y.column;
+    });
+    config.y.label = config.y.measure_detail.measure + unit;
+}
+
+function updateControlCutpointLabels() {
+    if (this.controls.config.inputs.find(function (input) {
+        return input.option === 'quadrants.cut_data.x';
+    })) this.controls.wrap.selectAll('.control-group').filter(function (d) {
+        return d.option === 'quadrants.cut_data.x';
+    }).select('.wc-control-label').text(this.config.x.column + ' Cutpoint');
+    if (this.controls.config.inputs.find(function (input) {
+        return input.option === 'quadrants.cut_data.y';
+    })) this.controls.wrap.selectAll('.control-group').filter(function (d) {
+        return d.option === 'quadrants.cut_data.y';
+    }).select('.wc-control-label').text(this.config.y.column + ' Cutpoint');
+}
+
 function updateRRatioSpan() {
     this.controls.wrap.select('#r-ratio').text(this.config.x.measure_detail.label + 'xULN / ' + this.config.y.measure_detail.label + 'xULN');
 }
@@ -1178,33 +1285,6 @@ function flattenData() {
         return m.values;
     });
     return flat_data;
-}
-
-function updateAxisSettings() {
-    var config = this.config;
-
-    //note: doing this in preprocess so that we can (theoretically have a control to change the variable on each axis later on)
-    config.x.column = this.controls.wrap.selectAll('.control-group').filter(function (d) {
-        return d.option === 'x.column';
-    }).select('option:selected').text();
-    console.log(config.x.column);
-    config.x.measure_detail = config.measure_details.find(function (measure_detail) {
-        return measure_detail.label === config.x.column;
-    });
-    var xMeasure = config.x.measure_detail;
-    config.y.measure_detail = config.measure_details.find(function (measure_detail) {
-        return measure_detail.axis === 'y';
-    });
-    var yMeasure = config.y.measure_detail;
-
-    config.x.column = xMeasure.label;
-
-    var unit = config.display == 'relative_uln' ? ' (xULN)' : config.display == 'relative_baseline' ? ' (xBaseline)' : config.display == 'absolute' ? ' (raw values)' : null;
-
-    config.x.label = xMeasure.measure + unit;
-
-    config.y.column = yMeasure.label;
-    config.y.label = yMeasure.measure + unit;
 }
 
 function setLegendLabel() {
@@ -1386,11 +1466,12 @@ function dropMissingValues() {
 }
 
 function onPreprocess() {
+    updateAxisSettings.call(this); //update axis label based on display type
+    updateControlCutpointLabels.call(this); //update cutpoint control labels given x- and y-axis variables
     updateRRatioSpan.call(this);
     imputeData.call(this); //clean up values < llod
     this.raw_data = flattenData.call(this); //update flattened data
     setLegendLabel.call(this); //update legend label based on group variable
-    updateAxisSettings.call(this); //update axis label based on display type
     dropMissingValues.call(this);
 }
 
