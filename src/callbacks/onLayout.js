@@ -1,3 +1,4 @@
+import setCutpointMinimums from './onLayout/setCutpointMinimums';
 import { initQuadrants } from './onLayout/initQuadrants';
 import { initRugs } from './onLayout/initRugs';
 import { initVisitPath } from './onLayout/initVisitPath';
@@ -8,6 +9,7 @@ import { layoutPanels } from './onLayout/layoutPanels';
 import { initTitle } from './onLayout/initTitle';
 
 export default function onLayout() {
+    setCutpointMinimums.call(this);
     layoutPanels.call(this);
     initTitle.call(this);
     initQuadrants.call(this);

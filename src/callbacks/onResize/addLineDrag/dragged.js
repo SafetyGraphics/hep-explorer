@@ -8,12 +8,13 @@ export function dragged() {
     var lineBack = d3.select(this).select('line.cut-line-backing');
 
     var dimension = d3.select(this).classed('x') ? 'x' : 'y';
+
     // Update the line properties
     var attributes = {
-        x1: parseInt(line.attr('x1')) + (dimension == 'x' ? x : 0),
-        x2: parseInt(line.attr('x2')) + (dimension == 'x' ? x : 0),
-        y1: parseInt(line.attr('y1')) + (dimension == 'y' ? y : 0),
-        y2: parseInt(line.attr('y2')) + (dimension == 'y' ? y : 0)
+        x1: Math.max(0, parseInt(line.attr('x1')) + (dimension == 'x' ? x : 0)),
+        x2: Math.max(0, parseInt(line.attr('x2')) + (dimension == 'x' ? x : 0)),
+        y1: Math.min(chart.plot_height, parseInt(line.attr('y1')) + (dimension == 'y' ? y : 0)),
+        y2: Math.min(chart.plot_height, parseInt(line.attr('y2')) + (dimension == 'y' ? y : 0))
     };
 
     line.attr(attributes);

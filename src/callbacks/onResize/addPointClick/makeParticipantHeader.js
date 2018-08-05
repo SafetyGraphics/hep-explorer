@@ -1,4 +1,3 @@
-import { merge } from 'd3';
 import { clearParticipantDetails } from '../clearParticipantDetails';
 
 export function makeParticipantHeader(d) {

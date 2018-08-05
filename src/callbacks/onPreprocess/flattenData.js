@@ -1,4 +1,3 @@
-import { merge } from 'd3';
 //Converts a one record per measure data object to a one record per participant objects
 export function flattenData() {
     var chart = this;

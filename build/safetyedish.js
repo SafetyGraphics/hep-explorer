@@ -1,10 +1,10 @@
 (function(global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined'
-        ? (module.exports = factory(require('webcharts'), require('d3')))
+        ? (module.exports = factory(require('webcharts')))
         : typeof define === 'function' && define.amd
-            ? define(['webcharts', 'd3'], factory)
-            : (global.safetyedish = factory(global.webCharts, global.d3));
-})(this, function(webcharts, d3$1) {
+            ? define(['webcharts'], factory)
+            : (global.safetyedish = factory(global.webCharts));
+})(this, function(webcharts) {
     'use strict';
 
     if (typeof Object.assign != 'function') {
@@ -599,6 +599,31 @@
         });
     }
 
+    function setCutpointMinimums() {
+        var chart = this;
+
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return /.-axis cut/i.test(d.description);
+            })
+            .attr('min', 0)
+            .on('change', function(d) {
+                var input = d3.select(this).select('input');
+
+                //Prevent a negative input.
+                if (input.property('value') < 0) input.property('value', 0);
+
+                //Update chart setting.
+                chart.config.quadrants.cut_data[
+                    d.description.split('-')[0].toLowerCase()
+                ] = input.property('value');
+
+                //Redraw.
+                chart.draw();
+            });
+    }
+
     var defaultCutData = [
         {
             dimension: 'x',
@@ -879,7 +904,7 @@
 
         //removing the interactivity for now, but could add it back in later if desired
         /*
-         .on('mouseover', function(d) {
+          .on('mouseover', function(d) {
             highlight.call(this, d, chart);
         })
         .on('mouseout', function() {
@@ -1062,6 +1087,7 @@
     }
 
     function onLayout() {
+        setCutpointMinimums.call(this);
         layoutPanels.call(this);
         initTitle.call(this);
         initQuadrants.call(this);
@@ -2441,12 +2467,13 @@
         var lineBack = d3.select(this).select('line.cut-line-backing');
 
         var dimension = d3.select(this).classed('x') ? 'x' : 'y';
+
         // Update the line properties
         var attributes = {
-            x1: parseInt(line.attr('x1')) + (dimension == 'x' ? x : 0),
-            x2: parseInt(line.attr('x2')) + (dimension == 'x' ? x : 0),
-            y1: parseInt(line.attr('y1')) + (dimension == 'y' ? y : 0),
-            y2: parseInt(line.attr('y2')) + (dimension == 'y' ? y : 0)
+            x1: Math.max(0, parseInt(line.attr('x1')) + (dimension == 'x' ? x : 0)),
+            x2: Math.max(0, parseInt(line.attr('x2')) + (dimension == 'x' ? x : 0)),
+            y1: Math.min(chart.plot_height, parseInt(line.attr('y1')) + (dimension == 'y' ? y : 0)),
+            y2: Math.min(chart.plot_height, parseInt(line.attr('y2')) + (dimension == 'y' ? y : 0))
         };
 
         line.attr(attributes);
@@ -2518,22 +2545,22 @@
             .map(function(d) {
                 return +d;
             })
-            .sort(d3$1.ascending);
+            .sort(d3.ascending);
 
-        //set up scales
+        //set up d3.scales
         if (horizontal) {
-            var y = log ? d3$1.scale.log() : d3$1.scale.linear();
+            var y = log ? d3.scale.log() : d3.scale.linear();
             y.range([height, 0]).domain(domain);
-            var x = d3$1.scale.linear().range([0, width]);
+            var x = d3.scale.linear().range([0, width]);
         } else {
-            var x = log ? d3$1.scale.log() : d3$1.scale.linear();
+            var x = log ? d3.scale.log() : d3.scale.linear();
             x.range([0, width]).domain(domain);
-            var y = d3$1.scale.linear().range([height, 0]);
+            var y = d3.scale.linear().range([height, 0]);
         }
 
         var probs = [0.05, 0.25, 0.5, 0.75, 0.95];
         for (var i = 0; i < probs.length; i++) {
-            probs[i] = d3$1.quantile(results, probs[i]);
+            probs[i] = d3.quantile(results, probs[i]);
         }
 
         var boxplot = svg
@@ -2560,9 +2587,9 @@
             .attr('height', box_height)
             .style('fill', boxColor);
 
-        //draw dividing lines at median, 95% and 5%
+        //draw dividing lines at d3.median, 95% and 5%
         var iS = [0, 2, 4];
-        var iSclass = ['', 'median', ''];
+        var iSclass = ['', 'd3.median', ''];
         var iSColor = [boxColor, boxInsideColor, boxColor];
         for (var i = 0; i < iS.length; i++) {
             boxplot
@@ -2591,23 +2618,23 @@
 
         boxplot
             .append('circle')
-            .attr('class', 'boxplot mean')
-            .attr('cx', horizontal ? x(0.5) : x(d3$1.mean(results)))
-            .attr('cy', horizontal ? y(d3$1.mean(results)) : y(0.5))
+            .attr('class', 'boxplot d3.mean')
+            .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
+            .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
             .attr('r', horizontal ? x(boxPlotWidth / 3) : y(1 - boxPlotWidth / 3))
             .style('fill', boxInsideColor)
             .style('stroke', boxColor);
 
         boxplot
             .append('circle')
-            .attr('class', 'boxplot mean')
-            .attr('cx', horizontal ? x(0.5) : x(d3$1.mean(results)))
-            .attr('cy', horizontal ? y(d3$1.mean(results)) : y(0.5))
+            .attr('class', 'boxplot d3.mean')
+            .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
+            .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
             .attr('r', horizontal ? x(boxPlotWidth / 6) : y(1 - boxPlotWidth / 6))
             .style('fill', boxColor)
             .style('stroke', 'None');
 
-        var formatx = fmt ? d3$1.format(fmt) : d3$1.format('.2f');
+        var formatx = fmt ? d3.format(fmt) : d3.format('.2f');
 
         boxplot
             .selectAll('.boxplot')
@@ -2617,32 +2644,32 @@
                     'N = ' +
                     d.values.length +
                     '\n' +
-                    'Min = ' +
-                    d3$1.min(d.values) +
+                    'd3.min = ' +
+                    d3.min(d.values) +
                     '\n' +
                     '5th % = ' +
-                    formatx(d3$1.quantile(d.values, 0.05)) +
+                    formatx(d3.quantile(d.values, 0.05)) +
                     '\n' +
                     'Q1 = ' +
-                    formatx(d3$1.quantile(d.values, 0.25)) +
+                    formatx(d3.quantile(d.values, 0.25)) +
                     '\n' +
-                    'Median = ' +
-                    formatx(d3$1.median(d.values)) +
+                    'd3.median = ' +
+                    formatx(d3.median(d.values)) +
                     '\n' +
                     'Q3 = ' +
-                    formatx(d3$1.quantile(d.values, 0.75)) +
+                    formatx(d3.quantile(d.values, 0.75)) +
                     '\n' +
                     '95th % = ' +
-                    formatx(d3$1.quantile(d.values, 0.95)) +
+                    formatx(d3.quantile(d.values, 0.95)) +
                     '\n' +
-                    'Max = ' +
-                    d3$1.max(d.values) +
+                    'd3.max = ' +
+                    d3.max(d.values) +
                     '\n' +
-                    'Mean = ' +
-                    formatx(d3$1.mean(d.values)) +
+                    'd3.mean = ' +
+                    formatx(d3.mean(d.values)) +
                     '\n' +
                     'StDev = ' +
-                    formatx(d3$1.deviation(d.values))
+                    formatx(d3.deviation(d.values))
                 );
             });
     }
