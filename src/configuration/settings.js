@@ -13,7 +13,8 @@ export default function settings() {
         group_cols: null,
         filters: null,
         details: null,
-        r_ratio: 0,
+        r_ratio_filter: true,
+        r_ratio_cut: 0,
         measure_details: [
             {
                 label: 'ALT',

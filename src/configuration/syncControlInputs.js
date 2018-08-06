@@ -12,6 +12,13 @@ export default function syncControlInputs(controlInputs, settings) {
         controlInputs = controlInputs.filter(controlInput => controlInput.label != 'Group');
     }
 
+    //drop the R Ratio control if r_ratio_filter is false
+    if (!settings.r_ratio_filter) {
+        controlInputs = controlInputs.filter(
+            controlInput => controlInput.label != 'Minimum R Ratio'
+        );
+    }
+
     //Sync point size control.
     const pointSizeControl = controlInputs.find(
         controlInput => controlInput.label === 'Point Size'

@@ -276,7 +276,8 @@
             group_cols: null,
             filters: null,
             details: null,
-            r_ratio: 0,
+            r_ratio_filter: true,
+            r_ratio_cut: 0,
             measure_details: [
                 {
                     label: 'ALT',
@@ -527,7 +528,7 @@
                 type: 'number',
                 label: 'Minimum R Ratio',
                 description: 'Display points with R ratios greater or equal to X',
-                option: 'r_ratio'
+                option: 'r_ratio_cut'
             }
         ];
     }
@@ -551,6 +552,13 @@
         if (settings.group_cols.length == 1) {
             controlInputs = controlInputs.filter(function(controlInput) {
                 return controlInput.label != 'Group';
+            });
+        }
+
+        //drop the R Ratio control if r_ratio_filter is false
+        if (!settings.r_ratio_filter) {
+            controlInputs = controlInputs.filter(function(controlInput) {
+                return controlInput.label != 'Minimum R Ratio';
             });
         }
 
@@ -616,12 +624,14 @@
     }
 
     function addRRatioFilter() {
-        this.filters.push({
-            col: 'rRatioFlag',
-            val: 'Y',
-            choices: ['Y', 'N'],
-            loose: undefined
-        });
+        if (this.config.r_ratio_filter) {
+            this.filters.push({
+                col: 'rRatioFlag',
+                val: 'Y',
+                choices: ['Y', 'N'],
+                loose: undefined
+            });
+        }
     }
 
     function onInit() {
@@ -655,13 +665,15 @@
     }
 
     function addRRatioSpan() {
-        var rRatioLabel = this.controls.wrap
-            .selectAll('.control-group')
-            .filter(function(d) {
-                return d.option === 'r_ratio';
-            })
-            .select('.wc-control-label');
-        rRatioLabel.html(rRatioLabel.html() + " (<span id = 'r-ratio'></span>)");
+        if (this.config.r_ratio_filter) {
+            var rRatioLabel = this.controls.wrap
+                .selectAll('.control-group')
+                .filter(function(d) {
+                    return d.option === 'r_ratio_cut';
+                })
+                .select('.wc-control-label');
+            rRatioLabel.html(rRatioLabel.html() + " (<span id = 'r-ratio'></span>)");
+        }
     }
 
     var defaultCutData = [
@@ -944,7 +956,7 @@
 
         //removing the interactivity for now, but could add it back in later if desired
         /*
-          .on('mouseover', function(d) {
+         .on('mouseover', function(d) {
             highlight.call(this, d, chart);
         })
         .on('mouseout', function() {
@@ -1140,16 +1152,9 @@
     }
 
     function updateRRatioSpan() {
-        this.controls.wrap.select('#r-ratio').text(
-            this.config.measure_details.find(function(measure_detail) {
-                return measure_detail.axis === 'x';
-            }).label +
-                'xULN / ' +
-                this.config.measure_details.find(function(measure_detail) {
-                    return measure_detail.axis === 'z';
-                }).label +
-                'xULN'
-        );
+        if (this.config.r_ratio_filter) {
+            this.controls.wrap.select('#r-ratio').text('ALTxULN / ALPxULN');
+        }
     }
 
     function addParticipantLevelMetadata(d, participant_obj) {
@@ -1178,37 +1183,16 @@
         });
     }
 
-    function calculateRatios(d, participant_obj) {
-        var _this = this;
+    function calculateRRatios(d, participant_obj) {
+        if (this.config.r_ratio_filter) {
+            //R-ratio should be the ratio of ALT to ALP, i.e. the x-axis to the z-axis.
+            participant_obj.rRatio =
+                participant_obj['ALT_relative_uln'] / participant_obj['ALP_relative_uln'];
 
-        this.config.measure_details.forEach(function(d) {
-            _this.config.measure_details
-                .filter(function(di) {
-                    return di.measure !== d.measure;
-                })
-                .forEach(function(di) {
-                    participant_obj[d.label + '_relative_uln/' + di.label + '_relative_uln'] =
-                        participant_obj[d.label + '_relative_uln'] /
-                        participant_obj[di.label + '_relative_uln'];
-                });
-        });
-
-        //R-ratio should be the ratio of ALT to ALP, i.e. the x-axis to the z-axis.
-        participant_obj.rRatio =
-            participant_obj[
-                this.config.measure_details.find(function(measure_detail) {
-                    return measure_detail.axis === 'x';
-                }).label +
-                    '_relative_uln/' +
-                    this.config.measure_details.find(function(measure_detail) {
-                        return measure_detail.axis === 'z';
-                    }).label +
-                    '_relative_uln'
-            ];
-
-        //Define flag given r-ratio minimum.
-        participant_obj.rRatioFlag = participant_obj.rRatio > this.config.r_ratio ? 'Y' : 'N';
-        console.log(participant_obj);
+            //Define flag given r-ratio minimum.
+            participant_obj.rRatioFlag =
+                participant_obj.rRatio > this.config.r_ratio_cut ? 'Y' : 'N';
+        }
     }
 
     //Converts a one record per measure data object to a one record per participant objects
@@ -1307,7 +1291,7 @@
                 addParticipantLevelMetadata.call(chart, d, participant_obj);
 
                 //Calculate ratios between measures.
-                calculateRatios.call(chart, d, participant_obj);
+                calculateRRatios.call(chart, d, participant_obj);
 
                 //calculate the day difference between x and y
                 participant_obj.day_diff = Math.abs(
