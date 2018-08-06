@@ -329,7 +329,8 @@
             group_cols: null,
             filters: null,
             details: null,
-            r_ratio: 0,
+            r_ratio_filter: true,
+            r_ratio_cut: 0,
             measure_details: [
                 {
                     label: 'ALT',
@@ -624,7 +625,7 @@
                 type: 'number',
                 label: 'Minimum R Ratio',
                 description: 'Display points with R ratios greater or equal to X',
-                option: 'r_ratio'
+                option: 'r_ratio_cut'
             }
         ];
     }
@@ -704,11 +705,20 @@
             });
         }
 
+<<<<<<< HEAD
         //Sync y-axis cut control.
         controlInputs.find(function(controlInput) {
             return controlInput.option === 'quadrants.cut_data.y';
         }).label =
             yAxisMeasures[0].label + ' Cutpoint';
+=======
+        //drop the R Ratio control if r_ratio_filter is false
+        if (!settings.r_ratio_filter) {
+            controlInputs = controlInputs.filter(function(controlInput) {
+                return controlInput.label != 'Minimum R Ratio';
+            });
+        }
+>>>>>>> v0.9.0-dev
 
         //Sync point size control.
         var pointSizeControl = controlInputs.find(function(controlInput) {
@@ -812,12 +822,14 @@
     }
 
     function addRRatioFilter() {
-        this.filters.push({
-            col: 'rRatioFlag',
-            val: 'Y',
-            choices: ['Y', 'N'],
-            loose: undefined
-        });
+        if (this.config.r_ratio_filter) {
+            this.filters.push({
+                col: 'rRatioFlag',
+                val: 'Y',
+                choices: ['Y', 'N'],
+                loose: undefined
+            });
+        }
     }
 
     function onInit() {
@@ -852,13 +864,15 @@
     }
 
     function addRRatioSpan() {
-        var rRatioLabel = this.controls.wrap
-            .selectAll('.control-group')
-            .filter(function(d) {
-                return d.option === 'r_ratio';
-            })
-            .select('.wc-control-label');
-        rRatioLabel.html(rRatioLabel.html() + " (<span id = 'r-ratio'></span>)");
+        if (this.config.r_ratio_filter) {
+            var rRatioLabel = this.controls.wrap
+                .selectAll('.control-group')
+                .filter(function(d) {
+                    return d.option === 'r_ratio_cut';
+                })
+                .select('.wc-control-label');
+            rRatioLabel.html(rRatioLabel.html() + " (<span id = 'r-ratio'></span>)");
+        }
     }
 
     var defaultCutData = [
@@ -1137,7 +1151,7 @@
 
         //removing the interactivity for now, but could add it back in later if desired
         /*
-          .on('mouseover', function(d) {
+         .on('mouseover', function(d) {
             highlight.call(this, d, chart);
         })
         .on('mouseout', function() {
@@ -1386,6 +1400,7 @@
     }
 
     function updateRRatioSpan() {
+<<<<<<< HEAD
         this.controls.wrap
             .select('#r-ratio')
             .text(
@@ -1394,6 +1409,11 @@
                     this.config.y.measure_detail.label +
                     'xULN'
             );
+=======
+        if (this.config.r_ratio_filter) {
+            this.controls.wrap.select('#r-ratio').text('ALTxULN / ALPxULN');
+        }
+>>>>>>> v0.9.0-dev
     }
 
     function addParticipantLevelMetadata(d, participant_obj) {
@@ -1422,9 +1442,13 @@
         });
     }
 
-    function calculateRatios(d, participant_obj) {
-        var _this = this;
+    function calculateRRatios(d, participant_obj) {
+        if (this.config.r_ratio_filter) {
+            //R-ratio should be the ratio of ALT to ALP, i.e. the x-axis to the z-axis.
+            participant_obj.rRatio =
+                participant_obj['ALT_relative_uln'] / participant_obj['ALP_relative_uln'];
 
+<<<<<<< HEAD
         this.config.measure_details.forEach(function(d) {
             _this.config.measure_details
                 .filter(function(di) {
@@ -1450,6 +1474,12 @@
 
         //Define flag given r-ratio minimum.
         participant_obj.rRatioFlag = participant_obj.rRatio > this.config.r_ratio ? 'Y' : 'N';
+=======
+            //Define flag given r-ratio minimum.
+            participant_obj.rRatioFlag =
+                participant_obj.rRatio > this.config.r_ratio_cut ? 'Y' : 'N';
+        }
+>>>>>>> v0.9.0-dev
     }
 
     //Converts a one record per measure data object to a one record per participant objects
@@ -1548,7 +1578,7 @@
                 addParticipantLevelMetadata.call(chart, d, participant_obj);
 
                 //Calculate ratios between measures.
-                calculateRatios.call(chart, d, participant_obj);
+                calculateRRatios.call(chart, d, participant_obj);
 
                 //calculate the day difference between x and y
                 participant_obj.day_diff = Math.abs(
@@ -1649,7 +1679,7 @@
         }
     }
 
-    function iterateOverMeasureDetails() {
+    function imputeData() {
         var chart = this;
         var config = this.config;
 
@@ -1771,7 +1801,7 @@
             );
     }
 
-    function imputeData() {
+    function cleanData() {
         var _this = this;
 
         this.imputed_data = this.initial_data.filter(function(d) {
@@ -1781,7 +1811,7 @@
             d.impute_flag = false;
         });
 
-        iterateOverMeasureDetails.call(this);
+        imputeData.call(this);
         deriveVariables.call(this);
     }
 
@@ -1813,8 +1843,8 @@
         updateAxisSettings.call(this); //update axis label based on display type
         updateControlCutpointLabels.call(this); //update cutpoint control labels given x- and y-axis variables
         updateRRatioSpan.call(this);
-        imputeData.call(this); //clean up values < llod
-        this.raw_data = flattenData.call(this); //update flattened data
+        cleanData.call(this); //clean visit-level data - imputation and variable derivations
+        this.raw_data = flattenData.call(this); //convert from visit-level data to participant-level data
         setLegendLabel.call(this); //update legend label based on group variable
         dropMissingValues.call(this);
     }

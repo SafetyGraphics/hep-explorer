@@ -89,11 +89,9 @@ document.onreadystatechange = function () {
         settings = {};
 
         const chart = safetyedish('#container', settings);
-        //d3.csv('adlbhy.csv', function(data) {
-        //    chart.init(data);
-        //});
-        d3.csv('../../viz-library/data/safetyData/ADBDS.csv', function(data) {
+        d3.csv('adlbhy.csv', function(data) {
             chart.init(data);
         });
+        
     }
 }

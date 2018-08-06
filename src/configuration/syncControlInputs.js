@@ -52,6 +52,12 @@ export default function syncControlInputs(controlInputs, settings) {
         yAxisMeasureControl.values = yAxisMeasures.map(yAxisMeasure => yAxisMeasure.label);
     }
 
+    //drop the R Ratio control if r_ratio_filter is false
+    if (!settings.r_ratio_filter) {
+        controlInputs = controlInputs.filter(
+            controlInput => controlInput.label != 'Minimum R Ratio'
+        );
+    }
     //Sync y-axis cut control.
     controlInputs.find(controlInput => controlInput.option === 'quadrants.cut_data.y').label = `${
         yAxisMeasures[0].label
