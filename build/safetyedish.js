@@ -261,103 +261,107 @@
         throw new Error("Unable to copy obj! Its type isn't supported.");
     }
 
-    var defaultSettings = {
-        //Default template settings
-        value_col: 'STRESN',
-        measure_col: 'TEST',
-        visit_col: 'VISIT',
-        visitn_col: 'VISITN',
-        studyday_col: 'DY',
-        unit_col: 'STRESU',
-        normal_col_low: 'STNRLO',
-        normal_col_high: 'STNRHI',
-        id_col: 'USUBJID',
-        group_cols: null,
-        filters: null,
-        details: null,
-        measure_details: [
-            {
-                label: 'ALT',
-                measure: 'Aminotransferase, alanine (ALT)',
-                axis: 'x',
-                imputation: 'data-driven',
-                cut: {
-                    relative_baseline: 3.8,
-                    relative_uln: 3,
-                    absolute: 1.0
+    function settings() {
+        return {
+            //Default template settings
+            value_col: 'STRESN',
+            measure_col: 'TEST',
+            visit_col: 'VISIT',
+            visitn_col: 'VISITN',
+            studyday_col: 'DY',
+            unit_col: 'STRESU',
+            normal_col_low: 'STNRLO',
+            normal_col_high: 'STNRHI',
+            id_col: 'USUBJID',
+            group_cols: null,
+            filters: null,
+            details: null,
+            r_ratio_filter: true,
+            r_ratio_cut: 0,
+            measure_details: [
+                {
+                    label: 'ALT',
+                    measure: 'Aminotransferase, alanine (ALT)',
+                    axis: 'x',
+                    imputation: 'data-driven',
+                    cut: {
+                        relative_baseline: 3.8,
+                        relative_uln: 3,
+                        absolute: 1.0
+                    }
+                },
+                {
+                    label: 'ALP',
+                    measure: 'Alkaline phosphatase (ALP)',
+                    axis: null,
+                    imputation: 'data-driven',
+                    cut: {
+                        relative_baseline: 3.8,
+                        relative_uln: 1,
+                        absolute: 1.0
+                    }
+                },
+                {
+                    label: 'TB',
+                    measure: 'Total Bilirubin',
+                    axis: 'y',
+                    imputation: 'data-driven',
+                    cut: {
+                        relative_baseline: 4.8,
+                        relative_uln: 2,
+                        absolute: 40
+                    }
                 }
-            },
-            {
-                label: 'ALP',
-                measure: 'Alkaline phosphatase (ALP)',
-                axis: null,
-                imputation: 'data-driven',
-                cut: {
-                    relative_baseline: 3.8,
-                    relative_uln: 1,
-                    absolute: 1.0
-                }
-            },
-            {
-                label: 'TB',
-                measure: 'Total Bilirubin',
-                axis: 'y',
-                imputation: 'data-driven',
-                cut: {
-                    relative_baseline: 4.8,
-                    relative_uln: 2,
-                    absolute: 40
-                }
-            }
-        ],
-        missingValues: ['', 'NA', 'N/A'],
-        axis_options: [
-            { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
-            { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' },
-            { label: 'Raw Values', value: 'absolute' }
-        ],
-        display: 'relative_uln', //or "relative_baseline" or "absolute"
-        baseline_visitn: '1',
-        measureBounds: [0.01, 0.99],
-        populationProfileURL: null,
-        participantProfileURL: null,
-        point_size: 'Uniform',
-        visit_window: 30,
-        showTitle: true,
+            ],
+            missingValues: ['', 'NA', 'N/A'],
+            axis_options: [
+                { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
+                { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' },
+                { label: 'Raw Values', value: 'absolute' }
+            ],
+            display: 'relative_uln', //or "relative_baseline" or "absolute"
+            baseline_visitn: '1',
+            measureBounds: [0.01, 0.99],
+            populationProfileURL: null,
+            participantProfileURL: null,
+            point_size: 'Uniform',
+            visit_window: 30,
+            showTitle: true,
 
-        //Standard webcharts settings
-        x: {
-            column: null, //set in onPreprocess/updateAxisSettings
-            label: null, // set in onPreprocess/updateAxisSettings,
-            type: 'linear',
-            behavior: 'raw',
-            format: '.2f'
-            //domain: [0, null]
-        },
-        y: {
-            column: null, // set in onPreprocess/updateAxisSettings,
-            label: null, // set in onPreprocess/updateAxisSettings,
-            type: 'linear',
-            behavior: 'raw',
-            format: '.2f'
-            //domain: [0, null]
-        },
-        marks: [
-            {
-                per: [], // set in syncSettings()
-                type: 'circle',
-                summarizeY: 'mean',
-                summarizeX: 'mean',
-                attributes: { 'fill-opacity': 0 }
-            }
-        ],
-        gridlines: 'xy',
-        color_by: null, //set in syncSettings
-        max_width: 600,
-        aspect: 1,
-        legend: { location: 'top' },
-        margin: { right: 25, top: 25, bottom: 75 }
-    };
+            //Standard webcharts settings
+            x: {
+                column: null, //set in onPreprocess/updateAxisSettings
+                label: null, // set in onPreprocess/updateAxisSettings,
+                type: 'linear',
+                behavior: 'raw',
+                format: '.2f'
+                //domain: [0, null]
+            },
+            y: {
+                column: null, // set in onPreprocess/updateAxisSettings,
+                label: null, // set in onPreprocess/updateAxisSettings,
+                type: 'linear',
+                behavior: 'raw',
+                format: '.2f'
+                //domain: [0, null]
+            },
+            marks: [
+                {
+                    per: [], // set in syncSettings()
+                    type: 'circle',
+                    summarizeY: 'mean',
+                    summarizeX: 'mean',
+                    attributes: { 'fill-opacity': 0 }
+                }
+            ],
+            gridlines: 'xy',
+            color_by: null, //set in syncSettings
+            max_width: 600,
+            aspect: 1,
+            legend: { location: 'top' },
+            margin: { right: 25, top: 25, bottom: 75 }
+        };
+    }
 
     //Replicate settings in multiple places in the settings object
     function syncSettings(settings) {
@@ -463,13 +467,12 @@
         return settings;
     }
 
-    //Map values from settings to control inputs
-    function syncControlInputs(settings) {
-        var defaultControls = [
+    function controlInputs() {
+        return [
             {
                 type: 'dropdown',
                 label: 'Group',
-                description: 'Grouping Variable',
+                description: 'Grouping variable',
                 options: ['color_by'],
                 start: null, // set in syncControlInputs()
                 values: ['NONE'], // set in syncControlInputs()
@@ -478,7 +481,7 @@
             {
                 type: 'dropdown',
                 label: 'Display Type',
-                description: 'Relative or Absolute Axes',
+                description: 'Relative or absolute axes',
                 options: ['displayLabel'],
                 start: null, // set in syncControlInputs()
                 values: null, // set in syncControlInputs()
@@ -520,13 +523,20 @@
                 label: 'Highlight Points Based on Timing',
                 description: 'Fill points with max values less than X days apart',
                 option: 'visit_window'
-                //  start: false, // set in syncControlInputs()
-                //  require: true
+            },
+            {
+                type: 'number',
+                label: 'Minimum R Ratio',
+                description: 'Display points with R ratios greater or equal to X',
+                option: 'r_ratio_cut'
             }
         ];
+    }
 
+    //Map values from settings to control inputs
+    function syncControlInputs(controlInputs, settings) {
         //Sync group control.
-        var groupControl = defaultControls.find(function(controlInput) {
+        var groupControl = controlInputs.find(function(controlInput) {
             return controlInput.label === 'Group';
         });
         groupControl.start = settings.color_by;
@@ -540,13 +550,20 @@
 
         //drop the group control if NONE is the only option
         if (settings.group_cols.length == 1) {
-            defaultControls = defaultControls.filter(function(controlInput) {
+            controlInputs = controlInputs.filter(function(controlInput) {
                 return controlInput.label != 'Group';
             });
         }
 
+        //drop the R Ratio control if r_ratio_filter is false
+        if (!settings.r_ratio_filter) {
+            controlInputs = controlInputs.filter(function(controlInput) {
+                return controlInput.label != 'Minimum R Ratio';
+            });
+        }
+
         //Sync point size control.
-        var pointSizeControl = defaultControls.find(function(controlInput) {
+        var pointSizeControl = controlInputs.find(function(controlInput) {
             return controlInput.label === 'Point Size';
         });
         settings.measure_details
@@ -559,13 +576,13 @@
 
         //drop the pointSize control if NONE is the only option
         if (settings.measure_details.length == 2) {
-            defaultControls = defaultControls.filter(function(controlInput) {
+            controlInputs = controlInputs.filter(function(controlInput) {
                 return controlInput.label != 'Point Size';
             });
         }
 
         //Sync display control
-        var displayControl = defaultControls.filter(function(controlInput) {
+        var displayControl = controlInputs.filter(function(controlInput) {
             return controlInput.label === 'Display Type';
         })[0];
         displayControl.values = settings.axis_options.map(function(m) {
@@ -584,11 +601,18 @@
                 };
                 return filter;
             });
-            return defaultControls.concat(otherFilters);
-        } else return defaultControls;
+            return controlInputs.concat(otherFilters);
+        } else return controlInputs;
     }
 
-    function onInit() {
+    var configuration = {
+        settings: settings,
+        syncSettings: syncSettings,
+        controlInputs: controlInputs,
+        syncControlInputs: syncControlInputs
+    };
+
+    function iterateOverData() {
         var _this = this;
 
         this.raw_data.forEach(function(d) {
@@ -597,6 +621,22 @@
                 d[_this.config.value_col] = d[_this.config.value_col].replace(/\s/g, ''); // remove space characters
             }
         });
+    }
+
+    function addRRatioFilter() {
+        if (this.config.r_ratio_filter) {
+            this.filters.push({
+                col: 'rRatioFlag',
+                val: 'Y',
+                choices: ['Y', 'N'],
+                loose: undefined
+            });
+        }
+    }
+
+    function onInit() {
+        iterateOverData.call(this);
+        addRRatioFilter.call(this);
     }
 
     function setCutpointMinimums() {
@@ -622,6 +662,18 @@
                 //Redraw.
                 chart.draw();
             });
+    }
+
+    function addRRatioSpan() {
+        if (this.config.r_ratio_filter) {
+            var rRatioLabel = this.controls.wrap
+                .selectAll('.control-group')
+                .filter(function(d) {
+                    return d.option === 'r_ratio_cut';
+                })
+                .select('.wc-control-label');
+            rRatioLabel.html(rRatioLabel.html() + " (<span id = 'r-ratio'></span>)");
+        }
     }
 
     var defaultCutData = [
@@ -904,7 +956,7 @@
 
         //removing the interactivity for now, but could add it back in later if desired
         /*
-          .on('mouseover', function(d) {
+         .on('mouseover', function(d) {
             highlight.call(this, d, chart);
         })
         .on('mouseout', function() {
@@ -1088,6 +1140,7 @@
 
     function onLayout() {
         setCutpointMinimums.call(this);
+        addRRatioSpan.call(this);
         layoutPanels.call(this);
         initTitle.call(this);
         initQuadrants.call(this);
@@ -1098,75 +1151,56 @@
         initDisplayControlLabels.call(this);
     }
 
+    function updateRRatioSpan() {
+        if (this.config.r_ratio_filter) {
+            this.controls.wrap.select('#r-ratio').text('ALTxULN / ALPxULN');
+        }
+    }
+
+    function addParticipantLevelMetadata(d, participant_obj) {
+        var varList = [];
+        if (this.config.filters) {
+            var filterVars = this.config.filters.map(function(d) {
+                return d.hasOwnProperty('value_col') ? d.value_col : d;
+            });
+            varList = d3.merge([varList, filterVars]);
+        }
+        if (this.config.group_cols) {
+            var groupVars = this.config.group_cols.map(function(d) {
+                return d.hasOwnProperty('value_col') ? d.value_col : d;
+            });
+            varList = d3.merge([varList, groupVars]);
+        }
+        if (this.config.details) {
+            var detailVars = this.config.details.map(function(d) {
+                return d.hasOwnProperty('value_col') ? d.value_col : d;
+            });
+            varList = d3.merge([varList, detailVars]);
+        }
+
+        varList.forEach(function(v) {
+            participant_obj[v] = d[0][v];
+        });
+    }
+
+    function calculateRRatios(d, participant_obj) {
+        if (this.config.r_ratio_filter) {
+            //R-ratio should be the ratio of ALT to ALP, i.e. the x-axis to the z-axis.
+            participant_obj.rRatio =
+                participant_obj['ALT_relative_uln'] / participant_obj['ALP_relative_uln'];
+
+            //Define flag given r-ratio minimum.
+            participant_obj.rRatioFlag =
+                participant_obj.rRatio > this.config.r_ratio_cut ? 'Y' : 'N';
+        }
+    }
+
     //Converts a one record per measure data object to a one record per participant objects
     function flattenData() {
         var chart = this;
         var config = this.config;
+
         //make a data set with one row per ID
-
-        //filter the lab data to only the required measures
-        var included_measures = config.measure_details.map(function(m) {
-            return m.measure;
-        });
-
-        var sub = this.imputed_data
-            .filter(function(f) {
-                return included_measures.indexOf(f[config.measure_col]) > -1;
-            })
-            .filter(function(f) {
-                return true;
-            }); //add a filter on selected visits here
-
-        var missingBaseline = 0;
-        this.imputed_data.forEach(function(d) {
-            //coerce numeric values to number
-            var numerics = ['value_col', 'visitn_col', 'normal_col_low', 'normal_col_high'];
-            numerics.forEach(function(col) {
-                d[config[col]] = +d[config[col]];
-            });
-            //standardize key variables
-            d.key_measure = false;
-            if (included_measures.indexOf(d[config.measure_col]) > -1) {
-                d.key_measure = true;
-
-                //map the raw value to a variable called 'absolute'
-                d.absolute = d[config.value_col];
-
-                //get the value relative to the ULN (% of the upper limit of normal) for the measure
-                d.relative_uln = d[config.value_col] / d[config.normal_col_high];
-
-                //get the value relative to baseline for the measure
-                var baseline_record = sub
-                    .filter(function(f) {
-                        return d[config.id_col] == f[config.id_col];
-                    })
-                    .filter(function(f) {
-                        return d[config.measure_col] == f[config.measure_col];
-                    })
-                    .filter(function(f) {
-                        return f[config.visitn_col] == +config.baseline_visitn;
-                    });
-
-                if (baseline_record.length > 0) {
-                    d.baseline_absolute = baseline_record[0][config.value_col];
-                    if (d.baseline_absolute > 0) {
-                        d.relative_baseline = d.absolute / d.baseline_absolute;
-                    } else {
-                        missingBaseline = missingBaseline + 1;
-                        d.relative_baseline = null;
-                    }
-                } else {
-                    missingBaseline = missingBaseline + 1;
-                    d.baseline_absolute = null;
-                    d.relative_baseline = null;
-                }
-            }
-        });
-
-        if (missingBaseline > 0)
-            console.warn(
-                'No baseline value found for ' + missingBaseline + ' of ' + sub.length + ' records.'
-            );
 
         //get list of columns to flatten
         var colList = [];
@@ -1254,29 +1288,10 @@
                 });
 
                 //Add participant level metadata
-                var varList = [];
-                if (chart.config.filters) {
-                    var filterVars = chart.config.filters.map(function(d) {
-                        return d.hasOwnProperty('value_col') ? d.value_col : d;
-                    });
-                    varList = d3.merge([varList, filterVars]);
-                }
-                if (chart.config.group_cols) {
-                    var groupVars = chart.config.group_cols.map(function(d) {
-                        return d.hasOwnProperty('value_col') ? d.value_col : d;
-                    });
-                    varList = d3.merge([varList, groupVars]);
-                }
-                if (chart.config.details) {
-                    var detailVars = chart.config.details.map(function(d) {
-                        return d.hasOwnProperty('value_col') ? d.value_col : d;
-                    });
-                    varList = d3.merge([varList, detailVars]);
-                }
+                addParticipantLevelMetadata.call(chart, d, participant_obj);
 
-                varList.forEach(function(v) {
-                    participant_obj[v] = d[0][v];
-                });
+                //Calculate ratios between measures.
+                calculateRRatios.call(chart, d, participant_obj);
 
                 //calculate the day difference between x and y
                 participant_obj.day_diff = Math.abs(
@@ -1404,18 +1419,8 @@
     }
 
     function imputeData() {
-        var _this = this;
-
-        var chart = this,
-            config = this.config;
-
-        //Remove missing values via the ultimate number regular expression.
-        this.imputed_data = this.initial_data.filter(function(d) {
-            return /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(d[_this.config.value_col]);
-        });
-        this.imputed_data.forEach(function(d) {
-            d.impute_flag = false;
-        });
+        var chart = this;
+        var config = this.config;
 
         config.measure_details.forEach(function(measure_settings) {
             var values = chart.imputed_data
@@ -1467,6 +1472,88 @@
         });
     }
 
+    function deriveVariables() {
+        var config = this.config;
+
+        //filter the lab data to only the required measures
+        var included_measures = config.measure_details.map(function(m) {
+            return m.measure;
+        });
+
+        var sub = this.imputed_data
+            .filter(function(f) {
+                return included_measures.indexOf(f[config.measure_col]) > -1;
+            })
+            .filter(function(f) {
+                return true;
+            }); //add a filter on selected visits here
+
+        var missingBaseline = 0;
+        this.imputed_data.forEach(function(d) {
+            //coerce numeric values to number
+            var numerics = ['value_col', 'visitn_col', 'normal_col_low', 'normal_col_high'];
+            numerics.forEach(function(col) {
+                d[config[col]] = +d[config[col]];
+            });
+            //standardize key variables
+            d.key_measure = false;
+            if (included_measures.indexOf(d[config.measure_col]) > -1) {
+                d.key_measure = true;
+
+                //map the raw value to a variable called 'absolute'
+                d.absolute = d[config.value_col];
+
+                //get the value relative to the ULN (% of the upper limit of normal) for the measure
+                d.relative_uln = d[config.value_col] / d[config.normal_col_high];
+
+                //get the value relative to baseline for the measure
+                var baseline_record = sub
+                    .filter(function(f) {
+                        return d[config.id_col] == f[config.id_col];
+                    })
+                    .filter(function(f) {
+                        return d[config.measure_col] == f[config.measure_col];
+                    })
+                    .filter(function(f) {
+                        return f[config.visitn_col] == +config.baseline_visitn;
+                    });
+
+                if (baseline_record.length > 0) {
+                    d.baseline_absolute = baseline_record[0][config.value_col];
+                    if (d.baseline_absolute > 0) {
+                        d.relative_baseline = d.absolute / d.baseline_absolute;
+                    } else {
+                        missingBaseline = missingBaseline + 1;
+                        d.relative_baseline = null;
+                    }
+                } else {
+                    missingBaseline = missingBaseline + 1;
+                    d.baseline_absolute = null;
+                    d.relative_baseline = null;
+                }
+            }
+        });
+
+        if (missingBaseline > 0)
+            console.warn(
+                'No baseline value found for ' + missingBaseline + ' of ' + sub.length + ' records.'
+            );
+    }
+
+    function cleanData() {
+        var _this = this;
+
+        this.imputed_data = this.initial_data.filter(function(d) {
+            return /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(d[_this.config.value_col]);
+        });
+        this.imputed_data.forEach(function(d) {
+            d.impute_flag = false;
+        });
+
+        imputeData.call(this);
+        deriveVariables.call(this);
+    }
+
     function dropMissingValues() {
         var config = this.config;
         //drop records with missing or invalid (negative) values
@@ -1492,8 +1579,9 @@
     }
 
     function onPreprocess() {
-        imputeData.call(this); //clean up values < llod
-        this.raw_data = flattenData.call(this); //update flattened data
+        updateRRatioSpan.call(this);
+        cleanData.call(this); //clean visit-level data - imputation and variable derivations
+        this.raw_data = flattenData.call(this); //convert from visit-level data to participant-level data
         setLegendLabel.call(this); //update legend label based on group variable
         updateAxisSettings.call(this); //update axis label based on display type
         dropMissingValues.call(this);
@@ -2297,7 +2385,7 @@
             .attr('div', 'value');
     }
 
-    var defaultSettings$2 = {
+    var defaultSettings = {
         max_width: 600,
         x: {
             column: null,
@@ -2354,20 +2442,20 @@
         }
 
         //sync settings
-        defaultSettings$2.x.column = config.visitn_col;
-        defaultSettings$2.y.domain = d3.extent(chart.imputed_data, function(f) {
+        defaultSettings.x.column = config.visitn_col;
+        defaultSettings.y.domain = d3.extent(chart.imputed_data, function(f) {
             return f.relative_uln;
         });
 
-        defaultSettings$2.color_by = config.measure_col;
-        defaultSettings$2.marks[0].per = [config.id_col, config.measure_col];
-        defaultSettings$2.marks[1].per = [config.id_col, config.visitn_col, config.measure_col];
+        defaultSettings.color_by = config.measure_col;
+        defaultSettings.marks[0].per = [config.id_col, config.measure_col];
+        defaultSettings.marks[1].per = [config.id_col, config.visitn_col, config.measure_col];
 
         //draw that chart
 
         chart.spaghetti = webcharts.createChart(
             this.element + ' .participantDetails .spaghettiPlot',
-            defaultSettings$2
+            defaultSettings
         );
         chart.spaghetti.on('resize', onResize$1);
         chart.spaghetti.init(matches);
@@ -2873,16 +2961,17 @@
     }
 
     function safetyedish$1(element, settings) {
-        var initial_settings = clone(settings),
-            defaultSettings_clone = clone(defaultSettings),
-            mergedSettings = Object.assign({}, defaultSettings_clone, settings),
-            syncedSettings = syncSettings(mergedSettings),
-            syncedControlInputs = syncControlInputs(syncedSettings),
-            controls = webcharts.createControls(element, {
-                location: 'top',
-                inputs: syncedControlInputs
-            }),
-            chart = webcharts.createChart(element, syncedSettings, controls);
+        var initial_settings = clone(settings);
+        var defaultSettings = configuration.settings();
+        var controlInputs = configuration.controlInputs();
+        var mergedSettings = Object.assign({}, defaultSettings, settings);
+        var syncedSettings = configuration.syncSettings(mergedSettings);
+        var syncedControlInputs = configuration.syncControlInputs(controlInputs, syncedSettings);
+        var controls = webcharts.createControls(element, {
+            location: 'top',
+            inputs: syncedControlInputs
+        });
+        var chart = webcharts.createChart(element, syncedSettings, controls);
 
         chart.element = element;
         chart.initial_settings = initial_settings;
