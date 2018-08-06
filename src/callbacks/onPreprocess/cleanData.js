@@ -1,7 +1,7 @@
-import iterateOverMeasureDetails from './imputeData/iterateOverMeasureDetails';
-import deriveVariables from './imputeData/deriveVariables';
+import imputeData from './cleanData/imputeData';
+import deriveVariables from './cleanData/deriveVariables';
 
-export function imputeData() {
+export function cleanData() {
     var chart = this,
         config = this.config;
 
@@ -13,6 +13,6 @@ export function imputeData() {
         d.impute_flag = false;
     });
 
-    iterateOverMeasureDetails.call(this);
+    imputeData.call(this);
     deriveVariables.call(this);
 }

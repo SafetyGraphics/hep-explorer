@@ -1418,7 +1418,7 @@
         }
     }
 
-    function iterateOverMeasureDetails() {
+    function imputeData() {
         var chart = this;
         var config = this.config;
 
@@ -1540,7 +1540,7 @@
             );
     }
 
-    function imputeData() {
+    function cleanData() {
         var _this = this;
 
         this.imputed_data = this.initial_data.filter(function(d) {
@@ -1550,7 +1550,7 @@
             d.impute_flag = false;
         });
 
-        iterateOverMeasureDetails.call(this);
+        imputeData.call(this);
         deriveVariables.call(this);
     }
 
@@ -1580,8 +1580,8 @@
 
     function onPreprocess() {
         updateRRatioSpan.call(this);
-        imputeData.call(this); //clean up values < llod
-        this.raw_data = flattenData.call(this); //update flattened data
+        cleanData.call(this); //clean visit-level data - imputation and variable derivations
+        this.raw_data = flattenData.call(this); //convert from visit-level data to participant-level data
         setLegendLabel.call(this); //update legend label based on group variable
         updateAxisSettings.call(this); //update axis label based on display type
         dropMissingValues.call(this);
