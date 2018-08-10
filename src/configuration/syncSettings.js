@@ -70,9 +70,7 @@ export default function syncSettings(settings) {
                     value_col: detail.value_col ? detail.value_col : detail,
                     label: detail.label
                         ? detail.label
-                        : detail.value_col
-                            ? detail.value_col
-                            : detail
+                        : detail.value_col ? detail.value_col : detail
                 });
         });
         settings.details = defaultDetails;

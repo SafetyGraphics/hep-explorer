@@ -65,7 +65,7 @@ document.onreadystatechange = function () {
                 {
                     label: 'ALP',
                     measure: 'Alkaline Phosphatase (U/L)',
-                    axis: 'z', //used to fill circles
+                    axis: 'x',
                     imputation: 'data-driven',
                     cut: {
                         relative_uln: 3,
@@ -86,12 +86,10 @@ document.onreadystatechange = function () {
                 }
             ]
         };
-        settings = {};
-
         const chart = safetyedish('#container', settings);
-        d3.csv('adlbhy.csv', function(data) {
+        d3.csv('adlbc.csv', function(data) {
             chart.init(data);
         });
-        
+
     }
 }

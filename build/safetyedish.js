@@ -469,9 +469,7 @@
                     value_col: filter.value_col ? filter.value_col : filter,
                     label: filter.label
                         ? filter.label
-                        : filter.value_col
-                            ? filter.value_col
-                            : filter
+                        : filter.value_col ? filter.value_col : filter
                 };
 
                 if (
@@ -494,9 +492,7 @@
                         value_col: group.value_col ? group.value_col : filter,
                         label: group.label
                             ? group.label
-                            : group.value_col
-                                ? group.value_col
-                                : filter
+                            : group.value_col ? group.value_col : filter
                     };
                     if (
                         defaultDetails.find(function(f) {
@@ -526,9 +522,7 @@
                         value_col: detail.value_col ? detail.value_col : detail,
                         label: detail.label
                             ? detail.label
-                            : detail.value_col
-                                ? detail.value_col
-                                : detail
+                            : detail.value_col ? detail.value_col : detail
                     });
             });
             settings.details = defaultDetails;
@@ -705,20 +699,17 @@
             });
         }
 
-<<<<<<< HEAD
-        //Sync y-axis cut control.
-        controlInputs.find(function(controlInput) {
-            return controlInput.option === 'quadrants.cut_data.y';
-        }).label =
-            yAxisMeasures[0].label + ' Cutpoint';
-=======
         //drop the R Ratio control if r_ratio_filter is false
         if (!settings.r_ratio_filter) {
             controlInputs = controlInputs.filter(function(controlInput) {
                 return controlInput.label != 'Minimum R Ratio';
             });
         }
->>>>>>> v0.9.0-dev
+        //Sync y-axis cut control.
+        controlInputs.find(function(controlInput) {
+            return controlInput.option === 'quadrants.cut_data.y';
+        }).label =
+            yAxisMeasures[0].label + ' Cutpoint';
 
         //Sync point size control.
         var pointSizeControl = controlInputs.find(function(controlInput) {
@@ -753,9 +744,7 @@
                     value_col: filter.value_col ? filter.value_col : filter,
                     label: filter.label
                         ? filter.label
-                        : filter.value_col
-                            ? filter.value_col
-                            : filter
+                        : filter.value_col ? filter.value_col : filter
                 };
                 return filter;
             });
@@ -1355,9 +1344,7 @@
                 ? ' (xULN)'
                 : config.display == 'relative_baseline'
                     ? ' (xBaseline)'
-                    : config.display == 'absolute'
-                        ? ' (raw values)'
-                        : null;
+                    : config.display == 'absolute' ? ' (raw values)' : null;
 
         //Update x-axis settings.
         config.x.measure_detail = config.measure_details.find(function(measure_detail) {
@@ -1400,20 +1387,9 @@
     }
 
     function updateRRatioSpan() {
-<<<<<<< HEAD
-        this.controls.wrap
-            .select('#r-ratio')
-            .text(
-                this.config.x.measure_detail.label +
-                    'xULN / ' +
-                    this.config.y.measure_detail.label +
-                    'xULN'
-            );
-=======
         if (this.config.r_ratio_filter) {
             this.controls.wrap.select('#r-ratio').text('ALTxULN / ALPxULN');
         }
->>>>>>> v0.9.0-dev
     }
 
     function addParticipantLevelMetadata(d, participant_obj) {
@@ -1448,38 +1424,10 @@
             participant_obj.rRatio =
                 participant_obj['ALT_relative_uln'] / participant_obj['ALP_relative_uln'];
 
-<<<<<<< HEAD
-        this.config.measure_details.forEach(function(d) {
-            _this.config.measure_details
-                .filter(function(di) {
-                    return di.measure !== d.measure;
-                })
-                .forEach(function(di) {
-                    participant_obj[d.label + '_relative_uln/' + di.label + '_relative_uln'] =
-                        participant_obj[d.label + '_relative_uln'] /
-                        participant_obj[di.label + '_relative_uln'];
-                });
-        });
-
-        //R-ratio should be the ratio of ALT to ALP, i.e. the x-axis to the z-axis.
-        participant_obj.rRatio =
-            participant_obj[
-                this.config.x.measure_detail.label +
-                    '_relative_uln/' +
-                    this.config.measure_details.find(function(measure_detail) {
-                        return measure_detail.axis === 'z';
-                    }).label +
-                    '_relative_uln'
-            ];
-
-        //Define flag given r-ratio minimum.
-        participant_obj.rRatioFlag = participant_obj.rRatio > this.config.r_ratio ? 'Y' : 'N';
-=======
             //Define flag given r-ratio minimum.
             participant_obj.rRatioFlag =
                 participant_obj.rRatio > this.config.r_ratio_cut ? 'Y' : 'N';
         }
->>>>>>> v0.9.0-dev
     }
 
     //Converts a one record per measure data object to a one record per participant objects
@@ -1804,15 +1752,21 @@
     function cleanData() {
         var _this = this;
 
+        console.log(this.initial_data);
+        console.log(this.config.value_col);
         this.imputed_data = this.initial_data.filter(function(d) {
-            return /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(d[_this.config.value_col]);
+            return /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(+d[_this.config.value_col]);
         });
+        console.log(this.imputed_data.length);
         this.imputed_data.forEach(function(d) {
             d.impute_flag = false;
         });
 
         imputeData.call(this);
+        console.log(this.imputed_data.length);
+
         deriveVariables.call(this);
+        console.log(this.imputed_data.length);
     }
 
     function dropMissingValues() {
@@ -1847,6 +1801,7 @@
         this.raw_data = flattenData.call(this); //convert from visit-level data to participant-level data
         setLegendLabel.call(this); //update legend label based on group variable
         dropMissingValues.call(this);
+        console.log(this);
     }
 
     function onDataTransform() {}
@@ -2261,7 +2216,8 @@
 
         var totalLength = path.node().getTotalLength();
 
-        path.attr('stroke-dasharray', totalLength + ' ' + totalLength)
+        path
+            .attr('stroke-dasharray', totalLength + ' ' + totalLength)
             .attr('stroke-dashoffset', totalLength)
             .transition()
             .duration(2000)
@@ -2397,7 +2353,8 @@
                         });
 
                     //draw lines at the population guidelines
-                    svg.selectAll('lines.guidelines')
+                    svg
+                        .selectAll('lines.guidelines')
                         .data(row_d.population_extent)
                         .enter()
                         .append('line')
@@ -2616,14 +2573,16 @@
             .style('text-align', 'center')
             .style('padding', '0.5em');
 
-        lis.append('div')
+        lis
+            .append('div')
             .text(function(d) {
                 return d.label;
             })
             .attr('div', 'label')
             .style('font-size', '0.8em');
 
-        lis.append('div')
+        lis
+            .append('div')
             .text(function(d) {
                 return raw[d.value_col];
             })
@@ -2720,7 +2679,8 @@
                 .attr('fill', 'white')
                 .classed('disabled', true); //disable mouseover while viewing participant details
 
-            d3.select(this)
+            d3
+                .select(this)
                 .attr('stroke', function(d) {
                     return chart.colorScale(d.values.raw[0][config.color_by]);
                 }) //highlight selected point
@@ -2776,7 +2736,8 @@
         var dimension = d3.select(this).classed('x') ? 'x' : 'y';
         var chart = d3.select(this).datum().chart;
 
-        d3.select(this)
+        d3
+            .select(this)
             .select('line.cut-line')
             .attr('stroke-width', '2')
             .attr('stroke-dasharray', '2,2');
@@ -2824,7 +2785,8 @@
     function dragEnded() {
         var chart = d3.select(this).datum().chart;
 
-        d3.select(this)
+        d3
+            .select(this)
             .select('line.cut-line')
             .attr('stroke-width', '1')
             .attr('stroke-dasharray', '5,5');
@@ -3022,10 +2984,12 @@
             true,
             this.config.y.type == 'log'
         );
-        ybox.select('g.boxplot').attr(
-            'transform',
-            'translate(' + (this.plot_width + this.config.margin.right / 2) + ',0)'
-        );
+        ybox
+            .select('g.boxplot')
+            .attr(
+                'transform',
+                'translate(' + (this.plot_width + this.config.margin.right / 2) + ',0)'
+            );
 
         //X-axis box plot
         var xValues = this.current_data.map(function(d) {
@@ -3045,10 +3009,9 @@
             false, // horizontal?
             this.config.y.type == 'log' // log?
         );
-        xbox.select('g.boxplot').attr(
-            'transform',
-            'translate(0,' + -(this.config.margin.top / 2) + ')'
-        );
+        xbox
+            .select('g.boxplot')
+            .attr('transform', 'translate(0,' + -(this.config.margin.top / 2) + ')');
     }
 
     function setPointSize() {

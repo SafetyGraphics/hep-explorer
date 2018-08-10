@@ -7,9 +7,7 @@ export default function updateAxisSettings() {
             ? ' (xULN)'
             : config.display == 'relative_baseline'
                 ? ' (xBaseline)'
-                : config.display == 'absolute'
-                    ? ' (raw values)'
-                    : null;
+                : config.display == 'absolute' ? ' (raw values)' : null;
 
     //Update x-axis settings.
     config.x.measure_detail = config.measure_details.find(

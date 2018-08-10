@@ -47,12 +47,14 @@ export function makeParticipantHeader(d) {
         .style('text-align', 'center')
         .style('padding', '0.5em');
 
-    lis.append('div')
+    lis
+        .append('div')
         .text(d => d.label)
         .attr('div', 'label')
         .style('font-size', '0.8em');
 
-    lis.append('div')
+    lis
+        .append('div')
         .text(d => raw[d.value_col])
         .attr('div', 'value');
 }
