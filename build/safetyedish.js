@@ -1,35 +1,44 @@
 (function(global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined'
-        ? (module.exports = factory(require('webcharts'), require('d3')))
+        ? (module.exports = factory(require('webcharts')))
         : typeof define === 'function' && define.amd
-            ? define(['webcharts', 'd3'], factory)
-            : (global.safetyedish = factory(global.webCharts, global.d3));
-})(this, function(webcharts, d3$1) {
+            ? define(['webcharts'], factory)
+            : (global.safetyedish = factory(global.webCharts));
+})(this, function(webcharts) {
     'use strict';
 
     if (typeof Object.assign != 'function') {
-        (function() {
-            Object.assign = function(target) {
+        Object.defineProperty(Object, 'assign', {
+            value: function assign(target, varArgs) {
+                // .length of function is 2
                 'use strict';
 
-                if (target === undefined || target === null) {
+                if (target == null) {
+                    // TypeError if undefined or null
                     throw new TypeError('Cannot convert undefined or null to object');
                 }
 
-                var output = Object(target);
+                var to = Object(target);
+
                 for (var index = 1; index < arguments.length; index++) {
-                    var source = arguments[index];
-                    if (source !== undefined && source !== null) {
-                        for (var nextKey in source) {
-                            if (source.hasOwnProperty(nextKey)) {
-                                output[nextKey] = source[nextKey];
+                    var nextSource = arguments[index];
+
+                    if (nextSource != null) {
+                        // Skip over if undefined or null
+                        for (var nextKey in nextSource) {
+                            // Avoid bugs when hasOwnProperty is shadowed
+                            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                                to[nextKey] = nextSource[nextKey];
                             }
                         }
                     }
                 }
-                return output;
-            };
-        })();
+
+                return to;
+            },
+            writable: true,
+            configurable: true
+        });
     }
 
     if (!Array.prototype.find) {
@@ -72,6 +81,50 @@
 
                 // 7. Return undefined.
                 return undefined;
+            }
+        });
+    }
+
+    if (!Array.prototype.findIndex) {
+        Object.defineProperty(Array.prototype, 'findIndex', {
+            value: function value(predicate) {
+                // 1. Let O be ? ToObject(this value).
+                if (this == null) {
+                    throw new TypeError('"this" is null or not defined');
+                }
+
+                var o = Object(this);
+
+                // 2. Let len be ? ToLength(? Get(O, "length")).
+                var len = o.length >>> 0;
+
+                // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+                if (typeof predicate !== 'function') {
+                    throw new TypeError('predicate must be a function');
+                }
+
+                // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+                var thisArg = arguments[1];
+
+                // 5. Let k be 0.
+                var k = 0;
+
+                // 6. Repeat, while k < len
+                while (k < len) {
+                    // a. Let Pk be ! ToString(k).
+                    // b. Let kValue be ? Get(O, Pk).
+                    // c. Let testResult be ToBoolean(? Call(predicate, T, � kValue, k, O �)).
+                    // d. If testResult is true, return k.
+                    var kValue = o[k];
+                    if (predicate.call(thisArg, kValue, k, o)) {
+                        return k;
+                    }
+                    // e. Increase k by 1.
+                    k++;
+                }
+
+                // 7. Return -1.
+                return -1;
             }
         });
     }
@@ -261,102 +314,118 @@
         throw new Error("Unable to copy obj! Its type isn't supported.");
     }
 
-    var defaultSettings = {
-        //Default template settings
-        value_col: 'STRESN',
-        measure_col: 'TEST',
-        visit_col: 'VISIT',
-        visitn_col: 'VISITN',
-        studyday_col: 'DY',
-        unit_col: 'STRESU',
-        normal_col_low: 'STNRLO',
-        normal_col_high: 'STNRHI',
-        id_col: 'USUBJID',
-        group_cols: null,
-        filters: null,
-        details: null,
-        measure_details: [
-            {
-                label: 'ALT',
-                measure: 'Aminotransferase, alanine (ALT)',
-                axis: 'x',
-                imputation: 'data-driven',
-                cut: {
-                    relative_baseline: 3.8,
-                    relative_uln: 3,
-                    absolute: 1.0
+    function settings() {
+        return {
+            //Default template settings
+            value_col: 'STRESN',
+            measure_col: 'TEST',
+            visit_col: 'VISIT',
+            visitn_col: 'VISITNUM',
+            studyday_col: 'DY',
+            unit_col: 'STRESU',
+            normal_col_low: 'STNRLO',
+            normal_col_high: 'STNRHI',
+            id_col: 'USUBJID',
+            group_cols: null,
+            filters: null,
+            details: null,
+            r_ratio_filter: true,
+            r_ratio_cut: 0,
+            measure_details: [
+                {
+                    label: 'ALT',
+                    measure: 'Aminotransferase, alanine (ALT)',
+                    axis: 'x',
+                    imputation: 'data-driven',
+                    cut: {
+                        relative_baseline: 3.8,
+                        relative_uln: 3,
+                        absolute: 1.0
+                    }
+                },
+                {
+                    label: 'AST',
+                    measure: 'Aminotransferase, aspartate (AST)',
+                    axis: 'x',
+                    imputation: 'data-driven',
+                    cut: {
+                        relative_baseline: 3.8,
+                        relative_uln: 3,
+                        absolute: 1.0
+                    }
+                },
+                {
+                    label: 'TB',
+                    measure: 'Total Bilirubin',
+                    axis: 'y',
+                    imputation: 'data-driven',
+                    cut: {
+                        relative_baseline: 4.8,
+                        relative_uln: 2,
+                        absolute: 40
+                    }
+                },
+                {
+                    label: 'ALP',
+                    measure: 'Alkaline phosphatase (ALP)',
+                    axis: 'z',
+                    imputation: 'data-driven',
+                    cut: {
+                        relative_baseline: 3.8,
+                        relative_uln: 1,
+                        absolute: 1.0
+                    }
                 }
-            },
-            {
-                label: 'ALP',
-                measure: 'Alkaline phosphatase (ALP)',
-                axis: null,
-                imputation: 'data-driven',
-                cut: {
-                    relative_baseline: 3.8,
-                    relative_uln: 1,
-                    absolute: 1.0
-                }
-            },
-            {
-                label: 'TB',
-                measure: 'Total Bilirubin',
-                axis: 'y',
-                imputation: 'data-driven',
-                cut: {
-                    relative_baseline: 4.8,
-                    relative_uln: 2,
-                    absolute: 40
-                }
-            }
-        ],
-        missingValues: ['', 'NA', 'N/A'],
-        axis_options: [
-            { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
-            { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' },
-            { label: 'Raw Values', value: 'absolute' }
-        ],
-        display: 'relative_uln', //or "relative_baseline" or "absolute"
-        baseline_visitn: '1',
-        measureBounds: [0.01, 0.99],
-        populationProfileURL: null,
-        participantProfileURL: null,
-        point_size: 'Uniform',
-        visit_window: 30,
+            ],
+            missingValues: ['', 'NA', 'N/A'],
+            axis_options: [
+                { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
+                { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' },
+                { label: 'Raw Values', value: 'absolute' }
+            ],
+            display: 'relative_uln', //or "relative_baseline" or "absolute"
+            baseline_visitn: '1',
+            measureBounds: [0.01, 0.99],
+            populationProfileURL: null,
+            participantProfileURL: null,
+            point_size: 'Uniform',
+            visit_window: 30,
+            showTitle: true,
 
-        //Standard webcharts settings
-        x: {
-            column: null, //set in onPreprocess/updateAxisSettings
-            label: null, // set in onPreprocess/updateAxisSettings,
-            type: 'linear',
-            behavior: 'raw',
-            format: '.2f'
-            //domain: [0, null]
-        },
-        y: {
-            column: null, // set in onPreprocess/updateAxisSettings,
-            label: null, // set in onPreprocess/updateAxisSettings,
-            type: 'linear',
-            behavior: 'raw',
-            format: '.2f'
-            //domain: [0, null]
-        },
-        marks: [
-            {
-                per: [], // set in syncSettings()
-                type: 'circle',
-                summarizeY: 'mean',
-                summarizeX: 'mean',
-                attributes: { 'fill-opacity': 0 }
-            }
-        ],
-        gridlines: 'xy',
-        color_by: null, //set in syncSettings
-        max_width: 600,
-        aspect: 1,
-        legend: { location: 'top' },
-        margin: { right: 25, top: 25, bottom: 75 }
-    };
+            //Standard webcharts settings
+            x: {
+                column: null, //set in onPreprocess/updateAxisSettings
+                label: null, // set in onPreprocess/updateAxisSettings,
+                type: 'linear',
+                behavior: 'raw',
+                format: '.2f'
+                //domain: [0, null]
+            },
+            y: {
+                column: null, // set in onPreprocess/updateAxisSettings,
+                label: null, // set in onPreprocess/updateAxisSettings,
+                type: 'linear',
+                behavior: 'raw',
+                format: '.2f'
+                //domain: [0, null]
+            },
+            marks: [
+                {
+                    per: [], // set in syncSettings()
+                    type: 'circle',
+                    summarizeY: 'mean',
+                    summarizeX: 'mean',
+                    attributes: { 'fill-opacity': 0 }
+                }
+            ],
+            gridlines: 'xy',
+            color_by: null, //set in syncSettings
+            max_width: 600,
+            aspect: 1,
+            legend: { location: 'top' },
+            margin: { right: 25, top: 25, bottom: 75 }
+        };
+    }
 
     //Replicate settings in multiple places in the settings object
     function syncSettings(settings) {
@@ -459,16 +528,25 @@
             settings.details = defaultDetails;
         }
 
+        //Attach measure details to axis settings.
+        settings.x.measure_detail = settings.measure_details.find(function(measure_detail) {
+            return measure_detail.axis === 'x';
+        });
+        settings.x.column = settings.x.measure_detail.label;
+        settings.y.measure_detail = settings.measure_details.find(function(measure_detail) {
+            return measure_detail.axis === 'y';
+        });
+        settings.y.column = settings.y.measure_detail.label;
+
         return settings;
     }
 
-    //Map values from settings to control inputs
-    function syncControlInputs(settings) {
-        var defaultControls = [
+    function controlInputs() {
+        return [
             {
                 type: 'dropdown',
                 label: 'Group',
-                description: 'Grouping Variable',
+                description: 'Grouping variable',
                 options: ['color_by'],
                 start: null, // set in syncControlInputs()
                 values: ['NONE'], // set in syncControlInputs()
@@ -477,22 +555,39 @@
             {
                 type: 'dropdown',
                 label: 'Display Type',
-                description: 'Relative or Absolute Axes',
+                description: 'Relative or absolute axes',
                 options: ['displayLabel'],
                 start: null, // set in syncControlInputs()
                 values: null, // set in syncControlInputs()
-                //    labels: ['Proportion of ULN', 'Proportion of Baseline', 'Raw Values'],
+                require: true
+            },
+            {
+                type: 'dropdown',
+                label: 'X-axis Measure',
+                description: null, // set in syncControlInputs()
+                option: 'x.column',
+                start: null, // set in syncControlInputs()
+                values: null, //set in syncControlInptus()
                 require: true
             },
             {
                 type: 'number',
-                label: 'ALT Cutpoint',
+                label: null, // set in syncControlInputs
                 description: 'X-axis cut',
                 option: 'quadrants.cut_data.x'
             },
             {
+                type: 'dropdown',
+                label: 'Y-axis Measure',
+                description: null, // set in syncControlInputs()
+                option: 'y.column',
+                start: null, // set in syncControlInputs()
+                values: null, //set in syncControlInptus()
+                require: true
+            },
+            {
                 type: 'number',
-                label: 'TB Cutpoint',
+                label: null, // set in syncControlInputs
                 description: 'Y-axis cut',
                 option: 'quadrants.cut_data.y'
             },
@@ -519,13 +614,20 @@
                 label: 'Highlight Points Based on Timing',
                 description: 'Fill points with max values less than X days apart',
                 option: 'visit_window'
-                //  start: false, // set in syncControlInputs()
-                //  require: true
+            },
+            {
+                type: 'number',
+                label: 'Minimum R Ratio',
+                description: 'Display points with R ratios greater or equal to X',
+                option: 'r_ratio_cut'
             }
         ];
+    }
 
+    //Map values from settings to control inputs
+    function syncControlInputs(controlInputs, settings) {
         //Sync group control.
-        var groupControl = defaultControls.find(function(controlInput) {
+        var groupControl = controlInputs.find(function(controlInput) {
             return controlInput.label === 'Group';
         });
         groupControl.start = settings.color_by;
@@ -538,36 +640,99 @@
             });
 
         //drop the group control if NONE is the only option
-        if (settings.group_cols.length == 1) {
-            defaultControls = defaultControls.filter(function(controlInput) {
+        if (settings.group_cols.length == 1)
+            controlInputs = controlInputs.filter(function(controlInput) {
                 return controlInput.label != 'Group';
+            });
+
+        //Sync x-axis measure control.
+        var xAxisMeasures = settings.measure_details.filter(function(measure_detail) {
+            return measure_detail.axis === 'x';
+        });
+
+        if (xAxisMeasures.length === 1)
+            controlInputs = controlInputs.filter(function(controlInput) {
+                return controlInput.option !== 'x.column';
+            });
+        else {
+            var xAxisMeasureControl = controlInputs.find(function(controlInput) {
+                return controlInput.option === 'x.column';
+            });
+            xAxisMeasureControl.description = xAxisMeasures
+                .map(function(xAxisMeasure) {
+                    return xAxisMeasure.label;
+                })
+                .join(', ');
+            xAxisMeasureControl.start = xAxisMeasures[0].label;
+            xAxisMeasureControl.values = xAxisMeasures.map(function(xAxisMeasure) {
+                return xAxisMeasure.label;
             });
         }
 
+        //Sync x-axis cut control.
+        controlInputs.find(function(controlInput) {
+            return controlInput.option === 'quadrants.cut_data.x';
+        }).label =
+            xAxisMeasures[0].label + ' Cutpoint';
+
+        //Sync y-axis measure control.
+        var yAxisMeasures = settings.measure_details.filter(function(measure_detail) {
+            return measure_detail.axis === 'y';
+        });
+
+        if (yAxisMeasures.length === 1)
+            controlInputs = controlInputs.filter(function(controlInput) {
+                return controlInput.option !== 'y.column';
+            });
+        else {
+            var yAxisMeasureControl = controlInputs.find(function(controlInput) {
+                return controlInput.option === 'y.column';
+            });
+            yAxisMeasureControl.description = yAxisMeasures
+                .map(function(yAxisMeasure) {
+                    return yAxisMeasure.label;
+                })
+                .join(', ');
+            yAxisMeasureControl.start = yAxisMeasures[0].label;
+            yAxisMeasureControl.values = yAxisMeasures.map(function(yAxisMeasure) {
+                return yAxisMeasure.label;
+            });
+        }
+
+        //drop the R Ratio control if r_ratio_filter is false
+        if (!settings.r_ratio_filter) {
+            controlInputs = controlInputs.filter(function(controlInput) {
+                return controlInput.label != 'Minimum R Ratio';
+            });
+        }
+        //Sync y-axis cut control.
+        controlInputs.find(function(controlInput) {
+            return controlInput.option === 'quadrants.cut_data.y';
+        }).label =
+            yAxisMeasures[0].label + ' Cutpoint';
+
         //Sync point size control.
-        var pointSizeControl = defaultControls.find(function(controlInput) {
+        var pointSizeControl = controlInputs.find(function(controlInput) {
             return controlInput.label === 'Point Size';
         });
         settings.measure_details
             .filter(function(f) {
-                return (f.axis != 'x') & (f.axis != 'y');
+                return f.axis != 'x' && f.axis != 'y';
             })
             .forEach(function(group) {
                 pointSizeControl.values.push(group.label);
             });
 
         //drop the pointSize control if NONE is the only option
-        if (settings.measure_details.length == 2) {
-            defaultControls = defaultControls.filter(function(controlInput) {
+        if (settings.measure_details.length == 2)
+            controlInputs = controlInputs.filter(function(controlInput) {
                 return controlInput.label != 'Point Size';
             });
-        }
 
         //Sync display control
-        var displayControl = defaultControls.filter(function(controlInput) {
+        controlInputs.find(function(controlInput) {
             return controlInput.label === 'Display Type';
-        })[0];
-        displayControl.values = settings.axis_options.map(function(m) {
+        }).values = settings.axis_options.map(function(m) {
             return m.label;
         });
 
@@ -583,19 +748,120 @@
                 };
                 return filter;
             });
-            return defaultControls.concat(otherFilters);
-        } else return defaultControls;
+            return controlInputs.concat(otherFilters);
+        } else return controlInputs;
     }
 
-    function onInit() {
+    var configuration = {
+        settings: settings,
+        syncSettings: syncSettings,
+        controlInputs: controlInputs,
+        syncControlInputs: syncControlInputs
+    };
+
+    function checkMeasureDetails() {
+        var _this = this;
+
+        this.measures = d3
+            .set(
+                this.raw_data.map(function(d) {
+                    return d[_this.config.measure_col];
+                })
+            )
+            .values()
+            .sort();
+        var specifiedMeasures = this.config.measure_details.map(function(measure_detail) {
+            return measure_detail.measure;
+        });
+        this.config.measure_details = this.config.measure_details.filter(function(measure) {
+            return _this.measures.indexOf(measure) < 0;
+        });
+        var missingMeasures = specifiedMeasures.filter(function(measure) {
+            return (
+                _this.config.measure_details
+                    .map(function(measure_detail) {
+                        return measure_detail.measure;
+                    })
+                    .indexOf(measure) < 0
+            );
+        });
+        var nMeasuresRemoved = missingMeasures.length;
+        if (nMeasuresRemoved > 0)
+            alert(
+                'The data are missing ' +
+                    (nMeasuresRemoved === 1 ? 'this measure' : 'these measures') +
+                    ': ' +
+                    missingMeasures.join(', ') +
+                    '.'
+            );
+    }
+
+    function iterateOverData() {
         var _this = this;
 
         this.raw_data.forEach(function(d) {
+            d[_this.config.x.column] = null; // placeholder variable for x-axis
+            d[_this.config.y.column] = null; // placeholder variable for y-axis
             d.NONE = 'All Participants'; // placeholder variable for non-grouped comparisons
-            if (typeof d[_this.config.value_col] == 'string') {
+
+            //Remove space characters from result variable.
+            if (typeof d[_this.config.value_col] == 'string')
                 d[_this.config.value_col] = d[_this.config.value_col].replace(/\s/g, ''); // remove space characters
-            }
         });
+    }
+
+    function addRRatioFilter() {
+        if (this.config.r_ratio_filter) {
+            this.filters.push({
+                col: 'rRatioFlag',
+                val: 'Y',
+                choices: ['Y', 'N'],
+                loose: undefined
+            });
+        }
+    }
+
+    function onInit() {
+        checkMeasureDetails.call(this);
+        iterateOverData.call(this);
+        addRRatioFilter.call(this);
+    }
+
+    function setCutpointMinimums() {
+        var chart = this;
+
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return /.-axis cut/i.test(d.description);
+            })
+            .attr('min', 0)
+            .on('change', function(d) {
+                var input = d3.select(this).select('input');
+
+                //Prevent a negative input.
+                if (input.property('value') < 0) input.property('value', 0);
+
+                //Update chart setting.
+                chart.config.quadrants.cut_data[
+                    d.description.split('-')[0].toLowerCase()
+                ] = input.property('value');
+
+                //Redraw.
+                chart.draw();
+            });
+    }
+
+    function addRRatioSpan() {
+        if (this.config.r_ratio_filter) {
+            var rRatioLabel = this.controls.wrap
+                .selectAll('.control-group')
+                .filter(function(d) {
+                    return d.option === 'r_ratio_cut';
+                })
+                .select('.wc-control-label');
+            rRatioLabel.html(rRatioLabel.html() + " (<span id = 'r-ratio'></span>)");
+        }
     }
 
     var defaultCutData = [
@@ -772,9 +1038,7 @@
         ///////////////////////////////////////////////////////////
         // set initial values
         //////////////////////////////////////////////////////////
-        quadrants.cut_data.x = config.measure_details.find(function(f) {
-            return f.axis == 'x';
-        }).cut[config.display];
+        quadrants.cut_data.x = config.x.measure_detail.cut[config.display];
 
         chart.controls.wrap
             .selectAll('div.control-group')
@@ -785,9 +1049,7 @@
             .node().value =
             quadrants.cut_data.x;
 
-        quadrants.cut_data.y = config.measure_details.find(function(f) {
-            return f.axis == 'y';
-        }).cut[config.display];
+        quadrants.cut_data.y = config.y.measure_detail.cut[config.display];
 
         chart.controls.wrap
             .selectAll('div.control-group')
@@ -981,13 +1243,11 @@
     function initDisplayControlLabels() {
         var chart = this;
         var config = this.config;
+        var displayControlWrap = this.controls.wrap.selectAll('div').filter(function(controlInput) {
+            return controlInput.label === 'Display Type';
+        });
 
-        var displayControl = this.controls.wrap
-            .selectAll('div')
-            .filter(function(controlInput) {
-                return controlInput.label === 'Display Type';
-            })
-            .select('select');
+        var displayControl = displayControlWrap.select('select');
 
         //set the start value
         var start_value = config.axis_options.find(function(f) {
@@ -997,6 +1257,14 @@
             return d == start_value ? 'selected' : null;
         });
 
+        //annotation of baseline visit (only visible when mDish is selected)
+        displayControlWrap
+            .append('span')
+            .attr('class', 'displayControlAnnotation span-description')
+            .style('color', 'blue')
+            .text('Note: Baseline defined as Visit ' + chart.config.baseline_visitn)
+            .style('display', config.display == 'relative_baseline' ? null : 'none');
+
         displayControl.on('change', function(d) {
             var currentLabel = this.value;
             var currentValue = config.axis_options.find(function(f) {
@@ -1004,6 +1272,12 @@
             }).value;
             config.display = currentValue;
             config.quadrants.cut_data.displayChange = currentValue;
+
+            if (currentValue == 'relative_baseline') {
+                displayControlWrap.select('span.displayControlAnnotation').style('display', null);
+            } else {
+                displayControlWrap.select('span.displayControlAnnotation').style('display', 'none');
+            }
 
             chart.draw();
         });
@@ -1024,8 +1298,35 @@
             .style('width', '200px');
     }
 
+    function initTitle() {
+        if (this.config.showTitle) {
+            this.titleDiv = this.controls.wrap
+                .insert('div', '*')
+                .attr('class', 'title')
+                .style('border-top', '1px solid black')
+                .style('border-bottom', '1px solid black')
+                .style('margin-right', '1em')
+                .style('margin-bottom', '1em');
+
+            this.titleDiv
+                .append('span')
+                .text('Safety eDish')
+                .style('font-size', '1.5em')
+                .style('font-weight', 'strong')
+                .style('display', 'block');
+
+            this.titleDiv
+                .append('span')
+                .text('Use controls to update chart or click a point to see participant details.')
+                .style('font-size', '0.8em');
+        }
+    }
+
     function onLayout() {
+        setCutpointMinimums.call(this);
+        addRRatioSpan.call(this);
         layoutPanels.call(this);
+        initTitle.call(this);
         initQuadrants.call(this);
         initRugs.call(this);
         initVisitPath.call(this);
@@ -1034,75 +1335,107 @@
         initDisplayControlLabels.call(this);
     }
 
+    function updateAxisSettings() {
+        var config = this.config;
+
+        //note: doing this in preprocess so that we can (theoretically have a control to change the variable on each axis later on)
+        var unit =
+            config.display == 'relative_uln'
+                ? ' (xULN)'
+                : config.display == 'relative_baseline'
+                    ? ' (xBaseline)'
+                    : config.display == 'absolute' ? ' (raw values)' : null;
+
+        //Update x-axis settings.
+        config.x.measure_detail = config.measure_details.find(function(measure_detail) {
+            return measure_detail.label === config.x.column;
+        });
+        config.x.label = config.x.measure_detail.measure + unit;
+
+        //Update y-axis settings.
+        config.y.measure_detail = config.measure_details.find(function(measure_detail) {
+            return measure_detail.label === config.y.column;
+        });
+        config.y.label = config.y.measure_detail.measure + unit;
+    }
+
+    function updateControlCutpointLabels() {
+        if (
+            this.controls.config.inputs.find(function(input) {
+                return input.option === 'quadrants.cut_data.x';
+            })
+        )
+            this.controls.wrap
+                .selectAll('.control-group')
+                .filter(function(d) {
+                    return d.option === 'quadrants.cut_data.x';
+                })
+                .select('.wc-control-label')
+                .text(this.config.x.column + ' Cutpoint');
+        if (
+            this.controls.config.inputs.find(function(input) {
+                return input.option === 'quadrants.cut_data.y';
+            })
+        )
+            this.controls.wrap
+                .selectAll('.control-group')
+                .filter(function(d) {
+                    return d.option === 'quadrants.cut_data.y';
+                })
+                .select('.wc-control-label')
+                .text(this.config.y.column + ' Cutpoint');
+    }
+
+    function updateRRatioSpan() {
+        if (this.config.r_ratio_filter) {
+            this.controls.wrap.select('#r-ratio').text('ALTxULN / ALPxULN');
+        }
+    }
+
+    function addParticipantLevelMetadata(d, participant_obj) {
+        var varList = [];
+        if (this.config.filters) {
+            var filterVars = this.config.filters.map(function(d) {
+                return d.hasOwnProperty('value_col') ? d.value_col : d;
+            });
+            varList = d3.merge([varList, filterVars]);
+        }
+        if (this.config.group_cols) {
+            var groupVars = this.config.group_cols.map(function(d) {
+                return d.hasOwnProperty('value_col') ? d.value_col : d;
+            });
+            varList = d3.merge([varList, groupVars]);
+        }
+        if (this.config.details) {
+            var detailVars = this.config.details.map(function(d) {
+                return d.hasOwnProperty('value_col') ? d.value_col : d;
+            });
+            varList = d3.merge([varList, detailVars]);
+        }
+
+        varList.forEach(function(v) {
+            participant_obj[v] = d[0][v];
+        });
+    }
+
+    function calculateRRatios(d, participant_obj) {
+        if (this.config.r_ratio_filter) {
+            //R-ratio should be the ratio of ALT to ALP, i.e. the x-axis to the z-axis.
+            participant_obj.rRatio =
+                participant_obj['ALT_relative_uln'] / participant_obj['ALP_relative_uln'];
+
+            //Define flag given r-ratio minimum.
+            participant_obj.rRatioFlag =
+                participant_obj.rRatio > this.config.r_ratio_cut ? 'Y' : 'N';
+        }
+    }
+
     //Converts a one record per measure data object to a one record per participant objects
     function flattenData() {
         var chart = this;
         var config = this.config;
+
         //make a data set with one row per ID
-
-        //filter the lab data to only the required measures
-        var included_measures = config.measure_details.map(function(m) {
-            return m.measure;
-        });
-
-        var sub = this.imputed_data
-            .filter(function(f) {
-                return included_measures.indexOf(f[config.measure_col]) > -1;
-            })
-            .filter(function(f) {
-                return true;
-            }); //add a filter on selected visits here
-
-        var missingBaseline = 0;
-        this.imputed_data.forEach(function(d) {
-            //coerce numeric values to number
-            var numerics = ['value_col', 'visitn_col', 'normal_col_low', 'normal_col_high'];
-            numerics.forEach(function(col) {
-                d[config[col]] = +d[config[col]];
-            });
-            //standardize key variables
-            d.key_measure = false;
-            if (included_measures.indexOf(d[config.measure_col]) > -1) {
-                d.key_measure = true;
-
-                //map the raw value to a variable called 'absolute'
-                d.absolute = d[config.value_col];
-
-                //get the value relative to the ULN (% of the upper limit of normal) for the measure
-                d.relative_uln = d[config.value_col] / d[config.normal_col_high];
-
-                //get the value relative to baseline for the measure
-                var baseline_record = sub
-                    .filter(function(f) {
-                        return d[config.id_col] == f[config.id_col];
-                    })
-                    .filter(function(f) {
-                        return d[config.measure_col] == f[config.measure_col];
-                    })
-                    .filter(function(f) {
-                        return f[config.visitn_col] == +config.baseline_visitn;
-                    });
-
-                if (baseline_record.length > 0) {
-                    d.baseline_absolute = baseline_record[0][config.value_col];
-                    if (d.baseline_absolute > 0) {
-                        d.relative_baseline = d.absolute / d.baseline_absolute;
-                    } else {
-                        missingBaseline = missingBaseline + 1;
-                        d.relative_baseline = null;
-                    }
-                } else {
-                    missingBaseline = missingBaseline + 1;
-                    d.baseline_absolute = null;
-                    d.relative_baseline = null;
-                }
-            }
-        });
-
-        if (missingBaseline > 0)
-            console.warn(
-                'No baseline value found for ' + missingBaseline + ' of ' + sub.length + ' records.'
-            );
 
         //get list of columns to flatten
         var colList = [];
@@ -1190,29 +1523,10 @@
                 });
 
                 //Add participant level metadata
-                var varList = [];
-                if (chart.config.filters) {
-                    var filterVars = chart.config.filters.map(function(d) {
-                        return d.hasOwnProperty('value_col') ? d.value_col : d;
-                    });
-                    varList = d3.merge([varList, filterVars]);
-                }
-                if (chart.config.group_cols) {
-                    var groupVars = chart.config.group_cols.map(function(d) {
-                        return d.hasOwnProperty('value_col') ? d.value_col : d;
-                    });
-                    varList = d3.merge([varList, groupVars]);
-                }
-                if (chart.config.details) {
-                    var detailVars = chart.config.details.map(function(d) {
-                        return d.hasOwnProperty('value_col') ? d.value_col : d;
-                    });
-                    varList = d3.merge([varList, detailVars]);
-                }
+                addParticipantLevelMetadata.call(chart, d, participant_obj);
 
-                varList.forEach(function(v) {
-                    participant_obj[v] = d[0][v];
-                });
+                //Calculate ratios between measures.
+                calculateRRatios.call(chart, d, participant_obj);
 
                 //calculate the day difference between x and y
                 participant_obj.day_diff = Math.abs(
@@ -1243,32 +1557,6 @@
                 return m.values;
             });
         return flat_data;
-    }
-
-    function updateAxisSettings() {
-        var config = this.config;
-
-        //note: doing this in preprocess so that we can (theoretically have a control to change the variable on each axis later on)
-        var xMeasure = config.measure_details.find(function(f) {
-                return f.axis == 'x';
-            }),
-            yMeasure = config.measure_details.find(function(f) {
-                return f.axis == 'y';
-            });
-
-        config.x.column = xMeasure.label;
-
-        var unit =
-            config.display == 'relative_uln'
-                ? ' (xULN)'
-                : config.display == 'relative_baseline'
-                    ? ' (xBaseline)'
-                    : config.display == 'absolute' ? ' (raw values)' : null;
-
-        config.x.label = xMeasure.measure + unit;
-
-        config.y.column = yMeasure.label;
-        config.y.label = yMeasure.measure + unit;
     }
 
     function setLegendLabel() {
@@ -1340,18 +1628,8 @@
     }
 
     function imputeData() {
-        var _this = this;
-
-        var chart = this,
-            config = this.config;
-
-        //Remove missing values via the ultimate number regular expression.
-        this.imputed_data = this.initial_data.filter(function(d) {
-            return /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(d[_this.config.value_col]);
-        });
-        this.imputed_data.forEach(function(d) {
-            d.impute_flag = false;
-        });
+        var chart = this;
+        var config = this.config;
 
         config.measure_details.forEach(function(measure_settings) {
             var values = chart.imputed_data
@@ -1403,6 +1681,94 @@
         });
     }
 
+    function deriveVariables() {
+        var config = this.config;
+
+        //filter the lab data to only the required measures
+        var included_measures = config.measure_details.map(function(m) {
+            return m.measure;
+        });
+
+        var sub = this.imputed_data
+            .filter(function(f) {
+                return included_measures.indexOf(f[config.measure_col]) > -1;
+            })
+            .filter(function(f) {
+                return true;
+            }); //add a filter on selected visits here
+
+        var missingBaseline = 0;
+        this.imputed_data.forEach(function(d) {
+            //coerce numeric values to number
+            var numerics = ['value_col', 'visitn_col', 'normal_col_low', 'normal_col_high'];
+            numerics.forEach(function(col) {
+                d[config[col]] = +d[config[col]];
+            });
+            //standardize key variables
+            d.key_measure = false;
+            if (included_measures.indexOf(d[config.measure_col]) > -1) {
+                d.key_measure = true;
+
+                //map the raw value to a variable called 'absolute'
+                d.absolute = d[config.value_col];
+
+                //get the value relative to the ULN (% of the upper limit of normal) for the measure
+                d.relative_uln = d[config.value_col] / d[config.normal_col_high];
+
+                //get the value relative to baseline for the measure
+                var baseline_record = sub
+                    .filter(function(f) {
+                        return d[config.id_col] == f[config.id_col];
+                    })
+                    .filter(function(f) {
+                        return d[config.measure_col] == f[config.measure_col];
+                    })
+                    .filter(function(f) {
+                        return f[config.visitn_col] == +config.baseline_visitn;
+                    });
+
+                if (baseline_record.length > 0) {
+                    d.baseline_absolute = baseline_record[0][config.value_col];
+                    if (d.baseline_absolute > 0) {
+                        d.relative_baseline = d.absolute / d.baseline_absolute;
+                    } else {
+                        missingBaseline = missingBaseline + 1;
+                        d.relative_baseline = null;
+                    }
+                } else {
+                    missingBaseline = missingBaseline + 1;
+                    d.baseline_absolute = null;
+                    d.relative_baseline = null;
+                }
+            }
+        });
+
+        if (missingBaseline > 0)
+            console.warn(
+                'No baseline value found for ' + missingBaseline + ' of ' + sub.length + ' records.'
+            );
+    }
+
+    function cleanData() {
+        var _this = this;
+
+        console.log(this.initial_data);
+        console.log(this.config.value_col);
+        this.imputed_data = this.initial_data.filter(function(d) {
+            return /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(+d[_this.config.value_col]);
+        });
+        console.log(this.imputed_data.length);
+        this.imputed_data.forEach(function(d) {
+            d.impute_flag = false;
+        });
+
+        imputeData.call(this);
+        console.log(this.imputed_data.length);
+
+        deriveVariables.call(this);
+        console.log(this.imputed_data.length);
+    }
+
     function dropMissingValues() {
         var config = this.config;
         //drop records with missing or invalid (negative) values
@@ -1428,11 +1794,14 @@
     }
 
     function onPreprocess() {
-        imputeData.call(this); //clean up values < llod
-        this.raw_data = flattenData.call(this); //update flattened data
-        setLegendLabel.call(this); //update legend label based on group variable
         updateAxisSettings.call(this); //update axis label based on display type
+        updateControlCutpointLabels.call(this); //update cutpoint control labels given x- and y-axis variables
+        updateRRatioSpan.call(this);
+        cleanData.call(this); //clean visit-level data - imputation and variable derivations
+        this.raw_data = flattenData.call(this); //convert from visit-level data to participant-level data
+        setLegendLabel.call(this); //update legend label based on group variable
         dropMissingValues.call(this);
+        console.log(this);
     }
 
     function onDataTransform() {}
@@ -1446,9 +1815,8 @@
         dimensions.forEach(function(dimension) {
             //change to the stored cut point if the display changed
             if (config.quadrants.cut_data.displayChange) {
-                config.quadrants.cut_data[dimension] = config.measure_details.find(function(f) {
-                    return f.axis == dimension;
-                }).cut[config.display];
+                config.quadrants.cut_data[dimension] =
+                    config[dimension].measure_detail.cut[config.display];
                 chart.controls.wrap
                     .selectAll('div.control-group')
                     .filter(function(f) {
@@ -1461,9 +1829,7 @@
 
             // get value linked to the controls (quadrant_cut_obj), add propogate it elsewhere
             var current_cut = config.quadrants.cut_data[dimension];
-            config.measure_details.find(function(f) {
-                return f.axis == dimension;
-            }).cut[config.display] = current_cut;
+            config[dimension].measure_detail.cut[config.display] = current_cut;
             config.quadrants.cut_data.filter(function(f) {
                 return f.dimension == dimension;
             })[0] = current_cut;
@@ -1492,13 +1858,9 @@
     }
 
     function setDomain(dimension) {
-        var _this = this;
-
         var config = this.config;
         var domain = this[dimension].domain();
-        var cut = this.config.measure_details.find(function(f) {
-            return _this.config[dimension].column.search(f.label) > -1;
-        }).cut[this.config.display];
+        var cut = this.config[dimension].measure_detail.cut[this.config.display];
 
         //make sure the domain contains the cut point
         if (cut * 1.01 >= domain[1]) {
@@ -1511,26 +1873,26 @@
             domain[0] = 0;
         } else if (this.config[dimension].type == 'log') {
             // use the smallest raw value for a log axis
-            var measure = config.measure_details.find(function(f) {
-                    return f.axis == dimension;
-                })['measure'],
-                values = this.imputed_data
-                    .filter(function(f) {
-                        return f[config.measure_col] == measure;
-                    })
-                    .map(function(m) {
-                        return +m[config.display];
-                    })
-                    .filter(function(m) {
-                        return m > 0;
-                    })
-                    .sort(function(a, b) {
-                        return a - b;
-                    }),
-                minValue = d3.min(values);
+            var measure = config[dimension].measure_detail['measure'];
+            var values = this.imputed_data
+                .filter(function(f) {
+                    return f[config.measure_col] == measure;
+                })
+                .map(function(m) {
+                    return +m[config.display];
+                })
+                .filter(function(m) {
+                    return m > 0;
+                })
+                .sort(function(a, b) {
+                    return a - b;
+                });
+            var minValue = d3.min(values);
+
             if (minValue < domain[0]) {
                 domain[0] = minValue;
             }
+
             //throw a warning if the domain is > 0 if using log scale
             if (this[dimension].type == 'log' && domain[0] <= 0) {
                 console.warn(
@@ -1690,13 +2052,11 @@
         var config = this.config;
 
         //get matching measures
-        var allMatches = d.values.raw[0].raw,
-            measure = config.measure_details.find(function(f) {
-                return config[axis].column.search(f.label) > -1;
-            }).measure,
-            matches = allMatches.filter(function(f) {
-                return f[config.measure_col] == measure;
-            });
+        var allMatches = d.values.raw[0].raw;
+        var measure = config[axis].measure_detail.measure;
+        var matches = allMatches.filter(function(f) {
+            return f[config.measure_col] == measure;
+        });
 
         //draw the rug
         var min_value = axis == 'x' ? chart.y.domain()[0] : chart.x.domain()[0];
@@ -1766,16 +2126,12 @@
         var chart = this;
         var config = chart.config;
 
-        var allMatches = d.values.raw[0].raw,
-            x_measure = config.measure_details.find(function(f) {
-                return config.x.column.search(f.label) > -1;
-            }).measure,
-            y_measure = config.measure_details.find(function(f) {
-                return config.y.column.search(f.label) > -1;
-            }).measure,
-            matches = allMatches.filter(function(f) {
-                return f[config.measure_col] == x_measure || f[config.measure_col] == y_measure;
-            });
+        var allMatches = d.values.raw[0].raw;
+        var x_measure = config.x.measure_detail.measure;
+        var y_measure = config.y.measure_detail.measure;
+        var matches = allMatches.filter(function(f) {
+            return f[config.measure_col] == x_measure || f[config.measure_col] == y_measure;
+        });
 
         //get coordinates by visit
         var visits = d3
@@ -2233,7 +2589,7 @@
             .attr('div', 'value');
     }
 
-    var defaultSettings$2 = {
+    var defaultSettings = {
         max_width: 600,
         x: {
             column: null,
@@ -2290,20 +2646,20 @@
         }
 
         //sync settings
-        defaultSettings$2.x.column = config.visitn_col;
-        defaultSettings$2.y.domain = d3.extent(chart.imputed_data, function(f) {
+        defaultSettings.x.column = config.visitn_col;
+        defaultSettings.y.domain = d3.extent(chart.imputed_data, function(f) {
             return f.relative_uln;
         });
 
-        defaultSettings$2.color_by = config.measure_col;
-        defaultSettings$2.marks[0].per = [config.id_col, config.measure_col];
-        defaultSettings$2.marks[1].per = [config.id_col, config.visitn_col, config.measure_col];
+        defaultSettings.color_by = config.measure_col;
+        defaultSettings.marks[0].per = [config.id_col, config.measure_col];
+        defaultSettings.marks[1].per = [config.id_col, config.visitn_col, config.measure_col];
 
         //draw that chart
 
         chart.spaghetti = webcharts.createChart(
             this.element + ' .participantDetails .spaghettiPlot',
-            defaultSettings$2
+            defaultSettings
         );
         chart.spaghetti.on('resize', onResize$1);
         chart.spaghetti.init(matches);
@@ -2344,12 +2700,8 @@
         var points = this.marks[0].circles;
         points.select('title').remove();
         points.append('title').text(function(d) {
-            var xvar = config.measure_details.find(function(f) {
-                return f.axis == 'x';
-            }).label;
-            var yvar = config.measure_details.find(function(f) {
-                return f.axis == 'y';
-            }).label;
+            var xvar = config.x.measure_detail.label;
+            var yvar = config.y.measure_detail.label;
             var raw = d.values.raw[0],
                 xLabel =
                     config.x.label +
@@ -2369,8 +2721,9 @@
                     ' (Day ' +
                     raw[yvar + '_' + config.studyday_col] +
                     ')',
-                dayDiff = raw['day_diff'] + ' days apart';
-            return xLabel + '\n' + yLabel + '\n' + dayDiff;
+                dayDiff = raw['day_diff'] + ' days apart',
+                idLabel = 'Participant ID: ' + raw[config.id_col];
+            return idLabel + '\n' + xLabel + '\n' + yLabel + '\n' + dayDiff;
         });
     }
 
@@ -2402,12 +2755,13 @@
         var lineBack = d3.select(this).select('line.cut-line-backing');
 
         var dimension = d3.select(this).classed('x') ? 'x' : 'y';
+
         // Update the line properties
         var attributes = {
-            x1: parseInt(line.attr('x1')) + (dimension == 'x' ? x : 0),
-            x2: parseInt(line.attr('x2')) + (dimension == 'x' ? x : 0),
-            y1: parseInt(line.attr('y1')) + (dimension == 'y' ? y : 0),
-            y2: parseInt(line.attr('y2')) + (dimension == 'y' ? y : 0)
+            x1: Math.max(0, parseInt(line.attr('x1')) + (dimension == 'x' ? x : 0)),
+            x2: Math.max(0, parseInt(line.attr('x2')) + (dimension == 'x' ? x : 0)),
+            y1: Math.min(chart.plot_height, parseInt(line.attr('y1')) + (dimension == 'y' ? y : 0)),
+            y2: Math.min(chart.plot_height, parseInt(line.attr('y2')) + (dimension == 'y' ? y : 0))
         };
 
         line.attr(attributes);
@@ -2479,22 +2833,22 @@
             .map(function(d) {
                 return +d;
             })
-            .sort(d3$1.ascending);
+            .sort(d3.ascending);
 
-        //set up scales
+        //set up d3.scales
         if (horizontal) {
-            var y = log ? d3$1.scale.log() : d3$1.scale.linear();
+            var y = log ? d3.scale.log() : d3.scale.linear();
             y.range([height, 0]).domain(domain);
-            var x = d3$1.scale.linear().range([0, width]);
+            var x = d3.scale.linear().range([0, width]);
         } else {
-            var x = log ? d3$1.scale.log() : d3$1.scale.linear();
+            var x = log ? d3.scale.log() : d3.scale.linear();
             x.range([0, width]).domain(domain);
-            var y = d3$1.scale.linear().range([height, 0]);
+            var y = d3.scale.linear().range([height, 0]);
         }
 
         var probs = [0.05, 0.25, 0.5, 0.75, 0.95];
         for (var i = 0; i < probs.length; i++) {
-            probs[i] = d3$1.quantile(results, probs[i]);
+            probs[i] = d3.quantile(results, probs[i]);
         }
 
         var boxplot = svg
@@ -2521,9 +2875,9 @@
             .attr('height', box_height)
             .style('fill', boxColor);
 
-        //draw dividing lines at median, 95% and 5%
+        //draw dividing lines at d3.median, 95% and 5%
         var iS = [0, 2, 4];
-        var iSclass = ['', 'median', ''];
+        var iSclass = ['', 'd3.median', ''];
         var iSColor = [boxColor, boxInsideColor, boxColor];
         for (var i = 0; i < iS.length; i++) {
             boxplot
@@ -2552,23 +2906,23 @@
 
         boxplot
             .append('circle')
-            .attr('class', 'boxplot mean')
-            .attr('cx', horizontal ? x(0.5) : x(d3$1.mean(results)))
-            .attr('cy', horizontal ? y(d3$1.mean(results)) : y(0.5))
+            .attr('class', 'boxplot d3.mean')
+            .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
+            .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
             .attr('r', horizontal ? x(boxPlotWidth / 3) : y(1 - boxPlotWidth / 3))
             .style('fill', boxInsideColor)
             .style('stroke', boxColor);
 
         boxplot
             .append('circle')
-            .attr('class', 'boxplot mean')
-            .attr('cx', horizontal ? x(0.5) : x(d3$1.mean(results)))
-            .attr('cy', horizontal ? y(d3$1.mean(results)) : y(0.5))
+            .attr('class', 'boxplot d3.mean')
+            .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
+            .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
             .attr('r', horizontal ? x(boxPlotWidth / 6) : y(1 - boxPlotWidth / 6))
             .style('fill', boxColor)
             .style('stroke', 'None');
 
-        var formatx = fmt ? d3$1.format(fmt) : d3$1.format('.2f');
+        var formatx = fmt ? d3.format(fmt) : d3.format('.2f');
 
         boxplot
             .selectAll('.boxplot')
@@ -2578,32 +2932,32 @@
                     'N = ' +
                     d.values.length +
                     '\n' +
-                    'Min = ' +
-                    d3$1.min(d.values) +
+                    'd3.min = ' +
+                    d3.min(d.values) +
                     '\n' +
                     '5th % = ' +
-                    formatx(d3$1.quantile(d.values, 0.05)) +
+                    formatx(d3.quantile(d.values, 0.05)) +
                     '\n' +
                     'Q1 = ' +
-                    formatx(d3$1.quantile(d.values, 0.25)) +
+                    formatx(d3.quantile(d.values, 0.25)) +
                     '\n' +
-                    'Median = ' +
-                    formatx(d3$1.median(d.values)) +
+                    'd3.median = ' +
+                    formatx(d3.median(d.values)) +
                     '\n' +
                     'Q3 = ' +
-                    formatx(d3$1.quantile(d.values, 0.75)) +
+                    formatx(d3.quantile(d.values, 0.75)) +
                     '\n' +
                     '95th % = ' +
-                    formatx(d3$1.quantile(d.values, 0.95)) +
+                    formatx(d3.quantile(d.values, 0.95)) +
                     '\n' +
-                    'Max = ' +
-                    d3$1.max(d.values) +
+                    'd3.max = ' +
+                    d3.max(d.values) +
                     '\n' +
-                    'Mean = ' +
-                    formatx(d3$1.mean(d.values)) +
+                    'd3.mean = ' +
+                    formatx(d3.mean(d.values)) +
                     '\n' +
                     'StDev = ' +
-                    formatx(d3$1.deviation(d.values))
+                    formatx(d3.deviation(d.values))
                 );
             });
     }
@@ -2807,16 +3161,17 @@
     }
 
     function safetyedish$1(element, settings) {
-        var initial_settings = clone(settings),
-            defaultSettings_clone = clone(defaultSettings),
-            mergedSettings = Object.assign({}, defaultSettings_clone, settings),
-            syncedSettings = syncSettings(mergedSettings),
-            syncedControlInputs = syncControlInputs(syncedSettings),
-            controls = webcharts.createControls(element, {
-                location: 'top',
-                inputs: syncedControlInputs
-            }),
-            chart = webcharts.createChart(element, syncedSettings, controls);
+        var initial_settings = clone(settings);
+        var defaultSettings = configuration.settings();
+        var controlInputs = configuration.controlInputs();
+        var mergedSettings = Object.assign({}, defaultSettings, settings);
+        var syncedSettings = configuration.syncSettings(mergedSettings);
+        var syncedControlInputs = configuration.syncControlInputs(controlInputs, syncedSettings);
+        var controls = webcharts.createControls(element, {
+            location: 'top',
+            inputs: syncedControlInputs
+        });
+        var chart = webcharts.createChart(element, syncedSettings, controls);
 
         chart.element = element;
         chart.initial_settings = initial_settings;

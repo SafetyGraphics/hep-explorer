@@ -1,5 +1,3 @@
-import { ascending, scale, quantile, mean, format, min, median, max, deviation } from 'd3';
-
 export function addBoxPlot(
     svg,
     results,
@@ -21,22 +19,22 @@ export function addBoxPlot(
         .map(function(d) {
             return +d;
         })
-        .sort(ascending);
+        .sort(d3.ascending);
 
-    //set up scales
+    //set up d3.scales
     if (horizontal) {
-        var y = log ? scale.log() : scale.linear();
+        var y = log ? d3.scale.log() : d3.scale.linear();
         y.range([height, 0]).domain(domain);
-        var x = scale.linear().range([0, width]);
+        var x = d3.scale.linear().range([0, width]);
     } else {
-        var x = log ? scale.log() : scale.linear();
+        var x = log ? d3.scale.log() : d3.scale.linear();
         x.range([0, width]).domain(domain);
-        var y = scale.linear().range([height, 0]);
+        var y = d3.scale.linear().range([height, 0]);
     }
 
     var probs = [0.05, 0.25, 0.5, 0.75, 0.95];
     for (var i = 0; i < probs.length; i++) {
-        probs[i] = quantile(results, probs[i]);
+        probs[i] = d3.quantile(results, probs[i]);
     }
 
     var boxplot = svg
@@ -69,9 +67,9 @@ export function addBoxPlot(
         .attr('height', box_height)
         .style('fill', boxColor);
 
-    //draw dividing lines at median, 95% and 5%
+    //draw dividing lines at d3.median, 95% and 5%
     var iS = [0, 2, 4];
-    var iSclass = ['', 'median', ''];
+    var iSclass = ['', 'd3.median', ''];
     var iSColor = [boxColor, boxInsideColor, boxColor];
     for (var i = 0; i < iS.length; i++) {
         boxplot
@@ -100,23 +98,23 @@ export function addBoxPlot(
 
     boxplot
         .append('circle')
-        .attr('class', 'boxplot mean')
-        .attr('cx', horizontal ? x(0.5) : x(mean(results)))
-        .attr('cy', horizontal ? y(mean(results)) : y(0.5))
+        .attr('class', 'boxplot d3.mean')
+        .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
+        .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
         .attr('r', horizontal ? x(boxPlotWidth / 3) : y(1 - boxPlotWidth / 3))
         .style('fill', boxInsideColor)
         .style('stroke', boxColor);
 
     boxplot
         .append('circle')
-        .attr('class', 'boxplot mean')
-        .attr('cx', horizontal ? x(0.5) : x(mean(results)))
-        .attr('cy', horizontal ? y(mean(results)) : y(0.5))
+        .attr('class', 'boxplot d3.mean')
+        .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
+        .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
         .attr('r', horizontal ? x(boxPlotWidth / 6) : y(1 - boxPlotWidth / 6))
         .style('fill', boxColor)
         .style('stroke', 'None');
 
-    var formatx = fmt ? format(fmt) : format('.2f');
+    var formatx = fmt ? d3.format(fmt) : d3.format('.2f');
 
     boxplot
         .selectAll('.boxplot')
@@ -126,32 +124,32 @@ export function addBoxPlot(
                 'N = ' +
                 d.values.length +
                 '\n' +
-                'Min = ' +
-                min(d.values) +
+                'd3.min = ' +
+                d3.min(d.values) +
                 '\n' +
                 '5th % = ' +
-                formatx(quantile(d.values, 0.05)) +
+                formatx(d3.quantile(d.values, 0.05)) +
                 '\n' +
                 'Q1 = ' +
-                formatx(quantile(d.values, 0.25)) +
+                formatx(d3.quantile(d.values, 0.25)) +
                 '\n' +
-                'Median = ' +
-                formatx(median(d.values)) +
+                'd3.median = ' +
+                formatx(d3.median(d.values)) +
                 '\n' +
                 'Q3 = ' +
-                formatx(quantile(d.values, 0.75)) +
+                formatx(d3.quantile(d.values, 0.75)) +
                 '\n' +
                 '95th % = ' +
-                formatx(quantile(d.values, 0.95)) +
+                formatx(d3.quantile(d.values, 0.95)) +
                 '\n' +
-                'Max = ' +
-                max(d.values) +
+                'd3.max = ' +
+                d3.max(d.values) +
                 '\n' +
-                'Mean = ' +
-                formatx(mean(d.values)) +
+                'd3.mean = ' +
+                formatx(d3.mean(d.values)) +
                 '\n' +
                 'StDev = ' +
-                formatx(deviation(d.values))
+                formatx(d3.deviation(d.values))
             );
         });
 }

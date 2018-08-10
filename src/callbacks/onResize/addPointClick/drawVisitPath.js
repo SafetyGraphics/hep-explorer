@@ -2,12 +2,12 @@ export function drawVisitPath(d) {
     var chart = this;
     var config = chart.config;
 
-    var allMatches = d.values.raw[0].raw,
-        x_measure = config.measure_details.find(f => config.x.column.search(f.label) > -1).measure,
-        y_measure = config.measure_details.find(f => config.y.column.search(f.label) > -1).measure,
-        matches = allMatches.filter(
-            f => f[config.measure_col] == x_measure || f[config.measure_col] == y_measure
-        );
+    var allMatches = d.values.raw[0].raw;
+    var x_measure = config.x.measure_detail.measure;
+    var y_measure = config.y.measure_detail.measure;
+    var matches = allMatches.filter(
+        f => f[config.measure_col] == x_measure || f[config.measure_col] == y_measure
+    );
 
     //get coordinates by visit
     var visits = d3.set(matches.map(m => m[config.visitn_col])).values();

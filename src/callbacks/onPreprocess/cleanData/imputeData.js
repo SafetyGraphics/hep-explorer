@@ -1,16 +1,8 @@
 import { imputeColumn } from './imputeData/imputeColumn';
 
-export function imputeData() {
-    var chart = this,
-        config = this.config;
-
-    //Remove missing values via the ultimate number regular expression.
-    this.imputed_data = this.initial_data.filter(d =>
-        /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(d[this.config.value_col])
-    );
-    this.imputed_data.forEach(function(d) {
-        d.impute_flag = false;
-    });
+export default function imputeData() {
+    const chart = this;
+    const config = this.config;
 
     config.measure_details.forEach(function(measure_settings) {
         var values = chart.imputed_data
