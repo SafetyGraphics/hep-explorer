@@ -1,7 +1,5 @@
 export default function updateRRatioSpan() {
-    this.controls.wrap
-        .select('#r-ratio')
-        .text(
-            `${this.config.x.measure_detail.label}xULN / ${this.config.y.measure_detail.label}xULN`
-        );
+    if (this.config.r_ratio_filter) {
+        this.controls.wrap.select('#r-ratio').text('ALTxULN / ALPxULN');
+    }
 }

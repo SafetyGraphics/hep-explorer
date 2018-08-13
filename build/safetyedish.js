@@ -328,7 +328,8 @@
             group_cols: null,
             filters: null,
             details: null,
-            r_ratio: 0,
+            r_ratio_filter: true,
+            r_ratio_cut: 0,
             visit_level_points: false,
             measure_details: [
                 {
@@ -641,7 +642,7 @@
                 type: 'number',
                 label: 'Minimum R Ratio',
                 description: 'Display points with R ratios greater or equal to X',
-                option: 'r_ratio'
+                option: 'r_ratio_cut'
             },
             {
                 type: 'checkbox',
@@ -727,6 +728,12 @@
             });
         }
 
+        //drop the R Ratio control if r_ratio_filter is false
+        if (!settings.r_ratio_filter) {
+            controlInputs = controlInputs.filter(function(controlInput) {
+                return controlInput.label != 'Minimum R Ratio';
+            });
+        }
         //Sync y-axis cut control.
         controlInputs.find(function(controlInput) {
             return controlInput.option === 'quadrants.cut_data.y';
@@ -872,12 +879,14 @@
     }
 
     function addRRatioFilter() {
-        this.filters.push({
-            col: 'rRatioFlag',
-            val: 'Y',
-            choices: ['Y', 'N'],
-            loose: undefined
-        });
+        if (this.config.r_ratio_filter) {
+            this.filters.push({
+                col: 'rRatioFlag',
+                val: 'Y',
+                choices: ['Y', 'N'],
+                loose: undefined
+            });
+        }
     }
 
     function onInit() {
@@ -922,13 +931,15 @@
     }
 
     function addRRatioSpan() {
-        var rRatioLabel = this.controls.wrap
-            .selectAll('.control-group')
-            .filter(function(d) {
-                return d.option === 'r_ratio';
-            })
-            .select('.wc-control-label');
-        rRatioLabel.html(rRatioLabel.html() + " (<span id = 'r-ratio'></span>)");
+        if (this.config.r_ratio_filter) {
+            var rRatioLabel = this.controls.wrap
+                .selectAll('.control-group')
+                .filter(function(d) {
+                    return d.option === 'r_ratio_cut';
+                })
+                .select('.wc-control-label');
+            rRatioLabel.html(rRatioLabel.html() + " (<span id = 'r-ratio'></span>)");
+        }
     }
 
     var defaultCutData = [
@@ -1455,14 +1466,262 @@
     }
 
     function updateRRatioSpan() {
-        this.controls.wrap
-            .select('#r-ratio')
-            .text(
-                this.config.x.measure_detail.label +
-                    'xULN / ' +
-                    this.config.y.measure_detail.label +
-                    'xULN'
+        if (this.config.r_ratio_filter) {
+            this.controls.wrap.select('#r-ratio').text('ALTxULN / ALPxULN');
+        }
+    }
+
+    function addParticipantLevelMetadata(d, participant_obj) {
+        this.varList.forEach(function(v) {
+            participant_obj[v] = d[0][v];
+            participant_obj.level = 'participant';
+        });
+    }
+
+    function calculateRRatios(d, participant_obj) {
+        if (this.config.r_ratio_filter) {
+            //R-ratio should be the ratio of ALT to ALP, i.e. the x-axis to the z-axis.
+            participant_obj.rRatio =
+                participant_obj['ALT_relative_uln'] / participant_obj['ALP_relative_uln'];
+
+            //Define flag given r-ratio minimum.
+            participant_obj.rRatioFlag =
+                participant_obj.rRatio > this.config.r_ratio_cut ? 'Y' : 'N';
+        }
+    }
+
+    //Converts a one record per measure data object to a one record per participant objects
+    function flattenData() {
+        var chart = this;
+        var config = this.config;
+
+        //make a data set with one row per ID
+
+        //get list of columns to flatten
+        var colList = [];
+        var measureCols = [
+            'measure_col',
+            'value_col',
+            'visit_col',
+            'visitn_col',
+            'studyday_col',
+            'unit_col',
+            'normal_col_low',
+            'normal_col_high'
+        ];
+
+        measureCols.forEach(function(d) {
+            if (Array.isArray(d)) {
+                d.forEach(function(di) {
+                    colList.push(
+                        di.hasOwnProperty('value_col') ? config[di.value_col] : config[di]
+                    );
+                });
+            } else {
+                colList.push(d.hasOwnProperty('value_col') ? config[d.value_col] : config[d]);
+            }
+        });
+
+        //merge in the absolute and relative values
+        colList = d3.merge([
+            colList,
+            ['absolute', 'relative_uln', 'relative_baseline', 'baseline_absolute']
+        ]);
+
+        //get maximum values for each measure type
+        var flat_data = d3
+            .nest()
+            .key(function(f) {
+                return f[config.id_col];
+            })
+            .rollup(function(d) {
+                var participant_obj = {};
+                participant_obj.days_x = null;
+                participant_obj.days_y = null;
+                config.measure_details.forEach(function(m) {
+                    //get all raw data for the current measure
+                    var matches = d.filter(function(f) {
+                        return m.measure == f[config.measure_col];
+                    }); //get matching measures
+
+                    if (matches.length == 0) {
+                        console.log('No matches found');
+                        participant_obj.drop_participant = true;
+                        return participant_obj;
+                    } else {
+                        participant_obj.drop_participant = false;
+                    }
+
+                    //get record with maximum value for the current display type
+                    participant_obj[m.label] = d3.max(matches, function(d) {
+                        return +d[config.display];
+                    });
+
+                    var maxRecord = matches.find(function(d) {
+                        return participant_obj[m.label] == +d[config.display];
+                    });
+                    //map all measure specific values
+                    colList.forEach(function(col) {
+                        participant_obj[m.label + '_' + col] = maxRecord[col];
+                    });
+
+                    //determine whether the value is above the specified threshold
+                    if (m.cut[config.display]) {
+                        config.show_quadrants = true;
+                        participant_obj[m.label + '_cut'] = m.cut[config.display];
+                        participant_obj[m.label + '_flagged'] =
+                            participant_obj[m.label] >= participant_obj[m.label + '_cut'];
+                    } else {
+                        config.show_quadrants = false;
+                        participant_obj[m.label + '_cut'] = null;
+                        participant_obj[m.label + '_flagged'] = null;
+                    }
+
+                    //save study days for each axis;
+                    if (m.axis == 'x') participant_obj.days_x = maxRecord[config.studyday_col];
+                    if (m.axis == 'y') participant_obj.days_y = maxRecord[config.studyday_col];
+                });
+
+                //Add participant level metadata
+                addParticipantLevelMetadata.call(chart, d, participant_obj);
+
+                //Calculate ratios between measures.
+                calculateRRatios.call(chart, d, participant_obj);
+
+                //calculate the day difference between x and y
+                participant_obj.day_diff = Math.abs(
+                    participant_obj.days_x - participant_obj.days_y
+                );
+
+                return participant_obj;
+            })
+            .entries(
+                this.imputed_data.filter(function(f) {
+                    return f.key_measure;
+                })
             );
+
+        var flat_data = flat_data
+            .filter(function(f) {
+                return f.values.drop_participant == false;
+            })
+            .map(function(m) {
+                m.values[config.id_col] = m.key;
+
+                //link the raw data to the flattened object
+                var allMatches = chart.imputed_data.filter(function(f) {
+                    return f[config.id_col] == m.key;
+                });
+                m.values.raw = allMatches;
+
+                return m.values;
+            });
+        return flat_data;
+    }
+
+    function addVisitLevelData() {
+        var _this = this;
+
+        if (this.config.visit_level_points) {
+            //Filter raw data on relevant measures and nest by participant and visit.
+            var currentMeasureDetails = this.config.measure_details.filter(function(
+                measure_detail
+            ) {
+                return (
+                    [_this.config.x.column, _this.config.y.column].indexOf(measure_detail.label) >
+                        -1 ||
+                    //measure_detail.axis === 'z'
+                    measure_detail.label === 'ALP'
+                );
+            });
+            var currentMeasures = currentMeasureDetails.map(function(measureDetail) {
+                return measureDetail.measure;
+            });
+            var currentMeasureLabels = currentMeasureDetails.map(function(measureDetail) {
+                return measureDetail.label;
+            });
+            var visitLevelData = d3
+                .nest()
+                .key(function(d) {
+                    return (
+                        d[_this.config.id_col] +
+                        '||' +
+                        d[_this.config.visit_col] +
+                        '||' +
+                        _this.varList
+                            .map(function(variable) {
+                                return d[variable];
+                            })
+                            .join('||')
+                    );
+                })
+                .rollup(function(d) {
+                    var visit_obj = {};
+                    d.forEach(function(di) {
+                        //Capture measure label/abbreviation given full measure text.
+                        var measureLabel =
+                            currentMeasureLabels[
+                                currentMeasures.findIndex(function(measure) {
+                                    return measure === di[_this.config.measure_col];
+                                })
+                            ];
+
+                        //Calculate ULN-relative, baseline-relative, or raw result.
+                        visit_obj[measureLabel] =
+                            _this.config.display === 'relative_uln'
+                                ? di[_this.config.value_col] / di[_this.config.normal_col_high]
+                                : _this.config.display === 'relative_baseline'
+                                    ? di[_this.config.value_col] /
+                                      (_this.raw_data.find(function(dii) {
+                                          return (
+                                              dii[_this.config.id_col] === di[_this.config.id_col]
+                                          );
+                                      })[measureLabel + '_baseline_absolute'] || NaN)
+                                    : _this.config.display === 'absolute'
+                                        ? di[_this.config.value_col]
+                                        : null;
+                    });
+                    return visit_obj;
+                })
+                .entries(
+                    this.imputed_data.filter(function(d) {
+                        return currentMeasures.indexOf(d[_this.config.measure_col]) > -1;
+                    })
+                );
+
+            //Flatten nested data.
+            visitLevelData.forEach(function(d) {
+                //Parse nest key.
+                var keys = d.key.split('||');
+                d[_this.config.id_col] = keys[0];
+                d[_this.config.visit_col] = keys[1];
+                _this.varList.forEach(function(variable, i) {
+                    d[variable] = keys[i + 2];
+                });
+                delete d.key;
+
+                //Un-nest nest values.
+                Object.assign(d, d.values);
+                delete d.values;
+
+                if (
+                    _this.config.r_ratio_filter &&
+                    _this.config.x.column === 'ALT' &&
+                    _this.config.measure_details.some(function(measure_detail) {
+                        return measure_detail.label === 'ALP';
+                    })
+                ) {
+                    //R-ratio should be the ratio of ALT to ALP, i.e. the x-axis to the z-axis.
+                    d.rRatio = d.ALT / d.ALP;
+                    d.rRatioFlag = d.rRatio > _this.config.r_ratio_cut ? 'Y' : 'N';
+                }
+
+                //Assign data level.
+                d.level = 'visit';
+            });
+
+            this.raw_data = this.raw_data.concat(visitLevelData);
+        }
     }
 
     function imputeColumn(data, measure_column, value_column, measure, llod, imputed_value, drop) {
@@ -1518,7 +1777,7 @@
         }
     }
 
-    function iterateOverMeasureDetails() {
+    function imputeData() {
         var chart = this;
         var config = this.config;
 
@@ -1640,7 +1899,7 @@
             );
     }
 
-    function imputeData() {
+    function cleanData() {
         var _this = this;
 
         this.imputed_data = this.initial_data.filter(function(d) {
@@ -1650,275 +1909,8 @@
             d.impute_flag = false;
         });
 
-        iterateOverMeasureDetails.call(this);
+        imputeData.call(this);
         deriveVariables.call(this);
-    }
-
-    function addParticipantLevelMetadata(d, participant_obj) {
-        this.varList.forEach(function(v) {
-            participant_obj[v] = d[0][v];
-            participant_obj.level = 'participant';
-        });
-    }
-
-    function calculateRatios(d, participant_obj) {
-        var _this = this;
-
-        this.config.measure_details.forEach(function(d) {
-            _this.config.measure_details
-                .filter(function(di) {
-                    return di.measure !== d.measure;
-                })
-                .forEach(function(di) {
-                    participant_obj[d.label + '_relative_uln/' + di.label + '_relative_uln'] =
-                        participant_obj[d.label + '_relative_uln'] /
-                        participant_obj[di.label + '_relative_uln'];
-                });
-        });
-
-        //R-ratio should be the ratio of ALT to ALP, i.e. the x-axis to the z-axis.
-        participant_obj.rRatio =
-            participant_obj[
-                this.config.x.measure_detail.label +
-                    '_relative_uln/' +
-                    this.config.measure_details.find(function(measure_detail) {
-                        return measure_detail.axis === 'z';
-                    }).label +
-                    '_relative_uln'
-            ];
-
-        //Define flag given r-ratio minimum.
-        participant_obj.rRatioFlag = participant_obj.rRatio > this.config.r_ratio ? 'Y' : 'N';
-    }
-
-    //Converts a one record per measure data object to a one record per participant objects
-    function flattenData() {
-        var chart = this;
-        var config = this.config;
-
-        //make a data set with one row per ID
-
-        //get list of columns to flatten
-        var colList = [];
-        var measureCols = [
-            'measure_col',
-            'value_col',
-            'visit_col',
-            'visitn_col',
-            'studyday_col',
-            'unit_col',
-            'normal_col_low',
-            'normal_col_high'
-        ];
-
-        measureCols.forEach(function(d) {
-            if (Array.isArray(d)) {
-                d.forEach(function(di) {
-                    colList.push(
-                        di.hasOwnProperty('value_col') ? config[di.value_col] : config[di]
-                    );
-                });
-            } else {
-                colList.push(d.hasOwnProperty('value_col') ? config[d.value_col] : config[d]);
-            }
-        });
-
-        //merge in the absolute and relative values
-        colList = d3.merge([
-            colList,
-            ['absolute', 'relative_uln', 'relative_baseline', 'baseline_absolute']
-        ]);
-
-        //get maximum values for each measure type
-        var flat_data = d3
-            .nest()
-            .key(function(f) {
-                return f[config.id_col];
-            })
-            .rollup(function(d) {
-                var participant_obj = {};
-                participant_obj.days_x = null;
-                participant_obj.days_y = null;
-                config.measure_details.forEach(function(m) {
-                    //get all raw data for the current measure
-                    var matches = d.filter(function(f) {
-                        return m.measure == f[config.measure_col];
-                    }); //get matching measures
-
-                    if (matches.length == 0) {
-                        console.log('No matches found');
-                        participant_obj.drop_participant = true;
-                        return participant_obj;
-                    } else {
-                        participant_obj.drop_participant = false;
-                    }
-
-                    //get record with maximum value for the current display type
-                    participant_obj[m.label] = d3.max(matches, function(d) {
-                        return +d[config.display];
-                    });
-
-                    var maxRecord = matches.find(function(d) {
-                        return participant_obj[m.label] == +d[config.display];
-                    });
-                    //map all measure specific values
-                    colList.forEach(function(col) {
-                        participant_obj[m.label + '_' + col] = maxRecord[col];
-                    });
-
-                    //determine whether the value is above the specified threshold
-                    if (m.cut[config.display]) {
-                        config.show_quadrants = true;
-                        participant_obj[m.label + '_cut'] = m.cut[config.display];
-                        participant_obj[m.label + '_flagged'] =
-                            participant_obj[m.label] >= participant_obj[m.label + '_cut'];
-                    } else {
-                        config.show_quadrants = false;
-                        participant_obj[m.label + '_cut'] = null;
-                        participant_obj[m.label + '_flagged'] = null;
-                    }
-
-                    //save study days for each axis;
-                    if (m.axis == 'x') participant_obj.days_x = maxRecord[config.studyday_col];
-                    if (m.axis == 'y') participant_obj.days_y = maxRecord[config.studyday_col];
-                });
-
-                //Add participant level metadata
-                addParticipantLevelMetadata.call(chart, d, participant_obj);
-
-                //Calculate ratios between measures.
-                calculateRatios.call(chart, d, participant_obj);
-
-                //calculate the day difference between x and y
-                participant_obj.day_diff = Math.abs(
-                    participant_obj.days_x - participant_obj.days_y
-                );
-
-                return participant_obj;
-            })
-            .entries(
-                this.imputed_data.filter(function(f) {
-                    return f.key_measure;
-                })
-            );
-
-        var flat_data = flat_data
-            .filter(function(f) {
-                return f.values.drop_participant == false;
-            })
-            .map(function(m) {
-                m.values[config.id_col] = m.key;
-
-                //link the raw data to the flattened object
-                var allMatches = chart.imputed_data.filter(function(f) {
-                    return f[config.id_col] == m.key;
-                });
-                m.values.raw = allMatches;
-
-                return m.values;
-            });
-        return flat_data;
-    }
-
-    function addVisitLevelData() {
-        var _this = this;
-
-        if (this.config.visit_level_points) {
-            //Filter raw data on relevant measures and nest by participant and visit.
-            var currentMeasureDetails = this.config.measure_details.filter(function(
-                measure_detail
-            ) {
-                return (
-                    [_this.config.x.column, _this.config.y.column].indexOf(measure_detail.label) >
-                        -1 || measure_detail.axis === 'z'
-                );
-            });
-            var currentMeasures = currentMeasureDetails.map(function(measureDetail) {
-                return measureDetail.measure;
-            });
-            var currentMeasureLabels = currentMeasureDetails.map(function(measureDetail) {
-                return measureDetail.label;
-            });
-            var visitLevelData = d3
-                .nest()
-                .key(function(d) {
-                    return (
-                        d[_this.config.id_col] +
-                        '||' +
-                        d[_this.config.visit_col] +
-                        '||' +
-                        _this.varList
-                            .map(function(variable) {
-                                return d[variable];
-                            })
-                            .join('||')
-                    );
-                })
-                .rollup(function(d) {
-                    var visit_obj = {};
-                    d.forEach(function(di) {
-                        //Capture measure label/abbreviation given full measure text.
-                        var measureLabel =
-                            currentMeasureLabels[
-                                currentMeasures.findIndex(function(measure) {
-                                    return measure === di[_this.config.measure_col];
-                                })
-                            ];
-
-                        //Calculate ULN-relative, baseline-relative, or raw result.
-                        visit_obj[measureLabel] =
-                            _this.config.display === 'relative_uln'
-                                ? di[_this.config.value_col] / di[_this.config.normal_col_high]
-                                : _this.config.display === 'relative_baseline'
-                                    ? di[_this.config.value_col] /
-                                      (_this.raw_data.find(function(dii) {
-                                          return (
-                                              dii[_this.config.id_col] === di[_this.config.id_col]
-                                          );
-                                      })[measureLabel + '_baseline_absolute'] || NaN)
-                                    : _this.config.display === 'absolute'
-                                        ? di[_this.config.value_col]
-                                        : null;
-                    });
-                    return visit_obj;
-                })
-                .entries(
-                    this.imputed_data.filter(function(d) {
-                        return currentMeasures.indexOf(d[_this.config.measure_col]) > -1;
-                    })
-                );
-
-            //Flatten nested data.
-            visitLevelData.forEach(function(d) {
-                //Parse nest key.
-                var keys = d.key.split('||');
-                d[_this.config.id_col] = keys[0];
-                d[_this.config.visit_col] = keys[1];
-                _this.varList.forEach(function(variable, i) {
-                    d[variable] = keys[i + 2];
-                });
-                delete d.key;
-
-                //Un-nest nest values.
-                Object.assign(d, d.values);
-                delete d.values;
-
-                //Calculate r-ratio (ALT|AST x ULN / ALP x ULN).
-                d.rRatio =
-                    d[_this.config.x.column] /
-                    d[
-                        _this.config.measure_details.find(function(measure_detail) {
-                            return measure_detail.axis === 'z';
-                        }).label
-                    ];
-                d.rRatioFlag = d.rRatio > _this.config.r_ratio ? 'Y' : 'N';
-
-                //Assign data level.
-                d.level = 'visit';
-            });
-
-            this.raw_data = this.raw_data.concat(visitLevelData);
-        }
     }
 
     function setLegendLabel() {
@@ -1961,13 +1953,13 @@
     }
 
     function onPreprocess() {
-        updateAxisSettings.call(this); //update axis label based on display type
-        updateControlCutpointLabels.call(this); //update cutpoint control labels given x- and y-axis variables
+        updateAxisSettings.call(this); // update axis label based on display type
+        updateControlCutpointLabels.call(this); // update cutpoint control labels given x- and y-axis variables
         updateRRatioSpan.call(this);
-        imputeData.call(this); //clean up values < llod
-        this.raw_data = flattenData.call(this); //update flattened data
+        cleanData.call(this); // clean visit-level data - imputation and variable derivations
+        this.raw_data = flattenData.call(this); // convert from visit-level data to participant-level data
         addVisitLevelData.call(this); // add visit-level data to plot
-        setLegendLabel.call(this); //update legend label based on group variable
+        setLegendLabel.call(this); // update legend label based on group variable
         dropMissingValues.call(this);
     }
 

@@ -4,7 +4,8 @@ export default function addVisitLevelData() {
         const currentMeasureDetails = this.config.measure_details.filter(
             measure_detail =>
                 [this.config.x.column, this.config.y.column].indexOf(measure_detail.label) > -1 ||
-                measure_detail.axis === 'z'
+                //measure_detail.axis === 'z'
+                measure_detail.label === 'ALP'
         );
         const currentMeasures = currentMeasureDetails.map(measureDetail => measureDetail.measure);
         const currentMeasureLabels = currentMeasureDetails.map(
@@ -65,14 +66,15 @@ export default function addVisitLevelData() {
             Object.assign(d, d.values);
             delete d.values;
 
-            //Calculate r-ratio (ALT|AST x ULN / ALP x ULN).
-            d.rRatio =
-                d[this.config.x.column] /
-                d[
-                    this.config.measure_details.find(measure_detail => measure_detail.axis === 'z')
-                        .label
-                ];
-            d.rRatioFlag = d.rRatio > this.config.r_ratio ? 'Y' : 'N';
+            if (
+                this.config.r_ratio_filter &&
+                this.config.x.column === 'ALT' &&
+                this.config.measure_details.some(measure_detail => measure_detail.label === 'ALP')
+            ) {
+                //R-ratio should be the ratio of ALT to ALP, i.e. the x-axis to the z-axis.
+                d.rRatio = d.ALT / d.ALP;
+                d.rRatioFlag = d.rRatio > this.config.r_ratio_cut ? 'Y' : 'N';
+            }
 
             //Assign data level.
             d.level = 'visit';

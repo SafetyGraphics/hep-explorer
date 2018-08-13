@@ -76,7 +76,7 @@ export default function controlInputs() {
             type: 'number',
             label: 'Minimum R Ratio',
             description: 'Display points with R ratios greater or equal to X',
-            option: 'r_ratio'
+            option: 'r_ratio_cut'
         },
         {
             type: 'checkbox',

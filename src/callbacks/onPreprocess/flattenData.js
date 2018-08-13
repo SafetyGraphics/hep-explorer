@@ -1,5 +1,5 @@
 import addParticipantLevelMetadata from './flattenData/addParticipantLevelMetadata';
-import calculateRatios from './flattenData/calculateRatios';
+import calculateRRatio from './flattenData/calculateRRatio';
 
 //Converts a one record per measure data object to a one record per participant objects
 export function flattenData() {
@@ -87,7 +87,7 @@ export function flattenData() {
             addParticipantLevelMetadata.call(chart, d, participant_obj);
 
             //Calculate ratios between measures.
-            calculateRatios.call(chart, d, participant_obj);
+            calculateRRatio.call(chart, d, participant_obj);
 
             //calculate the day difference between x and y
             participant_obj.day_diff = Math.abs(participant_obj.days_x - participant_obj.days_y);

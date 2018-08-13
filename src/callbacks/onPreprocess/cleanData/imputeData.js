@@ -1,6 +1,6 @@
-import { imputeColumn } from './iterateOverMeasureDetails/imputeColumn';
+import { imputeColumn } from './imputeData/imputeColumn';
 
-export default function iterateOverMeasureDetails() {
+export default function imputeData() {
     const chart = this;
     const config = this.config;
 

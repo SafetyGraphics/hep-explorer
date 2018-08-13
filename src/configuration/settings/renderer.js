@@ -12,7 +12,8 @@ export default function renderer() {
         group_cols: null,
         filters: null,
         details: null,
-        r_ratio: 0,
+        r_ratio_filter: true,
+        r_ratio_cut: 0,
         visit_level_points: false,
         measure_details: [
             {
