@@ -827,31 +827,6 @@
         addRRatioFilter.call(this);
     }
 
-    function setCutpointMinimums() {
-        var chart = this;
-
-        this.controls.wrap
-            .selectAll('.control-group')
-            .filter(function(d) {
-                return /.-axis cut/i.test(d.description);
-            })
-            .attr('min', 0)
-            .on('change', function(d) {
-                var input = d3.select(this).select('input');
-
-                //Prevent a negative input.
-                if (input.property('value') < 0) input.property('value', 0);
-
-                //Update chart setting.
-                chart.config.quadrants.cut_data[
-                    d.description.split('-')[0].toLowerCase()
-                ] = input.property('value');
-
-                //Redraw.
-                chart.draw();
-            });
-    }
-
     function addRRatioSpan() {
         if (this.config.r_ratio_filter) {
             var rRatioLabel = this.controls.wrap
@@ -1323,7 +1298,6 @@
     }
 
     function onLayout() {
-        setCutpointMinimums.call(this);
         addRRatioSpan.call(this);
         layoutPanels.call(this);
         initTitle.call(this);
@@ -1752,21 +1726,15 @@
     function cleanData() {
         var _this = this;
 
-        console.log(this.initial_data);
-        console.log(this.config.value_col);
         this.imputed_data = this.initial_data.filter(function(d) {
-            return /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(+d[_this.config.value_col]);
+            return /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(d[_this.config.value_col]);
         });
-        console.log(this.imputed_data.length);
         this.imputed_data.forEach(function(d) {
             d.impute_flag = false;
         });
 
         imputeData.call(this);
-        console.log(this.imputed_data.length);
-
         deriveVariables.call(this);
-        console.log(this.imputed_data.length);
     }
 
     function dropMissingValues() {
@@ -1809,33 +1777,6 @@
     function updateQuadrantData() {
         var chart = this;
         var config = this.config;
-
-        //update cut data
-        var dimensions = ['x', 'y'];
-        dimensions.forEach(function(dimension) {
-            //change to the stored cut point if the display changed
-            if (config.quadrants.cut_data.displayChange) {
-                config.quadrants.cut_data[dimension] =
-                    config[dimension].measure_detail.cut[config.display];
-                chart.controls.wrap
-                    .selectAll('div.control-group')
-                    .filter(function(f) {
-                        return f.option == 'quadrants.cut_data.' + dimension;
-                    })
-                    .select('input')
-                    .node().value =
-                    config.quadrants.cut_data[dimension];
-            }
-
-            // get value linked to the controls (quadrant_cut_obj), add propogate it elsewhere
-            var current_cut = config.quadrants.cut_data[dimension];
-            config[dimension].measure_detail.cut[config.display] = current_cut;
-            config.quadrants.cut_data.filter(function(f) {
-                return f.dimension == dimension;
-            })[0] = current_cut;
-        });
-
-        config.quadrants.cut_data.displayChange = false;
 
         //add "eDISH_quadrant" column to raw_data
         var x_var = this.config.x.column;
@@ -1955,16 +1896,108 @@
         this.participantDetails.wrap.selectAll('*').style('display', 'none');
     }
 
+    function setCutpointMinimums() {
+        var chart = this;
+        var config = this.config;
+        var lower_limits = {
+            x: chart['x_dom'][0],
+            y: chart['y_dom'][0]
+        };
+
+        //Make sure cutpoint isn't below lower domain - Comes in to play when changing from log to linear axes
+        Object.keys(lower_limits).forEach(function(dimension) {
+            var current_cut = config.quadrants.cut_data[dimension];
+            var min = lower_limits[dimension];
+            if (current_cut < min) {
+                config.quadrants.cut_data[dimension] = min;
+                config[dimension].measure_detail.cut[config.display] = min;
+                config.quadrants.cut_data.filter(function(f) {
+                    return f.dimension == dimension;
+                })[0] = min;
+                chart.controls.wrap
+                    .selectAll('div.control-group')
+                    .filter(function(f) {
+                        return f.option == 'quadrants.cut_data.' + dimension;
+                    })
+                    .select('input')
+                    .node().value =
+                    config.quadrants.cut_data[dimension];
+            }
+        });
+
+        //Update cut point controls
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return /.-axis cut/i.test(d.description);
+            })
+            .attr('min', function(d) {
+                return lower_limits[d.description.split('-')[0]];
+            })
+            .on('change', function(d) {
+                var dimension = d.description.split('-')[0].toLowerCase();
+                var min = lower_limits[dimension];
+                var input = d3.select(this).select('input');
+
+                //Prevent a cutpoint less than the lower domain.
+                if (input.property('value') < min) input.property('value', min);
+
+                //Update chart setting.
+                chart.config.quadrants.cut_data[dimension] = input.property('value');
+
+                //Redraw.
+                chart.draw();
+            });
+    }
+
+    function syncCutpoints() {
+        var chart = this;
+        var config = this.config;
+
+        //update cut data
+        var dimensions = ['x', 'y'];
+        dimensions.forEach(function(dimension) {
+            //change to the stored cut point if the display changed
+            if (config.quadrants.cut_data.displayChange) {
+                config.quadrants.cut_data[dimension] =
+                    config[dimension].measure_detail.cut[config.display];
+                chart.controls.wrap
+                    .selectAll('div.control-group')
+                    .filter(function(f) {
+                        return f.option == 'quadrants.cut_data.' + dimension;
+                    })
+                    .select('input')
+                    .node().value =
+                    config.quadrants.cut_data[dimension];
+            }
+
+            // get value linked to the controls (quadrant_cut_obj), add propogate it elsewhere
+            var current_cut = config.quadrants.cut_data[dimension];
+            config[dimension].measure_detail.cut[config.display] = current_cut;
+            config.quadrants.cut_data.filter(function(f) {
+                return f.dimension == dimension;
+            })[0] = current_cut;
+        });
+
+        config.quadrants.cut_data.displayChange = false;
+    }
+
     function onDraw() {
         //clear participant Details
         clearParticipantDetails.call(this);
 
-        //get current cutpoints and classify participants in to eDISH quadrants
-        updateQuadrantData.call(this);
+        //get correct cutpoint for the current view
+        syncCutpoints.call(this);
 
         //update domains to include cut lines
         setDomain.call(this, 'x');
         setDomain.call(this, 'y');
+
+        //Set update cutpoint interactivity
+        setCutpointMinimums.call(this);
+
+        //Classify participants in to eDISH quadrants
+        updateQuadrantData.call(this);
     }
 
     function drawQuadrants() {
