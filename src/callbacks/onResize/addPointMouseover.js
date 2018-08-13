@@ -5,6 +5,7 @@ export function addPointMouseover() {
     var chart = this;
     var config = this.config;
     var points = this.marks[0].circles;
+
     //add event listener to all participant level points
     points
         .filter(function(d) {
@@ -16,7 +17,7 @@ export function addPointMouseover() {
             var disabled = d3.select(this).classed('disabled');
             if (!disabled) {
                 //clear previous mouseover if any
-                points.attr('stroke-width', 1);
+                points.attr('stroke-width', chart.marks[0].attributes['stroke-width']);
                 clearRugs.call(chart, 'x');
                 clearRugs.call(chart, 'y');
 

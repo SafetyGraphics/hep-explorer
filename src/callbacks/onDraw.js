@@ -4,7 +4,8 @@ import { clearParticipantDetails } from './onResize/clearParticipantDetails';
 
 export default function onDraw() {
     //clear participant Details
-    clearParticipantDetails.call(this);
+    if (this.config.quadrants.table.wrap.style('display') === 'none')
+        clearParticipantDetails.call(this);
 
     //get current cutpoints and classify participants in to eDISH quadrants
     updateQuadrantData.call(this);

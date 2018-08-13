@@ -5,7 +5,7 @@ export function init() {
     this.svg.selectAll('g.boxplot').remove();
 
     // Y-axis box plot
-    var yValues = this.current_data.map(function(d) {
+    var yValues = this.marks[0].data.map(function(d) {
         return d.values.y;
     });
     var ybox = this.svg.append('g').attr('class', 'yMargin');
@@ -27,7 +27,7 @@ export function init() {
         .attr('transform', 'translate(' + (this.plot_width + this.config.margin.right / 2) + ',0)');
 
     //X-axis box plot
-    var xValues = this.current_data.map(function(d) {
+    var xValues = this.marks[0].data.map(function(d) {
         return d.values.x;
     });
     var xbox = this.svg.append('g').attr('class', 'xMargin');

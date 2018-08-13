@@ -1,16 +1,20 @@
-import { drawQuadrants } from './onResize/drawQuadrants';
-import { updateSummaryTable } from './onLayout/quadrants/updateSummaryTable';
 import { addPointMouseover } from './onResize/addPointMouseover';
 import { addPointClick } from './onResize/addPointClick';
 import { addTitle } from './onResize/addTitle';
-import { toggleLegend } from './onResize/toggleLegend';
-import { init as addLineDrag } from './onResize/addLineDrag/init';
-import { init as initBoxPlots } from './onResize/addBoxPlots/init';
 import { formatPoints } from './onResize/formatPoints';
 import { setPointSize } from './onResize/setPointSize';
 import { setPointOpacity } from './onResize/setPointOpacity';
-import { adjustTicks } from './onResize/adjustTicks';
 import { updateParticipantMarks } from './onResize/updateParticipantMarks';
+
+import { updateSummaryTable } from './onLayout/quadrants/updateSummaryTable';
+import { drawQuadrants } from './onResize/drawQuadrants';
+import { init as addLineDrag } from './onResize/addLineDrag/init';
+
+import { toggleLegend } from './onResize/toggleLegend';
+
+import { init as initBoxPlots } from './onResize/addBoxPlots/init';
+
+import { adjustTicks } from './onResize/adjustTicks';
 
 export default function onResize() {
     //add point interactivity, custom title and formatting

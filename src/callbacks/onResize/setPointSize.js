@@ -1,7 +1,8 @@
 export function setPointSize() {
     var chart = this;
     var config = this.config;
-    var points = this.svg.selectAll('g.point').select('circle');
+    var points = this.marks[0].circles;
+
     if (config.point_size != 'Uniform') {
         //create the scale
         var sizeScale = d3.scale

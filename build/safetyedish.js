@@ -314,9 +314,8 @@
         throw new Error("Unable to copy obj! Its type isn't supported.");
     }
 
-    function settings() {
+    function renderer() {
         return {
-            //Default template settings
             value_col: 'STRESN',
             measure_col: 'TEST',
             visit_col: 'VISIT',
@@ -331,6 +330,7 @@
             details: null,
             r_ratio_filter: true,
             r_ratio_cut: 0,
+            visit_level_points: false,
             measure_details: [
                 {
                     label: 'ALT',
@@ -390,9 +390,12 @@
             participantProfileURL: null,
             point_size: 'Uniform',
             visit_window: 30,
-            showTitle: true,
+            showTitle: true
+        };
+    }
 
-            //Standard webcharts settings
+    function webcharts$1() {
+        return {
             x: {
                 column: null, //set in onPreprocess/updateAxisSettings
                 label: null, // set in onPreprocess/updateAxisSettings,
@@ -413,9 +416,23 @@
                 {
                     per: [], // set in syncSettings()
                     type: 'circle',
-                    summarizeY: 'mean',
                     summarizeX: 'mean',
-                    attributes: { 'fill-opacity': 0 }
+                    summarizeY: 'mean',
+                    attributes: {
+                        'fill-opacity': 0,
+                        'stroke-width': 1.5
+                    }
+                },
+                {
+                    per: [], // set in syncSettings()
+                    type: 'circle',
+                    summarizeX: 'mean',
+                    summarizeY: 'mean',
+                    attributes: {
+                        'fill-opacity': 0.1,
+                        'stroke-width': 0.5
+                    },
+                    radius: 1
                 }
             ],
             gridlines: 'xy',
@@ -427,9 +444,15 @@
         };
     }
 
+    function settings() {
+        return Object.assign({}, renderer(), webcharts$1());
+    }
+
     //Replicate settings in multiple places in the settings object
     function syncSettings(settings) {
         settings.marks[0].per[0] = settings.id_col;
+        settings.marks[1].per[0] = settings.id_col;
+        settings.marks[1].per[1] = settings.visit_col;
 
         //set grouping config
         if (!(settings.group_cols instanceof Array && settings.group_cols.length)) {
@@ -603,7 +626,7 @@
             {
                 type: 'dropdown',
                 label: 'Axis Type',
-                description: 'Linear or Log Axes',
+                description: 'Linear or log axes',
                 options: ['x.type', 'y.type'],
                 start: null, // set in syncControlInputs()
                 values: ['linear', 'log'],
@@ -620,6 +643,12 @@
                 label: 'Minimum R Ratio',
                 description: 'Display points with R ratios greater or equal to X',
                 option: 'r_ratio_cut'
+            },
+            {
+                type: 'checkbox',
+                label: 'Visit-level Results',
+                description: 'Display visit-level data points',
+                option: 'visit_level_points'
             }
         ];
     }
@@ -796,6 +825,45 @@
             );
     }
 
+    function checkRequiredVariables() {
+        var _this = this;
+
+        this.varList = [];
+        if (this.config.filters) {
+            var filterVars = this.config.filters.map(function(d) {
+                return d.hasOwnProperty('value_col') ? d.value_col : d;
+            });
+            this.varList = d3.merge([this.varList, filterVars]);
+        }
+        if (this.config.group_cols) {
+            var groupVars = this.config.group_cols.map(function(d) {
+                return d.hasOwnProperty('value_col') ? d.value_col : d;
+            });
+            this.varList = d3.merge([this.varList, groupVars]);
+        }
+        if (this.config.details) {
+            var detailVars = this.config.details
+                .map(function(d) {
+                    return d.hasOwnProperty('value_col') ? d.value_col : d;
+                })
+                .filter(function(detail) {
+                    return (detail.value_col || detail) !== _this.config.id_col;
+                });
+            this.varList = d3.merge([this.varList, detailVars]);
+        }
+        var missingVariables = this.varList.filter(function(variable) {
+            return Object.keys(_this.raw_data[0]).indexOf(variable) < 0;
+        });
+        if (missingVariables.length > 0)
+            alert(
+                'The data are missing ' +
+                    (missingVariables.length === 1 ? 'this variable' : 'these variables') +
+                    ': ' +
+                    missingVariables.join(', ') +
+                    '.'
+            );
+    }
+
     function iterateOverData() {
         var _this = this;
 
@@ -824,7 +892,17 @@
     function onInit() {
         checkMeasureDetails.call(this);
         iterateOverData.call(this);
+        checkRequiredVariables.call(this);
         addRRatioFilter.call(this);
+    }
+
+    function updateMarkValues() {
+        this.config.marks[0].values = {
+            level: ['participant']
+        };
+        this.config.marks[1].values = {
+            level: ['visit']
+        };
     }
 
     function setCutpointMinimums() {
@@ -1140,7 +1218,7 @@
 
         //removing the interactivity for now, but could add it back in later if desired
         /*
-         .on('mouseover', function(d) {
+          .on('mouseover', function(d) {
             highlight.call(this, d, chart);
         })
         .on('mouseout', function() {
@@ -1323,6 +1401,7 @@
     }
 
     function onLayout() {
+        updateMarkValues.call(this);
         setCutpointMinimums.call(this);
         addRRatioSpan.call(this);
         layoutPanels.call(this);
@@ -1393,28 +1472,9 @@
     }
 
     function addParticipantLevelMetadata(d, participant_obj) {
-        var varList = [];
-        if (this.config.filters) {
-            var filterVars = this.config.filters.map(function(d) {
-                return d.hasOwnProperty('value_col') ? d.value_col : d;
-            });
-            varList = d3.merge([varList, filterVars]);
-        }
-        if (this.config.group_cols) {
-            var groupVars = this.config.group_cols.map(function(d) {
-                return d.hasOwnProperty('value_col') ? d.value_col : d;
-            });
-            varList = d3.merge([varList, groupVars]);
-        }
-        if (this.config.details) {
-            var detailVars = this.config.details.map(function(d) {
-                return d.hasOwnProperty('value_col') ? d.value_col : d;
-            });
-            varList = d3.merge([varList, detailVars]);
-        }
-
-        varList.forEach(function(v) {
+        this.varList.forEach(function(v) {
             participant_obj[v] = d[0][v];
+            participant_obj.level = 'participant';
         });
     }
 
@@ -1465,7 +1525,7 @@
         //merge in the absolute and relative values
         colList = d3.merge([
             colList,
-            ['absolute', 'relative_uln', 'relative_baseline', 'baseline_raw']
+            ['absolute', 'relative_uln', 'relative_baseline', 'baseline_absolute']
         ]);
 
         //get maximum values for each measure type
@@ -1559,19 +1619,109 @@
         return flat_data;
     }
 
-    function setLegendLabel() {
-        //change the legend label to match the group variable
-        //or hide legend if group = NONE
-        this.config.legend.label =
-            this.config.color_by !== 'NONE'
-                ? this.config.group_cols[
-                      this.config.group_cols
-                          .map(function(group) {
-                              return group.value_col;
-                          })
-                          .indexOf(this.config.color_by)
-                  ].label
-                : '';
+    function addVisitLevelData() {
+        var _this = this;
+
+        if (this.config.visit_level_points) {
+            //Filter raw data on relevant measures and nest by participant and visit.
+            var currentMeasureDetails = this.config.measure_details.filter(function(
+                measure_detail
+            ) {
+                return (
+                    [_this.config.x.column, _this.config.y.column].indexOf(measure_detail.label) >
+                        -1 ||
+                    //measure_detail.axis === 'z'
+                    measure_detail.label === 'ALP'
+                );
+            });
+            var currentMeasures = currentMeasureDetails.map(function(measureDetail) {
+                return measureDetail.measure;
+            });
+            var currentMeasureLabels = currentMeasureDetails.map(function(measureDetail) {
+                return measureDetail.label;
+            });
+            var visitLevelData = d3
+                .nest()
+                .key(function(d) {
+                    return (
+                        d[_this.config.id_col] +
+                        '||' +
+                        d[_this.config.visit_col] +
+                        '||' +
+                        _this.varList
+                            .map(function(variable) {
+                                return d[variable];
+                            })
+                            .join('||')
+                    );
+                })
+                .rollup(function(d) {
+                    var visit_obj = {};
+                    d.forEach(function(di) {
+                        //Capture measure label/abbreviation given full measure text.
+                        var measureLabel =
+                            currentMeasureLabels[
+                                currentMeasures.findIndex(function(measure) {
+                                    return measure === di[_this.config.measure_col];
+                                })
+                            ];
+
+                        //Calculate ULN-relative, baseline-relative, or raw result.
+                        visit_obj[measureLabel] =
+                            _this.config.display === 'relative_uln'
+                                ? di[_this.config.value_col] / di[_this.config.normal_col_high]
+                                : _this.config.display === 'relative_baseline'
+                                    ? di[_this.config.value_col] /
+                                      (_this.raw_data.find(function(dii) {
+                                          return (
+                                              dii[_this.config.id_col] === di[_this.config.id_col]
+                                          );
+                                      })[measureLabel + '_baseline_absolute'] || NaN)
+                                    : _this.config.display === 'absolute'
+                                        ? di[_this.config.value_col]
+                                        : null;
+                    });
+                    return visit_obj;
+                })
+                .entries(
+                    this.imputed_data.filter(function(d) {
+                        return currentMeasures.indexOf(d[_this.config.measure_col]) > -1;
+                    })
+                );
+
+            //Flatten nested data.
+            visitLevelData.forEach(function(d) {
+                //Parse nest key.
+                var keys = d.key.split('||');
+                d[_this.config.id_col] = keys[0];
+                d[_this.config.visit_col] = keys[1];
+                _this.varList.forEach(function(variable, i) {
+                    d[variable] = keys[i + 2];
+                });
+                delete d.key;
+
+                //Un-nest nest values.
+                Object.assign(d, d.values);
+                delete d.values;
+
+                if (
+                    _this.config.r_ratio_filter &&
+                    _this.config.x.column === 'ALT' &&
+                    _this.config.measure_details.some(function(measure_detail) {
+                        return measure_detail.label === 'ALP';
+                    })
+                ) {
+                    //R-ratio should be the ratio of ALT to ALP, i.e. the x-axis to the z-axis.
+                    d.rRatio = d.ALT / d.ALP;
+                    d.rRatioFlag = d.rRatio > _this.config.r_ratio_cut ? 'Y' : 'N';
+                }
+
+                //Assign data level.
+                d.level = 'visit';
+            });
+
+            this.raw_data = this.raw_data.concat(visitLevelData);
+        }
     }
 
     function imputeColumn(data, measure_column, value_column, measure, llod, imputed_value, drop) {
@@ -1752,21 +1902,30 @@
     function cleanData() {
         var _this = this;
 
-        console.log(this.initial_data);
-        console.log(this.config.value_col);
         this.imputed_data = this.initial_data.filter(function(d) {
-            return /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(+d[_this.config.value_col]);
+            return /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(d[_this.config.value_col]);
         });
-        console.log(this.imputed_data.length);
         this.imputed_data.forEach(function(d) {
             d.impute_flag = false;
         });
 
         imputeData.call(this);
-        console.log(this.imputed_data.length);
-
         deriveVariables.call(this);
-        console.log(this.imputed_data.length);
+    }
+
+    function setLegendLabel() {
+        //change the legend label to match the group variable
+        //or hide legend if group = NONE
+        this.config.legend.label =
+            this.config.color_by !== 'NONE'
+                ? this.config.group_cols[
+                      this.config.group_cols
+                          .map(function(group) {
+                              return group.value_col;
+                          })
+                          .indexOf(this.config.color_by)
+                  ].label
+                : '';
     }
 
     function dropMissingValues() {
@@ -1794,14 +1953,14 @@
     }
 
     function onPreprocess() {
-        updateAxisSettings.call(this); //update axis label based on display type
-        updateControlCutpointLabels.call(this); //update cutpoint control labels given x- and y-axis variables
+        updateAxisSettings.call(this); // update axis label based on display type
+        updateControlCutpointLabels.call(this); // update cutpoint control labels given x- and y-axis variables
         updateRRatioSpan.call(this);
-        cleanData.call(this); //clean visit-level data - imputation and variable derivations
-        this.raw_data = flattenData.call(this); //convert from visit-level data to participant-level data
-        setLegendLabel.call(this); //update legend label based on group variable
+        cleanData.call(this); // clean visit-level data - imputation and variable derivations
+        this.raw_data = flattenData.call(this); // convert from visit-level data to participant-level data
+        addVisitLevelData.call(this); // add visit-level data to plot
+        setLegendLabel.call(this); // update legend label based on group variable
         dropMissingValues.call(this);
-        console.log(this);
     }
 
     function onDataTransform() {}
@@ -1841,7 +2000,10 @@
         var x_var = this.config.x.column;
         var y_var = this.config.y.column;
 
-        this.raw_data.forEach(function(d) {
+        var participantData = this.raw_data.filter(function(d) {
+            return d.level === 'participant';
+        });
+        participantData.forEach(function(d) {
             var x_cat = d[x_var] >= config.quadrants.cut_data.x ? 'xHigh' : 'xNormal';
             var y_cat = d[y_var] >= config.quadrants.cut_data.y ? 'yHigh' : 'yNormal';
             d['eDISH_quadrant'] = x_cat + ':' + y_cat;
@@ -1849,10 +2011,10 @@
 
         //update Quadrant data
         config.quadrants.quadrant_data.forEach(function(quad) {
-            quad.count = chart.raw_data.filter(function(d) {
+            quad.count = participantData.filter(function(d) {
                 return d.eDISH_quadrant == quad.dataValue;
             }).length;
-            quad.total = chart.raw_data.length;
+            quad.total = participantData.length;
             quad.percent = d3.format('0.1%')(quad.count / quad.total);
         });
     }
@@ -1923,7 +2085,7 @@
     function formatPoints() {
         var chart = this;
         var config = this.config;
-        var points = this.svg.selectAll('g.point').select('circle');
+        var points = this.marks[0].circles;
 
         points
             .attr('stroke', function(d) {
@@ -1938,7 +2100,7 @@
                     pointColor = chart.colorScale(raw[config.color_by]);
                 return disabled ? 'white' : pointColor;
             })
-            .attr('stroke-width', 1);
+            .attr('stroke-width', this.marks[0].attributes['stroke-width']);
     }
 
     function clearParticipantDetails() {
@@ -1957,7 +2119,8 @@
 
     function onDraw() {
         //clear participant Details
-        clearParticipantDetails.call(this);
+        if (this.config.quadrants.table.wrap.style('display') === 'none')
+            clearParticipantDetails.call(this);
 
         //get current cutpoints and classify participants in to eDISH quadrants
         updateQuadrantData.call(this);
@@ -1965,85 +2128,6 @@
         //update domains to include cut lines
         setDomain.call(this, 'x');
         setDomain.call(this, 'y');
-    }
-
-    function drawQuadrants() {
-        var _this = this;
-
-        var config = this.config;
-
-        //position for cut-point lines
-        this.config.quadrants.cut_lines
-            .filter(function(d) {
-                return d.dimension == 'x';
-            })
-            .attr('x1', this.x(config.quadrants.cut_data.x))
-            .attr('x2', this.x(config.quadrants.cut_data.x))
-            .attr('y1', this.plot_height)
-            .attr('y2', 0);
-
-        this.config.quadrants.cut_lines
-            .filter(function(d) {
-                return d.dimension == 'y';
-            })
-            .attr('x1', 0)
-            .attr('x2', this.plot_width)
-            .attr('y1', function(d) {
-                return _this.y(config.quadrants.cut_data.y);
-            })
-            .attr('y2', function(d) {
-                return _this.y(config.quadrants.cut_data.y);
-            });
-
-        this.config.quadrants.cut_lines_backing
-            .filter(function(d) {
-                return d.dimension == 'x';
-            })
-            .attr('x1', this.x(config.quadrants.cut_data.x))
-            .attr('x2', this.x(config.quadrants.cut_data.x))
-            .attr('y1', this.plot_height)
-            .attr('y2', 0);
-
-        this.config.quadrants.cut_lines_backing
-            .filter(function(d) {
-                return d.dimension == 'y';
-            })
-            .attr('x1', 0)
-            .attr('x2', this.plot_width)
-            .attr('y1', function(d) {
-                return _this.y(config.quadrants.cut_data.y);
-            })
-            .attr('y2', function(d) {
-                return _this.y(config.quadrants.cut_data.y);
-            });
-
-        //position labels
-        this.config.quadrants.group_labels
-            .select('text.upper-right')
-            .attr('x', this.plot_width)
-            .attr('y', 0);
-
-        this.config.quadrants.group_labels
-            .select('text.upper-left')
-            .attr('x', 0)
-            .attr('y', 0);
-
-        this.config.quadrants.group_labels
-            .select('text.lower-right')
-            .attr('x', this.plot_width)
-            .attr('y', this.plot_height);
-
-        this.config.quadrants.group_labels
-            .select('text.lower-left')
-            .attr('x', 0)
-            .attr('y', this.plot_height);
-
-        this.config.quadrants.group_labels
-            .selectAll('text')
-            //    .attr('display', d => (d.count == 0 ? 'none' : null))
-            .text(function(d) {
-                return d.label + ' (' + d.percent + ')';
-            });
     }
 
     //draw marginal rug for visit-level measures
@@ -2099,6 +2183,7 @@
     function addPointMouseover() {
         var chart = this;
         var points = this.marks[0].circles;
+
         //add event listener to all participant level points
         points
             .filter(function(d) {
@@ -2110,7 +2195,7 @@
                 var disabled = d3.select(this).classed('disabled');
                 if (!disabled) {
                     //clear previous mouseover if any
-                    points.attr('stroke-width', 1);
+                    points.attr('stroke-width', chart.marks[0].attributes['stroke-width']);
                     clearRugs.call(chart, 'x');
                     clearRugs.call(chart, 'y');
 
@@ -2727,9 +2812,195 @@
         });
     }
 
-    function toggleLegend() {
-        var hideLegend = this.config.color_by == 'NONE';
-        this.wrap.select('.legend').style('display', hideLegend ? 'None' : null);
+    function setPointSize() {
+        var _this = this;
+
+        var chart = this;
+        var config = this.config;
+        var points = this.marks[0].circles;
+
+        if (config.point_size != 'Uniform') {
+            //create the scale
+            var sizeScale = d3.scale
+                .linear()
+                .range([2, 10])
+                .domain(
+                    d3.extent(
+                        chart.raw_data.map(function(m) {
+                            return m[config.point_size];
+                        })
+                    )
+                );
+
+            //draw a legend (coming later?)
+
+            //set the point radius
+            points
+                .transition()
+                .attr('r', function(d) {
+                    var raw = d.values.raw[0];
+                    return sizeScale(raw[config.point_size]);
+                })
+                .attr('cx', function(d) {
+                    return _this.x(d.values.x);
+                })
+                .attr('cy', function(d) {
+                    return _this.y(d.values.y);
+                });
+        }
+    }
+
+    function setPointOpacity() {
+        var config = this.config;
+        var points = this.marks[0].circles;
+
+        points.attr('fill-opacity', function(d) {
+            return d.values.raw[0].day_diff <= config.visit_window ? 1 : 0;
+        }); //fill points in visit_window
+    }
+
+    // Reposition any exisiting participant marks when the chart is resized
+    function updateParticipantMarks() {
+        var chart = this;
+        var config = this.config;
+
+        //reposition participant visit path
+        var myNewLine = d3.svg
+            .line()
+            .x(function(d) {
+                return chart.x(d.x);
+            })
+            .y(function(d) {
+                return chart.y(d.y);
+            });
+
+        chart.visitPath
+            .select('path')
+            .transition()
+            .attr('d', myNewLine);
+
+        //reposition participant visit circles and labels
+        chart.visitPath
+            .selectAll('g.visit-point')
+            .select('circle')
+            .transition()
+            .attr('cx', function(d) {
+                return chart.x(d.x);
+            })
+            .attr('cy', function(d) {
+                return chart.y(d.y);
+            });
+
+        chart.visitPath
+            .selectAll('g.visit-point')
+            .select('text.participant-visits')
+            .transition()
+            .attr('x', function(d) {
+                return chart.x(d.x);
+            })
+            .attr('y', function(d) {
+                return chart.y(d.y);
+            });
+
+        //reposition axis rugs
+        chart.x_rug
+            .selectAll('text')
+            .transition()
+            .attr('x', function(d) {
+                return chart.x(d[config.display]);
+            })
+            .attr('y', function(d) {
+                return chart.y(chart.y.domain()[0]);
+            });
+
+        chart.y_rug
+            .selectAll('text')
+            .transition()
+            .attr('x', function(d) {
+                return chart.x(chart.x.domain()[0]);
+            })
+            .attr('y', function(d) {
+                return chart.y(d[config.display]);
+            });
+    }
+
+    function drawQuadrants() {
+        var _this = this;
+
+        var config = this.config;
+
+        //position for cut-point lines
+        this.config.quadrants.cut_lines
+            .filter(function(d) {
+                return d.dimension == 'x';
+            })
+            .attr('x1', this.x(config.quadrants.cut_data.x))
+            .attr('x2', this.x(config.quadrants.cut_data.x))
+            .attr('y1', this.plot_height)
+            .attr('y2', 0);
+
+        this.config.quadrants.cut_lines
+            .filter(function(d) {
+                return d.dimension == 'y';
+            })
+            .attr('x1', 0)
+            .attr('x2', this.plot_width)
+            .attr('y1', function(d) {
+                return _this.y(config.quadrants.cut_data.y);
+            })
+            .attr('y2', function(d) {
+                return _this.y(config.quadrants.cut_data.y);
+            });
+
+        this.config.quadrants.cut_lines_backing
+            .filter(function(d) {
+                return d.dimension == 'x';
+            })
+            .attr('x1', this.x(config.quadrants.cut_data.x))
+            .attr('x2', this.x(config.quadrants.cut_data.x))
+            .attr('y1', this.plot_height)
+            .attr('y2', 0);
+
+        this.config.quadrants.cut_lines_backing
+            .filter(function(d) {
+                return d.dimension == 'y';
+            })
+            .attr('x1', 0)
+            .attr('x2', this.plot_width)
+            .attr('y1', function(d) {
+                return _this.y(config.quadrants.cut_data.y);
+            })
+            .attr('y2', function(d) {
+                return _this.y(config.quadrants.cut_data.y);
+            });
+
+        //position labels
+        this.config.quadrants.group_labels
+            .select('text.upper-right')
+            .attr('x', this.plot_width)
+            .attr('y', 0);
+
+        this.config.quadrants.group_labels
+            .select('text.upper-left')
+            .attr('x', 0)
+            .attr('y', 0);
+
+        this.config.quadrants.group_labels
+            .select('text.lower-right')
+            .attr('x', this.plot_width)
+            .attr('y', this.plot_height);
+
+        this.config.quadrants.group_labels
+            .select('text.lower-left')
+            .attr('x', 0)
+            .attr('y', this.plot_height);
+
+        this.config.quadrants.group_labels
+            .selectAll('text')
+            //    .attr('display', d => (d.count == 0 ? 'none' : null))
+            .text(function(d) {
+                return d.label + ' (' + d.percent + ')';
+            });
     }
 
     function dragStarted() {
@@ -2810,6 +3081,11 @@
 
         this.config.quadrants.wrap.moveToFront();
         this.config.quadrants.cut_g.call(drag);
+    }
+
+    function toggleLegend() {
+        var hideLegend = this.config.color_by == 'NONE';
+        this.wrap.select('.legend').style('display', hideLegend ? 'None' : null);
     }
 
     function addBoxPlot(
@@ -2967,7 +3243,7 @@
         this.svg.selectAll('g.boxplot').remove();
 
         // Y-axis box plot
-        var yValues = this.current_data.map(function(d) {
+        var yValues = this.marks[0].data.map(function(d) {
             return d.values.y;
         });
         var ybox = this.svg.append('g').attr('class', 'yMargin');
@@ -2992,7 +3268,7 @@
             );
 
         //X-axis box plot
-        var xValues = this.current_data.map(function(d) {
+        var xValues = this.marks[0].data.map(function(d) {
             return d.values.x;
         });
         var xbox = this.svg.append('g').attr('class', 'xMargin');
@@ -3014,51 +3290,6 @@
             .attr('transform', 'translate(0,' + -(this.config.margin.top / 2) + ')');
     }
 
-    function setPointSize() {
-        var _this = this;
-
-        var chart = this;
-        var config = this.config;
-        var points = this.svg.selectAll('g.point').select('circle');
-        if (config.point_size != 'Uniform') {
-            //create the scale
-            var sizeScale = d3.scale
-                .linear()
-                .range([2, 10])
-                .domain(
-                    d3.extent(
-                        chart.raw_data.map(function(m) {
-                            return m[config.point_size];
-                        })
-                    )
-                );
-
-            //draw a legend (coming later?)
-
-            //set the point radius
-            points
-                .transition()
-                .attr('r', function(d) {
-                    var raw = d.values.raw[0];
-                    return sizeScale(raw[config.point_size]);
-                })
-                .attr('cx', function(d) {
-                    return _this.x(d.values.x);
-                })
-                .attr('cy', function(d) {
-                    return _this.y(d.values.y);
-                });
-        }
-    }
-
-    function setPointOpacity() {
-        var config = this.config;
-        var points = this.svg.selectAll('g.point').select('circle');
-        points.attr('fill-opacity', function(d) {
-            return d.values.raw[0].day_diff <= config.visit_window ? 1 : 0;
-        }); //fill points in visit_window
-    }
-
     function adjustTicks() {
         this.svg
             .selectAll('.x.axis .tick text')
@@ -3068,71 +3299,6 @@
                 dy: 10
             })
             .style('text-anchor', 'end');
-    }
-
-    // Reposition any exisiting participant marks when the chart is resized
-    function updateParticipantMarks() {
-        var chart = this;
-        var config = this.config;
-
-        //reposition participant visit path
-        var myNewLine = d3.svg
-            .line()
-            .x(function(d) {
-                return chart.x(d.x);
-            })
-            .y(function(d) {
-                return chart.y(d.y);
-            });
-
-        chart.visitPath
-            .select('path')
-            .transition()
-            .attr('d', myNewLine);
-
-        //reposition participant visit circles and labels
-        chart.visitPath
-            .selectAll('g.visit-point')
-            .select('circle')
-            .transition()
-            .attr('cx', function(d) {
-                return chart.x(d.x);
-            })
-            .attr('cy', function(d) {
-                return chart.y(d.y);
-            });
-
-        chart.visitPath
-            .selectAll('g.visit-point')
-            .select('text.participant-visits')
-            .transition()
-            .attr('x', function(d) {
-                return chart.x(d.x);
-            })
-            .attr('y', function(d) {
-                return chart.y(d.y);
-            });
-
-        //reposition axis rugs
-        chart.x_rug
-            .selectAll('text')
-            .transition()
-            .attr('x', function(d) {
-                return chart.x(d[config.display]);
-            })
-            .attr('y', function(d) {
-                return chart.y(chart.y.domain()[0]);
-            });
-
-        chart.y_rug
-            .selectAll('text')
-            .transition()
-            .attr('x', function(d) {
-                return chart.x(chart.x.domain()[0]);
-            })
-            .attr('y', function(d) {
-                return chart.y(d[config.display]);
-            });
     }
 
     function onResize() {
