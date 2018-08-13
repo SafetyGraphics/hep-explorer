@@ -14,5 +14,4 @@ export default function onPreprocess() {
     this.raw_data = flattenData.call(this); //convert from visit-level data to participant-level data
     setLegendLabel.call(this); //update legend label based on group variable
     dropMissingValues.call(this);
-    console.log(this);
 }
