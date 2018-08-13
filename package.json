@@ -1,7 +1,7 @@
 {
   "name": "safety-edish",
   "description": "Interactive graphic for the Evaluation of Drug-Induced Serious Hepatotoxicity (eDISH)",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "author": "Rho, Inc.",
   "license": "MIT",
   "homepage": "https://github.com/rhoinc/safety-eDISH#readme",

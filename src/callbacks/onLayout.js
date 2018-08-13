@@ -1,4 +1,3 @@
-import setCutpointMinimums from './onLayout/setCutpointMinimums';
 import addRRatioSpan from './onLayout/addRRatioSpan';
 import { initQuadrants } from './onLayout/initQuadrants';
 import { initRugs } from './onLayout/initRugs';
@@ -10,7 +9,6 @@ import { layoutPanels } from './onLayout/layoutPanels';
 import { initTitle } from './onLayout/initTitle';
 
 export default function onLayout() {
-    setCutpointMinimums.call(this);
     addRRatioSpan.call(this);
     layoutPanels.call(this);
     initTitle.call(this);

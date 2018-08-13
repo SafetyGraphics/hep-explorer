@@ -6,9 +6,11 @@ export function dropMissingValues() {
         f => f[config.x.column] <= 0 || f[config.y.column] <= 0
     );
 
+    this.wrap.select('.se-footnote').remove();
     if (missing_count > 0) {
         this.wrap
-            .append('span.footnote')
+            .append('span')
+            .classed('se-footnote', true)
             .text(
                 'Data not shown for ' +
                     missing_count +
@@ -18,7 +20,5 @@ export function dropMissingValues() {
         this.raw_data = this.raw_data.filter(
             f => (f[config.x.column] > 0) & (f[config.y.column] > 0)
         );
-    } else {
-        this.wrap.select('span.footnote').remove();
     }
 }
