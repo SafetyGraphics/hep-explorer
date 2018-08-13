@@ -39,9 +39,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/RhoInc/safety-eDISH.git"
+    "url": "https://github.com/ASA-DIA-InteractiveSafetyGraphics/safety-eDISH.git"
   },
   "bugs": {
-    "url": "https://github.com/RhoInc/safety-eDISH/issues"
+    "url": "https://github.com/ASA-DIA-InteractiveSafetyGraphics/safety-eDISH/issues"
   }
 }

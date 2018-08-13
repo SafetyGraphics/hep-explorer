@@ -34,7 +34,7 @@ export function flattenData() {
     //merge in the absolute and relative values
     colList = d3.merge([
         colList,
-        ['absolute', 'relative_uln', 'relative_baseline', 'baseline_raw']
+        ['absolute', 'relative_uln', 'relative_baseline', 'baseline_absolute']
     ]);
 
     //get maximum values for each measure type
