@@ -1,6 +1,7 @@
 import { updateQuadrantData } from './onDraw/updateQuadrantData';
 import { setDomain } from './onDraw/setDomain';
 import { clearParticipantDetails } from './onResize/clearParticipantDetails';
+import { updateFilterLabel } from './onDraw/updateFilterLabel';
 import setCutpointMinimums from './onDraw/setCutpointMinimums';
 import syncCutpoints from './onDraw/syncCutpoints';
 
@@ -20,4 +21,7 @@ export default function onDraw() {
 
     //Classify participants in to eDISH quadrants
     updateQuadrantData.call(this);
+
+    //update the count in the filter label
+    updateFilterLabel.call(this);
 }
