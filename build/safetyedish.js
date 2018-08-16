@@ -573,7 +573,7 @@
             {
                 type: 'number',
                 label: null, // set in syncControlInputs
-                description: 'X-axis cut',
+                description: 'X-axis Reference Line',
                 option: 'quadrants.cut_data.x'
             },
             {
@@ -588,7 +588,7 @@
             {
                 type: 'number',
                 label: null, // set in syncControlInputs
-                description: 'Y-axis cut',
+                description: 'X-axis Reference Line',
                 option: 'quadrants.cut_data.y'
             },
             {
@@ -1405,7 +1405,7 @@
                     return d.option === 'quadrants.cut_data.x';
                 })
                 .select('.wc-control-label')
-                .text(this.config.x.column + ' Cutpoint');
+                .text(this.config.x.column + ' Reference Line');
         if (
             this.controls.config.inputs.find(function(input) {
                 return input.option === 'quadrants.cut_data.y';
@@ -1417,7 +1417,7 @@
                     return d.option === 'quadrants.cut_data.y';
                 })
                 .select('.wc-control-label')
-                .text(this.config.y.column + ' Cutpoint');
+                .text(this.config.y.column + ' Reference Line');
     }
 
     function updateRRatioSpan() {
