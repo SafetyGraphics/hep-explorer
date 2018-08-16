@@ -573,7 +573,7 @@
             {
                 type: 'number',
                 label: null, // set in syncControlInputs
-                description: 'X-axis cut',
+                description: 'X-axis Reference Line',
                 option: 'quadrants.cut_data.x'
             },
             {
@@ -588,7 +588,7 @@
             {
                 type: 'number',
                 label: null, // set in syncControlInputs
-                description: 'Y-axis cut',
+                description: 'X-axis Reference Line',
                 option: 'quadrants.cut_data.y'
             },
             {
@@ -1001,6 +1001,20 @@
         this.config.quadrants = {};
         var quadrants = this.config.quadrants;
 
+        var x_input = chart.controls.wrap
+            .selectAll('div.control-group')
+            .filter(function(f) {
+                return f.option == 'quadrants.cut_data.x';
+            })
+            .select('input');
+
+        var y_input = chart.controls.wrap
+            .selectAll('div.control-group')
+            .filter(function(f) {
+                return f.option == 'quadrants.cut_data.y';
+            })
+            .select('input');
+
         //////////////////////////////////////////////////////////
         //create custom data objects for the lines and quadrants
         /////////////////////////////////////////////////////////
@@ -1014,26 +1028,16 @@
         // set initial values
         //////////////////////////////////////////////////////////
         quadrants.cut_data.x = config.x.measure_detail.cut[config.display];
-
-        chart.controls.wrap
-            .selectAll('div.control-group')
-            .filter(function(f) {
-                return f.option == 'quadrants.cut_data.x';
-            })
-            .select('input')
-            .node().value =
-            quadrants.cut_data.x;
-
         quadrants.cut_data.y = config.y.measure_detail.cut[config.display];
 
-        chart.controls.wrap
-            .selectAll('div.control-group')
-            .filter(function(f) {
-                return f.option == 'quadrants.cut_data.y';
-            })
-            .select('input')
-            .node().value =
-            quadrants.cut_data.y;
+        x_input.node().value = quadrants.cut_data.x;
+        y_input.node().value = quadrants.cut_data.y;
+
+        ///////////////////////////////////////////////////////////
+        // set control step to 0.1
+        //////////////////////////////////////////////////////////
+        x_input.attr('step', 0.1);
+        y_input.attr('step', 0.1);
 
         ///////////////////////////////////////////////////////////
         // initialize the summary table
@@ -1115,7 +1119,7 @@
 
         //removing the interactivity for now, but could add it back in later if desired
         /*
-          .on('mouseover', function(d) {
+         .on('mouseover', function(d) {
             highlight.call(this, d, chart);
         })
         .on('mouseout', function() {
@@ -1297,6 +1301,61 @@
         }
     }
 
+    function initFilterLabel() {
+        var config = this.config;
+        //check to see if at least 1 filter exists
+        if (config.r_ratio_filter || config.filters.length > 0) {
+            //insert a header before the first filter
+            var control_wraps = this.controls.wrap.selectAll('div');
+            var first_filter = config.r_ratio_filter
+                ? control_wraps.filter(function(controlInput) {
+                      return controlInput.label === 'Minimum R Ratio';
+                  })
+                : control_wraps.filter(function(controlInput) {
+                      return controlInput.type === 'subsetter';
+                  });
+
+            this.controls.filter_header = first_filter
+                .insert('div', '*')
+                .attr('class', 'subtitle')
+                .style('border-top', '1px solid black')
+                .style('border-bottom', '1px solid black')
+                .style('margin-right', '1em')
+                .style('margin-bottom', '1em');
+            this.controls.filter_header
+                .append('span')
+                .text('Filters')
+                .style('font-size', '1.5em')
+                .style('font-weight', 'strong')
+                .style('display', 'block');
+            var population = d3
+                .set(
+                    this.initial_data.map(function(m) {
+                        return m[config.id_col];
+                    })
+                )
+                .values().length;
+            this.controls.filter_header
+                .append('span')
+                .attr('class', 'popCount')
+                .html(
+                    '<span class="numerator">' +
+                        population +
+                        '</span> of <span class="denominator">' +
+                        population +
+                        '</span> partiticpants shown.'
+                )
+                .style('font-size', '0.8em');
+
+            this.controls.filter_numerator = this.controls.filter_header
+                .select('span.popCount')
+                .select('span.numerator');
+            this.controls.filter_denominator = this.controls.filter_header
+                .select('span.popCount')
+                .select('span.denominator');
+        }
+    }
+
     function onLayout() {
         addRRatioSpan.call(this);
         layoutPanels.call(this);
@@ -1307,6 +1366,7 @@
         initParticipantDetails.call(this);
         initResetButton.call(this);
         initDisplayControlLabels.call(this);
+        initFilterLabel.call(this);
     }
 
     function updateAxisSettings() {
@@ -1345,7 +1405,7 @@
                     return d.option === 'quadrants.cut_data.x';
                 })
                 .select('.wc-control-label')
-                .text(this.config.x.column + ' Cutpoint');
+                .text(this.config.x.column + ' Reference Line');
         if (
             this.controls.config.inputs.find(function(input) {
                 return input.option === 'quadrants.cut_data.y';
@@ -1357,7 +1417,7 @@
                     return d.option === 'quadrants.cut_data.y';
                 })
                 .select('.wc-control-label')
-                .text(this.config.y.column + ' Cutpoint');
+                .text(this.config.y.column + ' Reference Line');
     }
 
     function updateRRatioSpan() {
@@ -1895,6 +1955,10 @@
         this.participantDetails.wrap.selectAll('*').style('display', 'none');
     }
 
+    function updateFilterLabel() {
+        this.controls.filter_numerator.text(this.filtered_data.length);
+    }
+
     function setCutpointMinimums() {
         var chart = this;
         var config = this.config;
@@ -1997,6 +2061,9 @@
 
         //Classify participants in to eDISH quadrants
         updateQuadrantData.call(this);
+
+        //update the count in the filter label
+        updateFilterLabel.call(this);
     }
 
     function drawQuadrants() {
@@ -2646,6 +2713,7 @@
                 per: []
             }
         ],
+        gridlines: 'xy',
         color_by: null,
         colors: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33', '#a65628'],
         aspect: 2
