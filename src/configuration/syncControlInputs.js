@@ -1,8 +1,15 @@
 //Map values from settings to control inputs
 export default function syncControlInputs(controlInputs, settings) {
-    //Sync group control.
+    ////////////////////////
+    // Group control
+    ///////////////////////
+    
     const groupControl = controlInputs.find(controlInput => controlInput.label === 'Group');
-    groupControl.start = settings.color_by;
+
+    //sync start value
+    groupControl.start = settings.color_by; //sync start value
+
+    //sync values
     settings.group_cols.filter(group => group.value_col !== 'NONE').forEach(group => {
         groupControl.values.push(group.value_col);
     });
@@ -11,17 +18,23 @@ export default function syncControlInputs(controlInputs, settings) {
     if (settings.group_cols.length == 1)
         controlInputs = controlInputs.filter(controlInput => controlInput.label != 'Group');
 
-    //Sync x-axis measure control.
+    //////////////////////////
+    // x-axis measure control
+    //////////////////////////
+
     const xAxisMeasures = settings.measure_details.filter(
         measure_detail => measure_detail.axis === 'x'
     );
 
+    // drop the control if there's only one option
     if (xAxisMeasures.length === 1)
         controlInputs = controlInputs.filter(controlInput => controlInput.option !== 'x.column');
     else {
+    //otherwise sync the properties
         const xAxisMeasureControl = controlInputs.find(
             controlInput => controlInput.option === 'x.column'
         );
+
         xAxisMeasureControl.description = xAxisMeasures
             .map(xAxisMeasure => xAxisMeasure.label)
             .join(', ');
@@ -29,19 +42,27 @@ export default function syncControlInputs(controlInputs, settings) {
         xAxisMeasureControl.values = xAxisMeasures.map(xAxisMeasure => xAxisMeasure.label);
     }
 
-    //Sync x-axis cut control.
+    //////////////////////////////////
+    // x-axis reference line control
+    //////////////////////////////////
+
     controlInputs.find(controlInput => controlInput.option === 'quadrants.cut_data.x').label = `${
         xAxisMeasures[0].label
     } Cutpoint`;
 
-    //Sync y-axis measure control.
+    ////////////////////////////
+    // y-axis measure control
+    ////////////////////////////
+
     const yAxisMeasures = settings.measure_details.filter(
         measure_detail => measure_detail.axis === 'y'
     );
 
+    // drop the control if there's only one option
     if (yAxisMeasures.length === 1)
         controlInputs = controlInputs.filter(controlInput => controlInput.option !== 'y.column');
     else {
+    //otherwise sync the properties
         const yAxisMeasureControl = controlInputs.find(
             controlInput => controlInput.option === 'y.column'
         );
@@ -52,21 +73,33 @@ export default function syncControlInputs(controlInputs, settings) {
         yAxisMeasureControl.values = yAxisMeasures.map(yAxisMeasure => yAxisMeasure.label);
     }
 
+    //////////////////////////////////
+    // y-axis reference line control
+    //////////////////////////////////
+
+    controlInputs.find(controlInput => controlInput.option === 'quadrants.cut_data.y').label = `${
+        yAxisMeasures[0].label
+    } Cutpoint`;
+
+    //////////////////////////////////
+    // R ratio filter control
+    //////////////////////////////////
+
     //drop the R Ratio control if r_ratio_filter is false
     if (!settings.r_ratio_filter) {
         controlInputs = controlInputs.filter(
             controlInput => controlInput.label != 'Minimum R Ratio'
         );
     }
-    //Sync y-axis cut control.
-    controlInputs.find(controlInput => controlInput.option === 'quadrants.cut_data.y').label = `${
-        yAxisMeasures[0].label
-    } Cutpoint`;
 
-    //Sync point size control.
+    //////////////////////////////////
+    // Point size control
+    //////////////////////////////////
+
     const pointSizeControl = controlInputs.find(
         controlInput => controlInput.label === 'Point Size'
     );
+
     settings.measure_details.filter(f => f.axis != 'x' && f.axis != 'y').forEach(group => {
         pointSizeControl.values.push(group.label);
     });
@@ -75,7 +108,10 @@ export default function syncControlInputs(controlInputs, settings) {
     if (settings.measure_details.length == 2)
         controlInputs = controlInputs.filter(controlInput => controlInput.label != 'Point Size');
 
-    //Sync display control
+    //////////////////////////////////
+    // Display control
+    //////////////////////////////////
+
     controlInputs.find(
         controlInput => controlInput.label === 'Display Type'
     ).values = settings.axis_options.map(m => m.label);
