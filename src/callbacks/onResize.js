@@ -2,7 +2,8 @@ import { drawQuadrants } from './onResize/drawQuadrants';
 import { updateSummaryTable } from './onLayout/quadrants/updateSummaryTable';
 import { addPointMouseover } from './onResize/addPointMouseover';
 import { addPointClick } from './onResize/addPointClick';
-import { addTitle } from './onResize/addTitle';
+import { addPointTitles } from './onResize/addPointTitles';
+import { addAxisLabelTitles } from './onResize/addAxisLabelTitles';
 import { toggleLegend } from './onResize/toggleLegend';
 import { init as addLineDrag } from './onResize/addLineDrag/init';
 import { init as initBoxPlots } from './onResize/addBoxPlots/init';
@@ -16,7 +17,8 @@ export default function onResize() {
     //add point interactivity, custom title and formatting
     addPointMouseover.call(this);
     addPointClick.call(this);
-    addTitle.call(this);
+    addPointTitles.call(this);
+    addAxisLabelTitles.call(this);
     formatPoints.call(this);
     setPointSize.call(this);
     setPointOpacity.call(this);

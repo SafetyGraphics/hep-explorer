@@ -1371,14 +1371,12 @@
 
     function updateAxisSettings() {
         var config = this.config;
-
-        //note: doing this in preprocess so that we can (theoretically have a control to change the variable on each axis later on)
         var unit =
             config.display == 'relative_uln'
-                ? ' (xULN)'
+                ? ' [xULN]'
                 : config.display == 'relative_baseline'
-                    ? ' (xBaseline)'
-                    : config.display == 'absolute' ? ' (raw values)' : null;
+                    ? ' [xBaseline]'
+                    : config.display == 'absolute' ? ' [raw values]' : null;
 
         //Update x-axis settings.
         config.x.measure_detail = config.measure_details.find(function(measure_detail) {
@@ -2795,7 +2793,7 @@
         });
     }
 
-    function addTitle() {
+    function addPointTitles() {
         var config = this.config;
         var points = this.marks[0].circles;
         points.select('title').remove();
@@ -2825,6 +2823,39 @@
                 idLabel = 'Participant ID: ' + raw[config.id_col];
             return idLabel + '\n' + xLabel + '\n' + yLabel + '\n' + dayDiff;
         });
+    }
+
+    function addAxisLabelTitles() {
+        var chart = this;
+        var config = this.config;
+
+        var details =
+            config.display == 'relative_uln'
+                ? 'Values are plotted as multiples of the upper limit of normal for the measure.'
+                : config.display == 'relative_baseline'
+                    ? "Values are plotted as multiples of the partipant's baseline value for the measure."
+                    : config.display == 'absolute'
+                        ? ' Values are plotted using the raw units for the measure.'
+                        : null;
+
+        var axisLabels = chart.svg
+            .selectAll('.axis')
+            .select('.axis-title')
+            .select('tspan')
+            .remove();
+
+        var axisLabels = chart.svg
+            .selectAll('.axis')
+            .select('.axis-title')
+            .append('tspan')
+            .html(function(d) {
+                //var current = d3.select(this).text();
+                return ' &#9432;';
+            })
+            .attr('font-size', '0.8em')
+            .style('cursor', 'help')
+            .append('title')
+            .text(details);
     }
 
     function toggleLegend() {
@@ -3239,7 +3270,8 @@
         //add point interactivity, custom title and formatting
         addPointMouseover.call(this);
         addPointClick.call(this);
-        addTitle.call(this);
+        addPointTitles.call(this);
+        addAxisLabelTitles.call(this);
         formatPoints.call(this);
         setPointSize.call(this);
         setPointOpacity.call(this);
