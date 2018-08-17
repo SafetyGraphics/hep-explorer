@@ -31,12 +31,9 @@ export default function setCutpointMinimums() {
         .selectAll('.control-group')
         .filter(d => /.-axis Reference Line/i.test(d.description))
         .attr('min', d => lower_limits[d.description.split('-')[0]])
-        /* not working since the chart.draw() fires immediately and then the callback below fires afterwards :( */
-        /* probably don't want to initialize this as a webchart control - annoying */
-
         .on('change', function(d) {
             const dimension = d.description.split('-')[0].toLowerCase();
-            const min = lower_limits[dimension];
+            const min = chart[dimension + '_dom'][0];
             const input = d3.select(this).select('input');
 
             console.log('changed ' + dimension);
@@ -51,5 +48,6 @@ export default function setCutpointMinimums() {
             var measure = config[dimension].column;
             console.log(measure);
             config.cuts[measure][config.display] = input.property('value');
+            chart.draw();
         });
 }

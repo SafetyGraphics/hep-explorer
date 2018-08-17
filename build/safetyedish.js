@@ -1260,6 +1260,8 @@
                 displayControlWrap.select('span.displayControlAnnotation').style('display', 'none');
             }
 
+            config.cuts.display_change = true;
+
             chart.draw();
         });
     }
@@ -1999,11 +2001,9 @@
             .attr('min', function(d) {
                 return lower_limits[d.description.split('-')[0]];
             })
-            /* not working since the chart.draw() fires immediately and then the callback below fires afterwards :( */
-            /* probably don't want to initialize this as a webchart control - annoying */
             .on('change', function(d) {
                 var dimension = d.description.split('-')[0].toLowerCase();
-                var min = lower_limits[dimension];
+                var min = chart[dimension + '_dom'][0];
                 var input = d3.select(this).select('input');
 
                 console.log('changed ' + dimension);
@@ -2018,6 +2018,7 @@
                 var measure = config[dimension].column;
                 console.log(measure);
                 config.cuts[measure][config.display] = input.property('value');
+                chart.draw();
             });
     }
 
@@ -2026,23 +2027,28 @@
         var config = this.config;
 
         //update cut point controls to use the current measures data
-        var dimensions = ['x', 'y'];
-        dimensions.forEach(function(dimension) {
-            //change the control to point at the correct cut point
-            var dimInput = chart.controls.wrap
-                .selectAll('div.control-group')
-                .filter(function(f) {
-                    return f.description
-                        ? f.description.toLowerCase() == dimension + '-axis reference line'
-                        : false;
-                })
-                .select('input');
+        if (config.cuts.display_change) {
+            console.log('setting cuts');
+            config.cuts.display_change = false; //reset the change flag;
+            var dimensions = ['x', 'y'];
+            dimensions.forEach(function(dimension) {
+                //change the control to point at the correct cut point
+                var dimInput = chart.controls.wrap
+                    .selectAll('div.control-group')
+                    .filter(function(f) {
+                        return f.description
+                            ? f.description.toLowerCase() == dimension + '-axis reference line'
+                            : false;
+                    })
+                    .select('input');
 
-            dimInput.node().value = config.cuts[config[dimension].column][config.display];
+                dimInput.node().value = config.cuts[config[dimension].column][config.display];
 
-            //don't think this actually changes functionality, but nice to have it accurate just in case
-            //    dimInput.option = 'settings.cuts.' + [config[dimension].column] + '.' + [config.display];
-        });
+                //don't think this actually changes functionality, but nice to have it accurate just in case
+                dimInput.option =
+                    'settings.cuts.' + [config[dimension].column] + '.' + [config.display];
+            });
+        }
     }
 
     function onDraw() {

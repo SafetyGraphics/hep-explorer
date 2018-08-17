@@ -32,6 +32,8 @@ export function initDisplayControlLabels() {
             displayControlWrap.select('span.displayControlAnnotation').style('display', 'none');
         }
 
+        config.cuts.display_change = true;
+
         chart.draw();
     });
 }
