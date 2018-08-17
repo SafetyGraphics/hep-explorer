@@ -1,14 +1,14 @@
 export default function updateControlCutpointLabels() {
-    if (this.controls.config.inputs.find(input => input.option === 'quadrants.cut_data.x'))
+    if (this.controls.config.inputs.find(input => input.description === 'X-axis Reference Line'))
         this.controls.wrap
             .selectAll('.control-group')
-            .filter(d => d.option === 'quadrants.cut_data.x')
+            .filter(d => d.description === 'X-axis Reference Line')
             .select('.wc-control-label')
             .text(`${this.config.x.column} Reference Line`);
-    if (this.controls.config.inputs.find(input => input.option === 'quadrants.cut_data.y'))
+    if (this.controls.config.inputs.find(input => input.description === 'Y-axis Reference Line'))
         this.controls.wrap
             .selectAll('.control-group')
-            .filter(d => d.option === 'quadrants.cut_data.y')
+            .filter(d => d.description === 'Y-axis Reference Line')
             .select('.wc-control-label')
             .text(`${this.config.y.column} Reference Line`);
 }

@@ -28,6 +28,6 @@ export function updateSummaryTable() {
     }
 
     //update the content of each row
-    rows.data(quadrants.quadrant_data, d => d.label);
+    rows.data(quadrants, d => d.label);
     rows.each(updateCells);
 }

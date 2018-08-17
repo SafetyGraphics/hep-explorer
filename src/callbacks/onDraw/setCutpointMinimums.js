@@ -8,38 +8,48 @@ export default function setCutpointMinimums() {
 
     //Make sure cutpoint isn't below lower domain - Comes in to play when changing from log to linear axes
     Object.keys(lower_limits).forEach(function(dimension) {
-        var current_cut = config.quadrants.cut_data[dimension];
+        var measure = config[dimension].column;
+        var current_cut = config.cuts[measure][config.display];
         var min = lower_limits[dimension];
         if (current_cut < min) {
-            config.quadrants.cut_data[dimension] = min;
-            config[dimension].measure_detail.cut[config.display] = min;
-            config.quadrants.cut_data.filter(f => f.dimension == dimension)[0] = min;
+            config.cuts[measure][config.display] = min;
             chart.controls.wrap
                 .selectAll('div.control-group')
-                .filter(f => f.option == 'quadrants.cut_data.' + dimension)
+                .filter(
+                    f =>
+                        f.description
+                            ? f.description.toLowerCase() == dimension + '-axis reference line'
+                            : false
+                )
                 .select('input')
-                .node().value =
-                config.quadrants.cut_data[dimension];
+                .node().value = min;
         }
     });
 
     //Update cut point controls
-    this.controls.wrap
+    var controlWraps = this.controls.wrap
         .selectAll('.control-group')
-        .filter(d => /.-axis cut/i.test(d.description))
+        .filter(d => /.-axis Reference Line/i.test(d.description))
         .attr('min', d => lower_limits[d.description.split('-')[0]])
+        /* not working since the chart.draw() fires immediately and then the callback below fires afterwards :( */
+        /* probably don't want to initialize this as a webchart control - annoying */
+
         .on('change', function(d) {
             const dimension = d.description.split('-')[0].toLowerCase();
             const min = lower_limits[dimension];
             const input = d3.select(this).select('input');
 
+            console.log('changed ' + dimension);
+            console.log(min);
+            console.log(input.property('value'));
+            console.log(input.node().value);
+
             //Prevent a cutpoint less than the lower domain.
             if (input.property('value') < min) input.property('value', min);
 
             //Update chart setting.
-            chart.config.quadrants.cut_data[dimension] = input.property('value');
-
-            //Redraw.
-            chart.draw();
+            var measure = config[dimension].column;
+            console.log(measure);
+            config.cuts[measure][config.display] = input.property('value');
         });
 }

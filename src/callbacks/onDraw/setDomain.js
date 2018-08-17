@@ -1,7 +1,8 @@
 export function setDomain(dimension) {
     var config = this.config;
     var domain = this[dimension].domain();
-    var cut = this.config[dimension].measure_detail.cut[this.config.display];
+    var measure = config[dimension].column;
+    var cut = config.cuts[measure][config.display];
 
     //make sure the domain contains the cut point
     if (cut * 1.01 >= domain[1]) {

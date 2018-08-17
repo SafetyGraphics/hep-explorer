@@ -25,7 +25,6 @@ export function initDisplayControlLabels() {
         var currentLabel = this.value;
         var currentValue = config.axis_options.find(f => f.label == currentLabel).value;
         config.display = currentValue;
-        config.quadrants.cut_data.displayChange = currentValue;
 
         if (currentValue == 'relative_baseline') {
             displayControlWrap.select('span.displayControlAnnotation').style('display', null);

@@ -67,9 +67,9 @@ export function flattenData() {
                 });
 
                 //determine whether the value is above the specified threshold
-                if (m.cut[config.display]) {
+                if (config.cuts[m.label][config.display]) {
                     config.show_quadrants = true;
-                    participant_obj[m.label + '_cut'] = m.cut[config.display];
+                    participant_obj[m.label + '_cut'] = config.cuts[m.label][config.display];
                     participant_obj[m.label + '_flagged'] =
                         participant_obj[m.label] >= participant_obj[m.label + '_cut'];
                 } else {

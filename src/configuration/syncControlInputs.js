@@ -3,7 +3,7 @@ export default function syncControlInputs(controlInputs, settings) {
     ////////////////////////
     // Group control
     ///////////////////////
-    
+
     const groupControl = controlInputs.find(controlInput => controlInput.label === 'Group');
 
     //sync start value
@@ -30,7 +30,7 @@ export default function syncControlInputs(controlInputs, settings) {
     if (xAxisMeasures.length === 1)
         controlInputs = controlInputs.filter(controlInput => controlInput.option !== 'x.column');
     else {
-    //otherwise sync the properties
+        //otherwise sync the properties
         const xAxisMeasureControl = controlInputs.find(
             controlInput => controlInput.option === 'x.column'
         );
@@ -46,9 +46,12 @@ export default function syncControlInputs(controlInputs, settings) {
     // x-axis reference line control
     //////////////////////////////////
 
-    controlInputs.find(controlInput => controlInput.option === 'quadrants.cut_data.x').label = `${
-        xAxisMeasures[0].label
-    } Cutpoint`;
+    const xRefControl = controlInputs.find(
+        controlInput => controlInput.description === 'X-axis Reference Line'
+    );
+    xRefControl.label = `${xAxisMeasures[0].label} Cutpoint`;
+
+    xRefControl.option = 'settings.cuts.' + [settings.x.column] + '.' + [settings.display];
 
     ////////////////////////////
     // y-axis measure control
@@ -62,7 +65,7 @@ export default function syncControlInputs(controlInputs, settings) {
     if (yAxisMeasures.length === 1)
         controlInputs = controlInputs.filter(controlInput => controlInput.option !== 'y.column');
     else {
-    //otherwise sync the properties
+        //otherwise sync the properties
         const yAxisMeasureControl = controlInputs.find(
             controlInput => controlInput.option === 'y.column'
         );
@@ -77,9 +80,12 @@ export default function syncControlInputs(controlInputs, settings) {
     // y-axis reference line control
     //////////////////////////////////
 
-    controlInputs.find(controlInput => controlInput.option === 'quadrants.cut_data.y').label = `${
-        yAxisMeasures[0].label
-    } Cutpoint`;
+    const yRefControl = controlInputs.find(
+        controlInput => controlInput.description === 'Y-axis Reference Line'
+    );
+    yRefControl.label = `${yAxisMeasures[0].label} Cutpoint`;
+
+    yRefControl.option = 'settings.cuts.' + [settings.y.column] + '.' + [settings.display];
 
     //////////////////////////////////
     // R ratio filter control

@@ -29,7 +29,7 @@ export function initSummaryTable() {
     ];
 
     if (config.populationProfileURL) {
-        quadrants.quadrant_data.forEach(function(d) {
+        quadrants.forEach(function(d) {
             d.link = "<a href='" + config.populationProfileURL + "'>&#128279</a>";
         });
         quadrants.table.cells.push({
@@ -57,7 +57,7 @@ export function initSummaryTable() {
         .style('border-bottom', '2px solid #999');
     quadrants.table.rows = quadrants.table.tbody
         .selectAll('tr')
-        .data(quadrants.quadrant_data, d => d.label)
+        .data(quadrants, d => d.label)
         .enter()
         .append('tr')
         .style('padding', '0.1em');

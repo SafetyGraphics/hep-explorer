@@ -2,26 +2,23 @@ export default function syncCutpoints() {
     var chart = this;
     var config = this.config;
 
-    //update cut data
+    //update cut point controls to use the current measures data
     var dimensions = ['x', 'y'];
     dimensions.forEach(function(dimension) {
-        //change to the stored cut point if the display changed
-        if (config.quadrants.cut_data.displayChange) {
-            config.quadrants.cut_data[dimension] =
-                config[dimension].measure_detail.cut[config.display];
-            chart.controls.wrap
-                .selectAll('div.control-group')
-                .filter(f => f.option == 'quadrants.cut_data.' + dimension)
-                .select('input')
-                .node().value =
-                config.quadrants.cut_data[dimension];
-        }
+        //change the control to point at the correct cut point
+        var dimInput = chart.controls.wrap
+            .selectAll('div.control-group')
+            .filter(
+                f =>
+                    f.description
+                        ? f.description.toLowerCase() == dimension + '-axis reference line'
+                        : false
+            )
+            .select('input');
 
-        // get value linked to the controls (quadrant_cut_obj), add propogate it elsewhere
-        var current_cut = config.quadrants.cut_data[dimension];
-        config[dimension].measure_detail.cut[config.display] = current_cut;
-        config.quadrants.cut_data.filter(f => f.dimension == dimension)[0] = current_cut;
+        dimInput.node().value = config.cuts[config[dimension].column][config.display];
+
+        //don't think this actually changes functionality, but nice to have it accurate just in case
+        //    dimInput.option = 'settings.cuts.' + [config[dimension].column] + '.' + [config.display];
     });
-
-    config.quadrants.cut_data.displayChange = false;
 }

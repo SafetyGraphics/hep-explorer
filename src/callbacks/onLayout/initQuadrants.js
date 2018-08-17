@@ -1,7 +1,9 @@
 import { init } from './quadrants/init';
-import { layout } from './quadrants/layout';
+import { layoutQuadrantLabels } from './quadrants/layoutQuadrantLabels';
+import { layoutCutLines } from './quadrants/layoutCutLines';
 
 export function initQuadrants() {
     init.call(this);
-    layout.call(this);
+    layoutCutLines.call(this);
+    layoutQuadrantLabels.call(this);
 }

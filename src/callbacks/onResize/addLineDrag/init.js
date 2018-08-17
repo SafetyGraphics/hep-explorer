@@ -14,6 +14,6 @@ export function init() {
         .on('drag', dragged)
         .on('dragend', dragEnded);
 
-    this.config.quadrants.wrap.moveToFront();
-    this.config.quadrants.cut_g.call(drag);
+    this.cut_lines.wrap.moveToFront();
+    this.cut_lines.g.call(drag);
 }
