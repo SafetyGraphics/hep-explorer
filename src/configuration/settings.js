@@ -61,7 +61,10 @@ export default function settings() {
                 relative_baseline: 3.8,
                 relative_uln: 1,
                 absolute: 1.0
-            }
+            },
+            xMeasure: null, //set in syncSettings
+            yMeasure: null, //set in syncSettings
+            display: null //set in syncSettings
         },
         missingValues: ['', 'NA', 'N/A'],
         axis_options: [

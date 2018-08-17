@@ -36,17 +36,11 @@ export default function setCutpointMinimums() {
             const min = chart[dimension + '_dom'][0];
             const input = d3.select(this).select('input');
 
-            console.log('changed ' + dimension);
-            console.log(min);
-            console.log(input.property('value'));
-            console.log(input.node().value);
-
             //Prevent a cutpoint less than the lower domain.
             if (input.property('value') < min) input.property('value', min);
 
             //Update chart setting.
             var measure = config[dimension].column;
-            console.log(measure);
             config.cuts[measure][config.display] = input.property('value');
             chart.draw();
         });

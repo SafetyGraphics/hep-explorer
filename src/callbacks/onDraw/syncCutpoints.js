@@ -2,9 +2,20 @@ export default function syncCutpoints() {
     var chart = this;
     var config = this.config;
 
-    //update cut point controls to use the current measures data
-    if (config.cuts.display_change) {
-        console.log('setting cuts');
+    //check to see if the cutpoint used is current
+    if (
+        config.cuts.x != config.x.column ||
+        config.cuts.y != config.y.column ||
+        config.cuts.display != config.display
+    ) {
+        // if not, update it!
+
+        // track the current cut point variables
+        config.cuts.x = config.x.column;
+        config.cuts.y = config.y.column;
+        config.cuts.display = config.display;
+
+        // update the cutpoint shown in the control
         config.cuts.display_change = false; //reset the change flag;
         var dimensions = ['x', 'y'];
         dimensions.forEach(function(dimension) {

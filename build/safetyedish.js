@@ -377,7 +377,10 @@
                     relative_baseline: 3.8,
                     relative_uln: 1,
                     absolute: 1.0
-                }
+                },
+                xMeasure: null, //set in syncSettings
+                yMeasure: null, //set in syncSettings
+                display: null //set in syncSettings
             },
             missingValues: ['', 'NA', 'N/A'],
             axis_options: [
@@ -563,6 +566,11 @@
             });
             settings.details = defaultDetails;
         }
+
+        // track initial Cutpoint (lets us detect when cutpoint should change)
+        settings.cuts.x = settings.x.column;
+        settings.cuts.y = settings.y.column;
+        settings.cuts.display = settings.display;
 
         //Attach measure details to axis settings.
         settings.x.measure_detail = settings.measure_details.find(function(measure_detail) {
@@ -2006,17 +2014,11 @@
                 var min = chart[dimension + '_dom'][0];
                 var input = d3.select(this).select('input');
 
-                console.log('changed ' + dimension);
-                console.log(min);
-                console.log(input.property('value'));
-                console.log(input.node().value);
-
                 //Prevent a cutpoint less than the lower domain.
                 if (input.property('value') < min) input.property('value', min);
 
                 //Update chart setting.
                 var measure = config[dimension].column;
-                console.log(measure);
                 config.cuts[measure][config.display] = input.property('value');
                 chart.draw();
             });
@@ -2026,9 +2028,20 @@
         var chart = this;
         var config = this.config;
 
-        //update cut point controls to use the current measures data
-        if (config.cuts.display_change) {
-            console.log('setting cuts');
+        //check to see if the cutpoint used is current
+        if (
+            config.cuts.x != config.x.column ||
+            config.cuts.y != config.y.column ||
+            config.cuts.display != config.display
+        ) {
+            // if not, update it!
+
+            // track the current cut point variables
+            config.cuts.x = config.x.column;
+            config.cuts.y = config.y.column;
+            config.cuts.display = config.display;
+
+            // update the cutpoint shown in the control
             config.cuts.display_change = false; //reset the change flag;
             var dimensions = ['x', 'y'];
             dimensions.forEach(function(dimension) {
