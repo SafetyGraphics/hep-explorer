@@ -15,32 +15,15 @@ export default function settings() {
         details: null,
         r_ratio_filter: true,
         r_ratio_cut: 0,
-        measure_details: [
-            {
-                label: 'ALT',
-                measure: 'Aminotransferase, alanine (ALT)',
-                axis: 'x',
-                imputation: 'data-driven'
-            },
-            {
-                label: 'AST',
-                measure: 'Aminotransferase, aspartate (AST)',
-                axis: 'x',
-                imputation: 'data-driven'
-            },
-            {
-                label: 'TB',
-                measure: 'Total Bilirubin',
-                axis: 'y',
-                imputation: 'data-driven'
-            },
-            {
-                label: 'ALP',
-                measure: 'Alkaline phosphatase (ALP)',
-                axis: 'z',
-                imputation: 'data-driven'
-            }
-        ],
+        measure_values: {
+            ALT: 'Aminotransferase, alanine (ALT)',
+            AST: 'Aminotransferase, aspartate (AST)',
+            TB: 'Total Bilirubin',
+            ALP: 'Alkaline phosphatase (ALP)'
+        },
+        x_options: ['ALT', 'AST', 'ALP'],
+        y_options: ['TB'],
+        size_options: ['ALT', 'ASP', 'ALP', 'TB'],
         cuts: {
             ALT: {
                 relative_baseline: 3.8,
@@ -66,13 +49,20 @@ export default function settings() {
             yMeasure: null, //set in syncSettings
             display: null //set in syncSettings
         },
+        imputation_methods: {
+            ALT: 'data-driven',
+            AST: 'data-driven',
+            TB: 'data-driven',
+            ALP: 'data-driven'
+        },
+        imputation_values: null,
         missingValues: ['', 'NA', 'N/A'],
-        axis_options: [
+        display: 'relative_uln', //or "relative_baseline" or "absolute"
+        display_options: [
             { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
             { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' },
             { label: 'Raw Values', value: 'absolute' }
         ],
-        display: 'relative_uln', //or "relative_baseline" or "absolute"
         baseline_visitn: '1',
         measureBounds: [0.01, 0.99],
         populationProfileURL: null,

@@ -4,8 +4,8 @@ export function addPointTitles() {
     var points = this.marks[0].circles;
     points.select('title').remove();
     points.append('title').text(function(d) {
-        var xvar = config.x.measure_detail.label;
-        var yvar = config.y.measure_detail.label;
+        var xvar = config.x.column;
+        var yvar = config.y.column;
         var raw = d.values.raw[0],
             xLabel =
                 config.x.label +

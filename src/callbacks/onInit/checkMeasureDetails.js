@@ -3,9 +3,8 @@ export default function checkMeasureDetails() {
         .set(this.raw_data.map(d => d[this.config.measure_col]))
         .values()
         .sort();
-    const specifiedMeasures = this.config.measure_details.map(
-        measure_detail => measure_detail.measure
-    );
+    const specifiedMeasures = Object.values(this.config.measure_values);
+    /*
     this.config.measure_details = this.config.measure_details.filter(
         measure => this.measures.indexOf(measure) < 0
     );
@@ -22,4 +21,5 @@ export default function checkMeasureDetails() {
                 nMeasuresRemoved === 1 ? 'this measure' : 'these measures'
             }: ${missingMeasures.join(', ')}.`
         );
+  */
 }

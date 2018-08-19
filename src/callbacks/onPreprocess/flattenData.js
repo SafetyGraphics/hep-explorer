@@ -45,9 +45,9 @@ export function flattenData() {
             var participant_obj = {};
             participant_obj.days_x = null;
             participant_obj.days_y = null;
-            config.measure_details.forEach(function(m) {
+            Object.keys(config.measure_values).forEach(function(mKey) {
                 //get all raw data for the current measure
-                var matches = d.filter(f => m.measure == f[config.measure_col]); //get matching measures
+                var matches = d.filter(f => config.measure_values[mKey] == f[config.measure_col]); //get matching measures
 
                 if (matches.length == 0) {
                     console.log('No matches found');
@@ -58,29 +58,31 @@ export function flattenData() {
                 }
 
                 //get record with maximum value for the current display type
-                participant_obj[m.label] = d3.max(matches, d => +d[config.display]);
+                participant_obj[mKey] = d3.max(matches, d => +d[config.display]);
 
-                var maxRecord = matches.find(d => participant_obj[m.label] == +d[config.display]);
+                var maxRecord = matches.find(d => participant_obj[mKey] == +d[config.display]);
                 //map all measure specific values
                 colList.forEach(function(col) {
-                    participant_obj[m.label + '_' + col] = maxRecord[col];
+                    participant_obj[mKey + '_' + col] = maxRecord[col];
                 });
 
                 //determine whether the value is above the specified threshold
-                if (config.cuts[m.label][config.display]) {
+                if (config.cuts[mKey][config.display]) {
                     config.show_quadrants = true;
-                    participant_obj[m.label + '_cut'] = config.cuts[m.label][config.display];
-                    participant_obj[m.label + '_flagged'] =
-                        participant_obj[m.label] >= participant_obj[m.label + '_cut'];
+                    participant_obj[mKey + '_cut'] = config.cuts[mKey][config.display];
+                    participant_obj[mKey + '_flagged'] =
+                        participant_obj[mKey] >= participant_obj[mKey + '_cut'];
                 } else {
                     config.show_quadrants = false;
-                    participant_obj[m.label + '_cut'] = null;
-                    participant_obj[m.label + '_flagged'] = null;
+                    participant_obj[mKey + '_cut'] = null;
+                    participant_obj[mKey + '_flagged'] = null;
                 }
 
                 //save study days for each axis;
-                if (m.axis == 'x') participant_obj.days_x = maxRecord[config.studyday_col];
-                if (m.axis == 'y') participant_obj.days_y = maxRecord[config.studyday_col];
+                if (mKey == config.x.column)
+                    participant_obj.days_x = maxRecord[config.studyday_col];
+                if (mKey == config.y.column)
+                    participant_obj.days_y = maxRecord[config.studyday_col];
             });
 
             //Add participant level metadata

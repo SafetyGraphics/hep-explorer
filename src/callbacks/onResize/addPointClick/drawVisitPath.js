@@ -3,8 +3,8 @@ export function drawVisitPath(d) {
     var config = chart.config;
 
     var allMatches = d.values.raw[0].raw;
-    var x_measure = config.x.measure_detail.measure;
-    var y_measure = config.y.measure_detail.measure;
+    const x_measure = config.measure_values[config.x.column];
+    const y_measure = config.measure_values[config.y.column];
     var matches = allMatches.filter(
         f => f[config.measure_col] == x_measure || f[config.measure_col] == y_measure
     );

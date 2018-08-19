@@ -331,32 +331,15 @@
             details: null,
             r_ratio_filter: true,
             r_ratio_cut: 0,
-            measure_details: [
-                {
-                    label: 'ALT',
-                    measure: 'Aminotransferase, alanine (ALT)',
-                    axis: 'x',
-                    imputation: 'data-driven'
-                },
-                {
-                    label: 'AST',
-                    measure: 'Aminotransferase, aspartate (AST)',
-                    axis: 'x',
-                    imputation: 'data-driven'
-                },
-                {
-                    label: 'TB',
-                    measure: 'Total Bilirubin',
-                    axis: 'y',
-                    imputation: 'data-driven'
-                },
-                {
-                    label: 'ALP',
-                    measure: 'Alkaline phosphatase (ALP)',
-                    axis: 'z',
-                    imputation: 'data-driven'
-                }
-            ],
+            measure_values: {
+                ALT: 'Aminotransferase, alanine (ALT)',
+                AST: 'Aminotransferase, aspartate (AST)',
+                TB: 'Total Bilirubin',
+                ALP: 'Alkaline phosphatase (ALP)'
+            },
+            x_options: ['ALT', 'AST', 'ALP'],
+            y_options: ['TB'],
+            size_options: ['ALT', 'ASP', 'ALP', 'TB'],
             cuts: {
                 ALT: {
                     relative_baseline: 3.8,
@@ -382,13 +365,20 @@
                 yMeasure: null, //set in syncSettings
                 display: null //set in syncSettings
             },
+            imputation_methods: {
+                ALT: 'data-driven',
+                AST: 'data-driven',
+                TB: 'data-driven',
+                ALP: 'data-driven'
+            },
+            imputation_values: null,
             missingValues: ['', 'NA', 'N/A'],
-            axis_options: [
+            display: 'relative_uln', //or "relative_baseline" or "absolute"
+            display_options: [
                 { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
                 { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' },
                 { label: 'Raw Values', value: 'absolute' }
             ],
-            display: 'relative_uln', //or "relative_baseline" or "absolute"
             baseline_visitn: '1',
             measureBounds: [0.01, 0.99],
             populationProfileURL: null,
@@ -572,15 +562,9 @@
         settings.cuts.y = settings.y.column;
         settings.cuts.display = settings.display;
 
-        //Attach measure details to axis settings.
-        settings.x.measure_detail = settings.measure_details.find(function(measure_detail) {
-            return measure_detail.axis === 'x';
-        });
-        settings.x.column = settings.x.measure_detail.label;
-        settings.y.measure_detail = settings.measure_details.find(function(measure_detail) {
-            return measure_detail.axis === 'y';
-        });
-        settings.y.column = settings.y.measure_detail.label;
+        //Attach measure columns to axis settings.
+        settings.x.column = settings.x_options[0];
+        settings.y.column = settings.y_options[0];
 
         return settings;
     }
@@ -700,12 +684,8 @@
         // x-axis measure control
         //////////////////////////
 
-        var xAxisMeasures = settings.measure_details.filter(function(measure_detail) {
-            return measure_detail.axis === 'x';
-        });
-
         // drop the control if there's only one option
-        if (xAxisMeasures.length === 1)
+        if (settings.x_options.length === 1)
             controlInputs = controlInputs.filter(function(controlInput) {
                 return controlInput.option !== 'x.column';
             });
@@ -715,15 +695,9 @@
                 return controlInput.option === 'x.column';
             });
 
-            xAxisMeasureControl.description = xAxisMeasures
-                .map(function(xAxisMeasure) {
-                    return xAxisMeasure.label;
-                })
-                .join(', ');
-            xAxisMeasureControl.start = xAxisMeasures[0].label;
-            xAxisMeasureControl.values = xAxisMeasures.map(function(xAxisMeasure) {
-                return xAxisMeasure.label;
-            });
+            xAxisMeasureControl.description = settings.x_options.join(', ');
+            xAxisMeasureControl.start = settings.x_options[0];
+            xAxisMeasureControl.values = settings.x_options;
         }
 
         //////////////////////////////////
@@ -733,20 +707,15 @@
         var xRefControl = controlInputs.find(function(controlInput) {
             return controlInput.description === 'X-axis Reference Line';
         });
-        xRefControl.label = xAxisMeasures[0].label + ' Cutpoint';
-
+        xRefControl.label = settings.x_options[0] + ' Cutpoint';
         xRefControl.option = 'settings.cuts.' + [settings.x.column] + '.' + [settings.display];
 
         ////////////////////////////
         // y-axis measure control
         ////////////////////////////
 
-        var yAxisMeasures = settings.measure_details.filter(function(measure_detail) {
-            return measure_detail.axis === 'y';
-        });
-
         // drop the control if there's only one option
-        if (yAxisMeasures.length === 1)
+        if (settings.y_options.length === 1)
             controlInputs = controlInputs.filter(function(controlInput) {
                 return controlInput.option !== 'y.column';
             });
@@ -755,15 +724,9 @@
             var yAxisMeasureControl = controlInputs.find(function(controlInput) {
                 return controlInput.option === 'y.column';
             });
-            yAxisMeasureControl.description = yAxisMeasures
-                .map(function(yAxisMeasure) {
-                    return yAxisMeasure.label;
-                })
-                .join(', ');
-            yAxisMeasureControl.start = yAxisMeasures[0].label;
-            yAxisMeasureControl.values = yAxisMeasures.map(function(yAxisMeasure) {
-                return yAxisMeasure.label;
-            });
+            yAxisMeasureControl.description = settings.y_options.join(', ');
+            yAxisMeasureControl.start = settings.y_options[0];
+            yAxisMeasureControl.values = settings.y_options;
         }
 
         //////////////////////////////////
@@ -773,7 +736,7 @@
         var yRefControl = controlInputs.find(function(controlInput) {
             return controlInput.description === 'Y-axis Reference Line';
         });
-        yRefControl.label = yAxisMeasures[0].label + ' Cutpoint';
+        yRefControl.label = settings.y_options[0] + ' Cutpoint';
 
         yRefControl.option = 'settings.cuts.' + [settings.y.column] + '.' + [settings.display];
 
@@ -792,20 +755,16 @@
         // Point size control
         //////////////////////////////////
 
-        var pointSizeControl = controlInputs.find(function(controlInput) {
-            return controlInput.label === 'Point Size';
+        var pointSizeControl = controlInputs.find(function(ci) {
+            return ci.label === 'Point Size';
         });
 
-        settings.measure_details
-            .filter(function(f) {
-                return f.axis != 'x' && f.axis != 'y';
-            })
-            .forEach(function(group) {
-                pointSizeControl.values.push(group.label);
-            });
+        settings.size_options.forEach(function(d) {
+            pointSizeControl.values.push(d);
+        });
 
         //drop the pointSize control if NONE is the only option
-        if (settings.measure_details.length == 2)
+        if (settings.size_options.length == 0)
             controlInputs = controlInputs.filter(function(controlInput) {
                 return controlInput.label != 'Point Size';
             });
@@ -816,11 +775,13 @@
 
         controlInputs.find(function(controlInput) {
             return controlInput.label === 'Display Type';
-        }).values = settings.axis_options.map(function(m) {
+        }).values = settings.display_options.map(function(m) {
             return m.label;
         });
 
-        //Add custom filters to control inputs.
+        //////////////////////////////////
+        // Add filters to inputs
+        //////////////////////////////////
         if (settings.filters && settings.filters.length > 0) {
             var otherFilters = settings.filters.map(function(filter) {
                 filter = {
@@ -854,30 +815,25 @@
             )
             .values()
             .sort();
-        var specifiedMeasures = this.config.measure_details.map(function(measure_detail) {
-            return measure_detail.measure;
-        });
-        this.config.measure_details = this.config.measure_details.filter(function(measure) {
-            return _this.measures.indexOf(measure) < 0;
-        });
-        var missingMeasures = specifiedMeasures.filter(function(measure) {
-            return (
-                _this.config.measure_details
-                    .map(function(measure_detail) {
-                        return measure_detail.measure;
-                    })
-                    .indexOf(measure) < 0
-            );
-        });
-        var nMeasuresRemoved = missingMeasures.length;
-        if (nMeasuresRemoved > 0)
-            alert(
-                'The data are missing ' +
-                    (nMeasuresRemoved === 1 ? 'this measure' : 'these measures') +
-                    ': ' +
-                    missingMeasures.join(', ') +
-                    '.'
-            );
+        var specifiedMeasures = Object.values(this.config.measure_values);
+        /*
+    this.config.measure_details = this.config.measure_details.filter(
+        measure => this.measures.indexOf(measure) < 0
+    );
+    const missingMeasures = specifiedMeasures.filter(
+        measure =>
+            this.config.measure_details
+                .map(measure_detail => measure_detail.measure)
+                .indexOf(measure) < 0
+    );
+    const nMeasuresRemoved = missingMeasures.length;
+    if (nMeasuresRemoved > 0)
+        alert(
+            `The data are missing ${
+                nMeasuresRemoved === 1 ? 'this measure' : 'these measures'
+            }: ${missingMeasures.join(', ')}.`
+        );
+    */
     }
 
     function iterateOverData() {
@@ -1240,7 +1196,7 @@
         var displayControl = displayControlWrap.select('select');
 
         //set the start value
-        var start_value = config.axis_options.find(function(f) {
+        var start_value = config.display_options.find(function(f) {
             return f.value == config.display;
         }).label;
         displayControl.selectAll('option').attr('selected', function(d) {
@@ -1257,7 +1213,7 @@
 
         displayControl.on('change', function(d) {
             var currentLabel = this.value;
-            var currentValue = config.axis_options.find(function(f) {
+            var currentValue = config.display_options.find(function(f) {
                 return f.label == currentLabel;
             }).value;
             config.display = currentValue;
@@ -1382,6 +1338,7 @@
     }
 
     function updateAxisSettings() {
+        console.log(this);
         var config = this.config;
         var unit =
             config.display == 'relative_uln'
@@ -1390,17 +1347,9 @@
                     ? ' [xBaseline]'
                     : config.display == 'absolute' ? ' [raw values]' : null;
 
-        //Update x-axis settings.
-        config.x.measure_detail = config.measure_details.find(function(measure_detail) {
-            return measure_detail.label === config.x.column;
-        });
-        config.x.label = config.x.measure_detail.measure + unit;
-
-        //Update y-axis settings.
-        config.y.measure_detail = config.measure_details.find(function(measure_detail) {
-            return measure_detail.label === config.y.column;
-        });
-        config.y.label = config.y.measure_detail.measure + unit;
+        //Update axis labels.
+        config.x.label = config.measure_values[config.x.column] + unit;
+        config.y.label = config.measure_values[config.y.column] + unit;
     }
 
     function updateControlCutpointLabels() {
@@ -1522,10 +1471,10 @@
                 var participant_obj = {};
                 participant_obj.days_x = null;
                 participant_obj.days_y = null;
-                config.measure_details.forEach(function(m) {
+                Object.keys(config.measure_values).forEach(function(mKey) {
                     //get all raw data for the current measure
                     var matches = d.filter(function(f) {
-                        return m.measure == f[config.measure_col];
+                        return config.measure_values[mKey] == f[config.measure_col];
                     }); //get matching measures
 
                     if (matches.length == 0) {
@@ -1537,33 +1486,35 @@
                     }
 
                     //get record with maximum value for the current display type
-                    participant_obj[m.label] = d3.max(matches, function(d) {
+                    participant_obj[mKey] = d3.max(matches, function(d) {
                         return +d[config.display];
                     });
 
                     var maxRecord = matches.find(function(d) {
-                        return participant_obj[m.label] == +d[config.display];
+                        return participant_obj[mKey] == +d[config.display];
                     });
                     //map all measure specific values
                     colList.forEach(function(col) {
-                        participant_obj[m.label + '_' + col] = maxRecord[col];
+                        participant_obj[mKey + '_' + col] = maxRecord[col];
                     });
 
                     //determine whether the value is above the specified threshold
-                    if (config.cuts[m.label][config.display]) {
+                    if (config.cuts[mKey][config.display]) {
                         config.show_quadrants = true;
-                        participant_obj[m.label + '_cut'] = config.cuts[m.label][config.display];
-                        participant_obj[m.label + '_flagged'] =
-                            participant_obj[m.label] >= participant_obj[m.label + '_cut'];
+                        participant_obj[mKey + '_cut'] = config.cuts[mKey][config.display];
+                        participant_obj[mKey + '_flagged'] =
+                            participant_obj[mKey] >= participant_obj[mKey + '_cut'];
                     } else {
                         config.show_quadrants = false;
-                        participant_obj[m.label + '_cut'] = null;
-                        participant_obj[m.label + '_flagged'] = null;
+                        participant_obj[mKey + '_cut'] = null;
+                        participant_obj[mKey + '_flagged'] = null;
                     }
 
                     //save study days for each axis;
-                    if (m.axis == 'x') participant_obj.days_x = maxRecord[config.studyday_col];
-                    if (m.axis == 'y') participant_obj.days_y = maxRecord[config.studyday_col];
+                    if (mKey == config.x.column)
+                        participant_obj.days_x = maxRecord[config.studyday_col];
+                    if (mKey == config.y.column)
+                        participant_obj.days_y = maxRecord[config.studyday_col];
                 });
 
                 //Add participant level metadata
@@ -1675,10 +1626,10 @@
         var chart = this;
         var config = this.config;
 
-        config.measure_details.forEach(function(measure_settings) {
+        Object.keys(config.measure_values).forEach(function(measureKey) {
             var values = chart.imputed_data
                     .filter(function(f) {
-                        return f[config.measure_col] == measure_settings.measure;
+                        return f[config.measure_col] == config.measure_values[measureKey];
                     })
                     .map(function(m) {
                         return +m[config.value_col];
@@ -1696,15 +1647,15 @@
                 imputed_value = null,
                 drop = null;
 
-            if (measure_settings.imputation == 'data-driven') {
+            if (config.imputation_methods[measureKey] == 'data-driven') {
                 llod = minValue;
                 imputed_value = minValue / 2;
                 drop = false;
-            } else if (measure_settings.imputation == 'user-defined') {
-                llod = measure_settings.imputation_value;
-                imputed_value = measure_settings.imputation_value / 2;
+            } else if (config.imputation_methods[measureKey] == 'user-defined') {
+                llod = config.imputation_values[measureKey];
+                imputed_value = config.imputation_values[measureKey] / 2;
                 drop = false;
-            } else if (measure_settings.imputation == 'drop') {
+            } else if (config.imputation_methods[measureKey] == 'drop') {
                 llod = null;
                 imputed_value = null;
                 drop = true;
@@ -1713,7 +1664,7 @@
                 chart.imputed_data,
                 config.measure_col,
                 config.value_col,
-                measure_settings.measure,
+                config.measure_values[measureKey],
                 llod,
                 imputed_value,
                 drop
@@ -1729,9 +1680,7 @@
         var config = this.config;
 
         //filter the lab data to only the required measures
-        var included_measures = config.measure_details.map(function(m) {
-            return m.measure;
-        });
+        var included_measures = Object.values(config.measure_values);
 
         var sub = this.imputed_data
             .filter(function(f) {
@@ -1887,7 +1836,7 @@
             domain[0] = 0;
         } else if (this.config[dimension].type == 'log') {
             // use the smallest raw value for a log axis
-            var measure = config[dimension].measure_detail['measure'];
+            var measure = config.measure_values[config[dimension].column];
             var values = this.imputed_data
                 .filter(function(f) {
                     return f[config.measure_col] == measure;
@@ -2173,7 +2122,7 @@
 
         //get matching measures
         var allMatches = d.values.raw[0].raw;
-        var measure = config[axis].measure_detail.measure;
+        var measure = config.measure_values[config[axis].column];
         var matches = allMatches.filter(function(f) {
             return f[config.measure_col] == measure;
         });
@@ -2247,8 +2196,8 @@
         var config = chart.config;
 
         var allMatches = d.values.raw[0].raw;
-        var x_measure = config.x.measure_detail.measure;
-        var y_measure = config.y.measure_detail.measure;
+        var x_measure = config.measure_values[config.x.column];
+        var y_measure = config.measure_values[config.y.column];
         var matches = allMatches.filter(function(f) {
             return f[config.measure_col] == x_measure || f[config.measure_col] == y_measure;
         });
@@ -2628,16 +2577,8 @@
                 return m.values;
             })
             .sort(function(a, b) {
-                var a_order = config.measure_details
-                    .map(function(m) {
-                        return m.measure;
-                    })
-                    .indexOf(a.key);
-                var b_order = config.measure_details
-                    .map(function(m) {
-                        return m.measure;
-                    })
-                    .indexOf(b.key);
+                var a_order = Object.values(config.measure_values).indexOf(a.key);
+                var b_order = Object.values(config.measure_values).indexOf(b.key);
                 return b_order - a_order;
             });
 
@@ -2755,9 +2696,11 @@
         });
         //flag variables above the cut-off
         matches.forEach(function(d) {
-            d.cut = config.measure_details.find(function(f) {
-                return f.measure == d[config['measure_col']];
-            }).cut.relative_uln;
+            var measure = d[config['measure_col']];
+            var label = Object.keys(config.measure_values).find(function(key) {
+                return config.measure_values[key] == measure;
+            });
+            d.cut = config.cuts[label].relative_uln;
 
             d.flagged = d.relative_uln >= d.cut;
         });
@@ -2821,8 +2764,8 @@
         var points = this.marks[0].circles;
         points.select('title').remove();
         points.append('title').text(function(d) {
-            var xvar = config.x.measure_detail.label;
-            var yvar = config.y.measure_detail.label;
+            var xvar = config.x.column;
+            var yvar = config.y.column;
             var raw = d.values.raw[0],
                 xLabel =
                     config.x.label +

@@ -39,52 +39,12 @@ document.onreadystatechange = function () {
                     label: 'Age group'
                 },
             ],
-            measure_details: [
-                {
-                    label: 'ALT',
-                    measure: 'Alanine Aminotransferase (U/L)',
-                    axis: 'x',
-                    imputation: 'data-driven',
-                    cut: {
-                        relative_uln: 3,
-                        absolute: 3.8,
-                        relative_baseline: 3.8
-                    }
-                },
-                {
-                    label: 'AST',
-                    measure: 'Aspartate Aminotransferase (U/L)',
-                    axis: 'x',
-                    imputation: 'data-driven',
-                    cut: {
-                        relative_uln: 3,
-                        absolute: 3.8,
-                        relative_baseline: 3.8
-                    }
-                },
-                {
-                    label: 'ALP',
-                    measure: 'Alkaline Phosphatase (U/L)',
-                    axis: 'x',
-                    imputation: 'data-driven',
-                    cut: {
-                        relative_uln: 3,
-                        absolute: 3,
-                        relative_baseline: 3.8
-                    }
-                },
-                {
-                    label: 'TB',
-                    measure: 'Bilirubin (umol/L)',
-                    axis: 'y',
-                    imputation: 'data-driven',
-                    cut: {
-                        relative_uln: 2,
-                        absolute: 2,
-                        relative_baseline: 4.8
-                    }
-                }
-            ]
+            measure_values:{
+              'ALT':'Alanine Aminotransferase (U/L)',
+              'AST':'Aspartate Aminotransferase (U/L)',
+              'TB':'Bilirubin (umol/L)',
+              'ALP':'Alkaline Phosphatase (U/L)'
+            }
         };
         const chart = safetyedish('#container', settings);
         d3.csv('adlbc.csv', function(data) {

@@ -1,4 +1,5 @@
 export default function updateAxisSettings() {
+    console.log(this);
     const config = this.config;
     const unit =
         config.display == 'relative_uln'
@@ -7,15 +8,7 @@ export default function updateAxisSettings() {
                 ? ' [xBaseline]'
                 : config.display == 'absolute' ? ' [raw values]' : null;
 
-    //Update x-axis settings.
-    config.x.measure_detail = config.measure_details.find(
-        measure_detail => measure_detail.label === config.x.column
-    );
-    config.x.label = config.x.measure_detail.measure + unit;
-
-    //Update y-axis settings.
-    config.y.measure_detail = config.measure_details.find(
-        measure_detail => measure_detail.label === config.y.column
-    );
-    config.y.label = config.y.measure_detail.measure + unit;
+    //Update axis labels.
+    config.x.label = config.measure_values[config.x.column] + unit;
+    config.y.label = config.measure_values[config.y.column] + unit;
 }
