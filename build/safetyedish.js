@@ -339,7 +339,7 @@
             },
             x_options: ['ALT', 'AST', 'ALP'],
             y_options: ['TB'],
-            size_options: ['ALT', 'ASP', 'ALP', 'TB'],
+            size_options: ['ALT', 'AST', 'ALP', 'TB'],
             cuts: {
                 ALT: {
                     relative_baseline: 3.8,
@@ -805,35 +805,49 @@
     };
 
     function checkMeasureDetails() {
-        var _this = this;
-
-        this.measures = d3
+        var config = this.config;
+        var measures = d3
             .set(
                 this.raw_data.map(function(d) {
-                    return d[_this.config.measure_col];
+                    return d[config.measure_col];
                 })
             )
             .values()
             .sort();
-        var specifiedMeasures = Object.values(this.config.measure_values);
-        /*
-    this.config.measure_details = this.config.measure_details.filter(
-        measure => this.measures.indexOf(measure) < 0
-    );
-    const missingMeasures = specifiedMeasures.filter(
-        measure =>
-            this.config.measure_details
-                .map(measure_detail => measure_detail.measure)
-                .indexOf(measure) < 0
-    );
-    const nMeasuresRemoved = missingMeasures.length;
-    if (nMeasuresRemoved > 0)
-        alert(
-            `The data are missing ${
-                nMeasuresRemoved === 1 ? 'this measure' : 'these measures'
-            }: ${missingMeasures.join(', ')}.`
-        );
-    */
+        var specifiedMeasures = Object.values(config.measure_values);
+        var missingMeasures = [];
+        Object.keys(config.measure_values).forEach(function(d) {
+            if (measures.indexOf(config.measure_values[d]) == -1) {
+                missingMeasures.push(config.measure_values[d]);
+                delete config.measure_values[d];
+            }
+        });
+        var nMeasuresRemoved = missingMeasures.length;
+        if (nMeasuresRemoved > 0)
+            console.warn(
+                'The data are missing ' +
+                    (nMeasuresRemoved === 1 ? 'this measure' : 'these measures') +
+                    ': ' +
+                    missingMeasures.join(', ') +
+                    '.'
+            );
+
+        //check that x_options, y_options and size_options all have value keys/values in measure_values
+        var valid_options = Object.keys(config.measure_values);
+        var all_options = ['x_options', 'y_options', 'size_options'];
+        all_options.forEach(function(options) {
+            config[options].forEach(function(option) {
+                if (valid_options.indexOf(option) == -1) {
+                    delete config[options][option];
+                    console.warn(
+                        option +
+                            " wasn't found in the measure_values index and has been removed from config." +
+                            options +
+                            '. This may cause problems with the chart.'
+                    );
+                }
+            });
+        });
     }
 
     function iterateOverData() {

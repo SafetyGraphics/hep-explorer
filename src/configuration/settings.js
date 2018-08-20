@@ -23,7 +23,7 @@ export default function settings() {
         },
         x_options: ['ALT', 'AST', 'ALP'],
         y_options: ['TB'],
-        size_options: ['ALT', 'ASP', 'ALP', 'TB'],
+        size_options: ['ALT', 'AST', 'ALP', 'TB'],
         cuts: {
             ALT: {
                 relative_baseline: 3.8,
