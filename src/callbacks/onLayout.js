@@ -7,6 +7,7 @@ import { initResetButton } from './onLayout/initResetButton';
 import { initDisplayControlLabels } from './onLayout/initDisplayControlLabels';
 import { layoutPanels } from './onLayout/layoutPanels';
 import { initTitle } from './onLayout/initTitle';
+import { initFilterLabel } from './onLayout/initFilterLabel';
 
 export default function onLayout() {
     addRRatioSpan.call(this);
@@ -18,4 +19,5 @@ export default function onLayout() {
     initParticipantDetails.call(this);
     initResetButton.call(this);
     initDisplayControlLabels.call(this);
+    initFilterLabel.call(this);
 }

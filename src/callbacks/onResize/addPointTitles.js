@@ -1,4 +1,4 @@
-export function addTitle() {
+export function addPointTitles() {
     var chart = this;
     var config = this.config;
     var points = this.marks[0].circles;
