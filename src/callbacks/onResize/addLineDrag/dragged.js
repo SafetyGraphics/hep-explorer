@@ -26,9 +26,14 @@ export function dragged() {
     //update the cut control in real time
     chart.controls.wrap
         .selectAll('div.control-group')
-        .filter(f => f.option == 'quadrants.cut_data.' + dimension)
+        .filter(
+            f =>
+                f.description
+                    ? f.description.toLowerCase() == dimension + '-axis reference line'
+                    : false
+        )
         .select('input')
         .node().value = current_cut;
-
-    chart.config.quadrants.cut_data[dimension] = current_cut;
+    const measure = chart.config[dimension].column;
+    chart.config.cuts[measure][chart.config.display] = current_cut;
 }

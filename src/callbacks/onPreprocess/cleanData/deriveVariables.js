@@ -3,7 +3,7 @@ export default function deriveVariables() {
     var config = this.config;
 
     //filter the lab data to only the required measures
-    var included_measures = config.measure_details.map(m => m.measure);
+    var included_measures = Object.values(config.measure_values);
 
     var sub = this.imputed_data
         .filter(f => included_measures.indexOf(f[config.measure_col]) > -1)

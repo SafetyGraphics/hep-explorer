@@ -4,9 +4,9 @@ export default function imputeData() {
     const chart = this;
     const config = this.config;
 
-    config.measure_details.forEach(function(measure_settings) {
+    Object.keys(config.measure_values).forEach(function(measureKey) {
         var values = chart.imputed_data
-                .filter(f => f[config.measure_col] == measure_settings.measure)
+                .filter(f => f[config.measure_col] == config.measure_values[measureKey])
                 .map(m => +m[config.value_col])
                 .sort((a, b) => a - b),
             minValue = d3.min(values.filter(f => f > 0)), //minimum value > 0
@@ -14,15 +14,15 @@ export default function imputeData() {
             imputed_value = null,
             drop = null;
 
-        if (measure_settings.imputation == 'data-driven') {
+        if (config.imputation_methods[measureKey] == 'data-driven') {
             llod = minValue;
             imputed_value = minValue / 2;
             drop = false;
-        } else if (measure_settings.imputation == 'user-defined') {
-            llod = measure_settings.imputation_value;
-            imputed_value = measure_settings.imputation_value / 2;
+        } else if (config.imputation_methods[measureKey] == 'user-defined') {
+            llod = config.imputation_values[measureKey];
+            imputed_value = config.imputation_values[measureKey] / 2;
             drop = false;
-        } else if (measure_settings.imputation == 'drop') {
+        } else if (config.imputation_methods[measureKey] == 'drop') {
             llod = null;
             imputed_value = null;
             drop = true;
@@ -31,7 +31,7 @@ export default function imputeData() {
             chart.imputed_data,
             config.measure_col,
             config.value_col,
-            measure_settings.measure,
+            config.measure_values[measureKey],
             llod,
             imputed_value,
             drop

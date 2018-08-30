@@ -15,59 +15,54 @@ export default function settings() {
         details: null,
         r_ratio_filter: true,
         r_ratio_cut: 0,
-        measure_details: [
-            {
-                label: 'ALT',
-                measure: 'Aminotransferase, alanine (ALT)',
-                axis: 'x',
-                imputation: 'data-driven',
-                cut: {
-                    relative_baseline: 3.8,
-                    relative_uln: 3,
-                    absolute: 1.0
-                }
+        measure_values: {
+            ALT: 'Aminotransferase, alanine (ALT)',
+            AST: 'Aminotransferase, aspartate (AST)',
+            TB: 'Total Bilirubin',
+            ALP: 'Alkaline phosphatase (ALP)'
+        },
+        x_options: ['ALT', 'AST', 'ALP'],
+        y_options: ['TB'],
+        size_options: ['ALT', 'AST', 'ALP', 'TB'],
+        cuts: {
+            ALT: {
+                relative_baseline: 3.8,
+                relative_uln: 3,
+                absolute: 1.0
             },
-            {
-                label: 'AST',
-                measure: 'Aminotransferase, aspartate (AST)',
-                axis: 'x',
-                imputation: 'data-driven',
-                cut: {
-                    relative_baseline: 3.8,
-                    relative_uln: 3,
-                    absolute: 1.0
-                }
+            AST: {
+                relative_baseline: 3.8,
+                relative_uln: 3,
+                absolute: 1.0
             },
-            {
-                label: 'TB',
-                measure: 'Total Bilirubin',
-                axis: 'y',
-                imputation: 'data-driven',
-                cut: {
-                    relative_baseline: 4.8,
-                    relative_uln: 2,
-                    absolute: 40
-                }
+            TB: {
+                relative_baseline: 4.8,
+                relative_uln: 2,
+                absolute: 40
             },
-            {
-                label: 'ALP',
-                measure: 'Alkaline phosphatase (ALP)',
-                axis: 'z',
-                imputation: 'data-driven',
-                cut: {
-                    relative_baseline: 3.8,
-                    relative_uln: 1,
-                    absolute: 1.0
-                }
-            }
-        ],
+            ALP: {
+                relative_baseline: 3.8,
+                relative_uln: 1,
+                absolute: 1.0
+            },
+            xMeasure: null, //set in syncSettings
+            yMeasure: null, //set in syncSettings
+            display: null //set in syncSettings
+        },
+        imputation_methods: {
+            ALT: 'data-driven',
+            AST: 'data-driven',
+            TB: 'data-driven',
+            ALP: 'data-driven'
+        },
+        imputation_values: null,
         missingValues: ['', 'NA', 'N/A'],
-        axis_options: [
+        display: 'relative_uln', //or "relative_baseline" or "absolute"
+        display_options: [
             { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
             { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' },
             { label: 'Raw Values', value: 'absolute' }
         ],
-        display: 'relative_uln', //or "relative_baseline" or "absolute"
         baseline_visitn: '1',
         measureBounds: [0.01, 0.99],
         populationProfileURL: null,
@@ -75,7 +70,41 @@ export default function settings() {
         point_size: 'Uniform',
         visit_window: 30,
         showTitle: true,
-
+        quadrants: [
+            //all values set in onLayout/quadrants/*.js
+            {
+                label: "Possible Hy's Law Range",
+                position: 'upper-right',
+                dataValue: 'xHigh:yHigh',
+                count: null,
+                total: null,
+                percent: null
+            },
+            {
+                label: 'Hyperbilirubinemia',
+                position: 'upper-left',
+                dataValue: 'xNormal:yHigh',
+                count: null,
+                total: null,
+                percent: null
+            },
+            {
+                label: "Temple's Corollary",
+                position: 'lower-right',
+                dataValue: 'xHigh:yNormal',
+                count: null,
+                total: null,
+                percent: null
+            },
+            {
+                label: 'Normal Range',
+                position: 'lower-left',
+                dataValue: 'xNormal:yNormal',
+                count: null,
+                total: null,
+                percent: null
+            }
+        ],
         //Standard webcharts settings
         x: {
             column: null, //set in onPreprocess/updateAxisSettings

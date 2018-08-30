@@ -1,8 +1,15 @@
 //Map values from settings to control inputs
 export default function syncControlInputs(controlInputs, settings) {
-    //Sync group control.
+    ////////////////////////
+    // Group control
+    ///////////////////////
+
     const groupControl = controlInputs.find(controlInput => controlInput.label === 'Group');
-    groupControl.start = settings.color_by;
+
+    //sync start value
+    groupControl.start = settings.color_by; //sync start value
+
+    //sync values
     settings.group_cols.filter(group => group.value_col !== 'NONE').forEach(group => {
         groupControl.values.push(group.value_col);
     });
@@ -11,46 +18,65 @@ export default function syncControlInputs(controlInputs, settings) {
     if (settings.group_cols.length == 1)
         controlInputs = controlInputs.filter(controlInput => controlInput.label != 'Group');
 
-    //Sync x-axis measure control.
-    const xAxisMeasures = settings.measure_details.filter(
-        measure_detail => measure_detail.axis === 'x'
-    );
+    //////////////////////////
+    // x-axis measure control
+    //////////////////////////
 
-    if (xAxisMeasures.length === 1)
+    // drop the control if there's only one option
+    if (settings.x_options.length === 1)
         controlInputs = controlInputs.filter(controlInput => controlInput.option !== 'x.column');
     else {
+        //otherwise sync the properties
         const xAxisMeasureControl = controlInputs.find(
             controlInput => controlInput.option === 'x.column'
         );
-        xAxisMeasureControl.description = xAxisMeasures
-            .map(xAxisMeasure => xAxisMeasure.label)
-            .join(', ');
-        xAxisMeasureControl.start = xAxisMeasures[0].label;
-        xAxisMeasureControl.values = xAxisMeasures.map(xAxisMeasure => xAxisMeasure.label);
+
+        xAxisMeasureControl.description = settings.x_options.join(', ');
+        xAxisMeasureControl.start = settings.x_options[0];
+        xAxisMeasureControl.values = settings.x_options;
     }
 
-    //Sync x-axis cut control.
-    controlInputs.find(controlInput => controlInput.option === 'quadrants.cut_data.x').label = `${
-        xAxisMeasures[0].label
-    } Cutpoint`;
+    //////////////////////////////////
+    // x-axis reference line control
+    //////////////////////////////////
 
-    //Sync y-axis measure control.
-    const yAxisMeasures = settings.measure_details.filter(
-        measure_detail => measure_detail.axis === 'y'
+    const xRefControl = controlInputs.find(
+        controlInput => controlInput.description === 'X-axis Reference Line'
     );
+    xRefControl.label = `${settings.x_options[0]} Cutpoint`;
+    xRefControl.option = 'settings.cuts.' + [settings.x.column] + '.' + [settings.display];
 
-    if (yAxisMeasures.length === 1)
+    ////////////////////////////
+    // y-axis measure control
+    ////////////////////////////
+
+    // drop the control if there's only one option
+    if (settings.y_options.length === 1)
         controlInputs = controlInputs.filter(controlInput => controlInput.option !== 'y.column');
     else {
+        //otherwise sync the properties
         const yAxisMeasureControl = controlInputs.find(
             controlInput => controlInput.option === 'y.column'
         );
-        yAxisMeasureControl.description = yAxisMeasures
-            .map(yAxisMeasure => yAxisMeasure.label)
-            .join(', ');
-        yAxisMeasureControl.start = yAxisMeasures[0].label;
-        yAxisMeasureControl.values = yAxisMeasures.map(yAxisMeasure => yAxisMeasure.label);
+        yAxisMeasureControl.description = settings.y_options.join(', ');
+        yAxisMeasureControl.start = settings.y_options[0];
+        yAxisMeasureControl.values = settings.y_options;
     }
+
+    //////////////////////////////////
+    // y-axis reference line control
+    //////////////////////////////////
+
+    const yRefControl = controlInputs.find(
+        controlInput => controlInput.description === 'Y-axis Reference Line'
+    );
+    yRefControl.label = `${settings.y_options[0]} Cutpoint`;
+
+    yRefControl.option = 'settings.cuts.' + [settings.y.column] + '.' + [settings.display];
+
+    //////////////////////////////////
+    // R ratio filter control
+    //////////////////////////////////
 
     //drop the R Ratio control if r_ratio_filter is false
     if (!settings.r_ratio_filter) {
@@ -58,29 +84,32 @@ export default function syncControlInputs(controlInputs, settings) {
             controlInput => controlInput.label != 'Minimum R Ratio'
         );
     }
-    //Sync y-axis cut control.
-    controlInputs.find(controlInput => controlInput.option === 'quadrants.cut_data.y').label = `${
-        yAxisMeasures[0].label
-    } Cutpoint`;
 
-    //Sync point size control.
-    const pointSizeControl = controlInputs.find(
-        controlInput => controlInput.label === 'Point Size'
-    );
-    settings.measure_details.filter(f => f.axis != 'x' && f.axis != 'y').forEach(group => {
-        pointSizeControl.values.push(group.label);
+    //////////////////////////////////
+    // Point size control
+    //////////////////////////////////
+
+    const pointSizeControl = controlInputs.find(ci => ci.label === 'Point Size');
+
+    settings.size_options.forEach(function(d) {
+        pointSizeControl.values.push(d);
     });
 
     //drop the pointSize control if NONE is the only option
-    if (settings.measure_details.length == 2)
+    if (settings.size_options.length == 0)
         controlInputs = controlInputs.filter(controlInput => controlInput.label != 'Point Size');
 
-    //Sync display control
+    //////////////////////////////////
+    // Display control
+    //////////////////////////////////
+
     controlInputs.find(
         controlInput => controlInput.label === 'Display Type'
-    ).values = settings.axis_options.map(m => m.label);
+    ).values = settings.display_options.map(m => m.label);
 
-    //Add custom filters to control inputs.
+    //////////////////////////////////
+    // Add filters to inputs
+    //////////////////////////////////
     if (settings.filters && settings.filters.length > 0) {
         let otherFilters = settings.filters.map(filter => {
             filter = {

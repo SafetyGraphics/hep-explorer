@@ -9,9 +9,11 @@ export function init(d) {
     var matches = d.values.raw[0].raw.filter(f => f.key_measure);
     //flag variables above the cut-off
     matches.forEach(function(d) {
-        d.cut = config.measure_details.find(
-            f => f.measure == d[config['measure_col']]
-        ).cut.relative_uln;
+        const measure = d[config['measure_col']];
+        const label = Object.keys(config.measure_values).find(
+            key => config.measure_values[key] == measure
+        );
+        d.cut = config.cuts[label].relative_uln;
 
         d.flagged = d.relative_uln >= d.cut;
     });

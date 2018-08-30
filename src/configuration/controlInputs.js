@@ -31,7 +31,7 @@ export default function controlInputs() {
             type: 'number',
             label: null, // set in syncControlInputs
             description: 'X-axis Reference Line',
-            option: 'quadrants.cut_data.x'
+            option: null // set in syncControlInputs
         },
         {
             type: 'dropdown',
@@ -45,8 +45,8 @@ export default function controlInputs() {
         {
             type: 'number',
             label: null, // set in syncControlInputs
-            description: 'X-axis Reference Line',
-            option: 'quadrants.cut_data.y'
+            description: 'Y-axis Reference Line',
+            option: null // set in syncControlInputs
         },
         {
             type: 'dropdown',

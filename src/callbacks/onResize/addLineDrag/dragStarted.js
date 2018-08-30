@@ -8,5 +8,5 @@ export function dragStarted() {
         .attr('stroke-width', '2')
         .attr('stroke-dasharray', '2,2');
 
-    chart.config.quadrants.group_labels.style('display', 'none');
+    chart.quadrant_labels.g.style('display', 'none');
 }

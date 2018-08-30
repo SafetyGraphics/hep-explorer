@@ -1,7 +1,8 @@
 export function setDomain(dimension) {
     var config = this.config;
     var domain = this[dimension].domain();
-    var cut = this.config[dimension].measure_detail.cut[this.config.display];
+    var measure = config[dimension].column;
+    var cut = config.cuts[measure][config.display];
 
     //make sure the domain contains the cut point
     if (cut * 1.01 >= domain[1]) {
@@ -14,7 +15,7 @@ export function setDomain(dimension) {
         domain[0] = 0;
     } else if (this.config[dimension].type == 'log') {
         // use the smallest raw value for a log axis
-        var measure = config[dimension].measure_detail['measure'];
+        var measure = config.measure_values[config[dimension].column];
         var values = this.imputed_data
             .filter(f => f[config.measure_col] == measure)
             .map(m => +m[config.display])

@@ -2,26 +2,39 @@ export default function syncCutpoints() {
     var chart = this;
     var config = this.config;
 
-    //update cut data
-    var dimensions = ['x', 'y'];
-    dimensions.forEach(function(dimension) {
-        //change to the stored cut point if the display changed
-        if (config.quadrants.cut_data.displayChange) {
-            config.quadrants.cut_data[dimension] =
-                config[dimension].measure_detail.cut[config.display];
-            chart.controls.wrap
+    //check to see if the cutpoint used is current
+    if (
+        config.cuts.x != config.x.column ||
+        config.cuts.y != config.y.column ||
+        config.cuts.display != config.display
+    ) {
+        // if not, update it!
+
+        // track the current cut point variables
+        config.cuts.x = config.x.column;
+        config.cuts.y = config.y.column;
+        config.cuts.display = config.display;
+
+        // update the cutpoint shown in the control
+        config.cuts.display_change = false; //reset the change flag;
+        var dimensions = ['x', 'y'];
+        dimensions.forEach(function(dimension) {
+            //change the control to point at the correct cut point
+            var dimInput = chart.controls.wrap
                 .selectAll('div.control-group')
-                .filter(f => f.option == 'quadrants.cut_data.' + dimension)
-                .select('input')
-                .node().value =
-                config.quadrants.cut_data[dimension];
-        }
+                .filter(
+                    f =>
+                        f.description
+                            ? f.description.toLowerCase() == dimension + '-axis reference line'
+                            : false
+                )
+                .select('input');
 
-        // get value linked to the controls (quadrant_cut_obj), add propogate it elsewhere
-        var current_cut = config.quadrants.cut_data[dimension];
-        config[dimension].measure_detail.cut[config.display] = current_cut;
-        config.quadrants.cut_data.filter(f => f.dimension == dimension)[0] = current_cut;
-    });
+            dimInput.node().value = config.cuts[config[dimension].column][config.display];
 
-    config.quadrants.cut_data.displayChange = false;
+            //don't think this actually changes functionality, but nice to have it accurate just in case
+            dimInput.option =
+                'settings.cuts.' + [config[dimension].column] + '.' + [config.display];
+        });
+    }
 }

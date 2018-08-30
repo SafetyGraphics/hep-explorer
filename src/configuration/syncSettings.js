@@ -76,15 +76,14 @@ export default function syncSettings(settings) {
         settings.details = defaultDetails;
     }
 
-    //Attach measure details to axis settings.
-    settings.x.measure_detail = settings.measure_details.find(
-        measure_detail => measure_detail.axis === 'x'
-    );
-    settings.x.column = settings.x.measure_detail.label;
-    settings.y.measure_detail = settings.measure_details.find(
-        measure_detail => measure_detail.axis === 'y'
-    );
-    settings.y.column = settings.y.measure_detail.label;
+    // track initial Cutpoint (lets us detect when cutpoint should change)
+    settings.cuts.x = settings.x.column;
+    settings.cuts.y = settings.y.column;
+    settings.cuts.display = settings.display;
+
+    //Attach measure columns to axis settings.
+    settings.x.column = settings.x_options[0];
+    settings.y.column = settings.y_options[0];
 
     return settings;
 }
