@@ -10,7 +10,17 @@ export default function deriveVariables() {
         .filter(f => true); //add a filter on selected visits here
 
     var missingBaseline = 0;
-    this.imputed_data.forEach(function(d) {
+
+    //create an object mapping baseline values for id/measure pairs
+    const baseline_records = sub.filter(f => +f[config.visitn_col] == +config.baseline_visitn);
+    const baseline_values = d3
+        .nest()
+        .key(d => d[config.id_col])
+        .key(d => d[config.measure_col])
+        .rollup(d => d[0][config.value_col])
+        .map(baseline_records);
+
+    this.imputed_data = this.imputed_data.map(function(d) {
         //coerce numeric values to number
         var numerics = ['value_col', 'visitn_col', 'normal_col_low', 'normal_col_high'];
         numerics.forEach(function(col) {
@@ -27,18 +37,14 @@ export default function deriveVariables() {
             //get the value relative to the ULN (% of the upper limit of normal) for the measure
             d.relative_uln = d[config.value_col] / d[config.normal_col_high];
 
-            //get the value relative to baseline for the measure
-            var baseline_record = sub
-                .filter(f => d[config.id_col] == f[config.id_col])
-                .filter(f => d[config.measure_col] == f[config.measure_col])
-                .filter(f => f[config.visitn_col] == +config.baseline_visitn);
-
-            if (baseline_record.length > 0) {
-                d.baseline_absolute = baseline_record[0][config.value_col];
-                if (d.baseline_absolute > 0) {
+            //get value relative to baseline
+            if (baseline_values[d[config.id_col]]) {
+                if (baseline_values[d[config.id_col]][d[config.measure_col]]) {
+                    d.baseline_absolute = baseline_values[d[config.id_col]][d[config.measure_col]];
                     d.relative_baseline = d.absolute / d.baseline_absolute;
                 } else {
                     missingBaseline = missingBaseline + 1;
+                    d.baseline_absolute = null;
                     d.relative_baseline = null;
                 }
             } else {
@@ -47,6 +53,7 @@ export default function deriveVariables() {
                 d.relative_baseline = null;
             }
         }
+        return d;
     });
 
     if (missingBaseline > 0)

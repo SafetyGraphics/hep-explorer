@@ -875,10 +875,208 @@
         }
     }
 
+    function imputeColumn(data, measure_column, value_column, measure, llod, imputed_value, drop) {
+        //returns a data set with imputed values (or drops records) for records at or below a lower threshold for a given measure
+        //data = the data set for imputation
+        //measure_column = the column with the text measure names
+        //value_column = the column with the numeric values to be changed via imputation
+        //measure = the measure to be imputed
+        //llod = the lower limit of detection - values at or below the llod are imputed
+        //imputed_value = value for imputed records
+        //drop = boolean flag indicating whether values at or below the llod should be dropped (default = false)
+
+        if (drop == undefined) drop = false;
+        if (drop) {
+            return data.filter(function(f) {
+                dropFlag = d[measure_column] == measure && +d[value_column] <= 0;
+                return !dropFlag;
+            });
+        } else {
+            data.forEach(function(d) {
+                if (
+                    d[measure_column] == measure &&
+                    +d[value_column] < +llod &&
+                    d[value_column] >= 0
+                ) {
+                    d.impute_flag = true;
+                    d[value_column + '_original'] = d[value_column];
+                    d[value_column] = imputed_value;
+                }
+            });
+
+            var impute_count = d3.sum(
+                data.filter(function(d) {
+                    return d[measure_column] === measure;
+                }),
+                function(f) {
+                    return f.impute_flag;
+                }
+            );
+
+            if (impute_count > 0)
+                console.warn(
+                    '' +
+                        impute_count +
+                        ' value(s) less than ' +
+                        llod +
+                        ' were imputed to ' +
+                        imputed_value +
+                        ' for ' +
+                        measure
+                );
+            return data;
+        }
+    }
+
+    function imputeData() {
+        var chart = this;
+        var config = this.config;
+
+        Object.keys(config.measure_values).forEach(function(measureKey) {
+            var values = chart.imputed_data
+                    .filter(function(f) {
+                        return f[config.measure_col] == config.measure_values[measureKey];
+                    })
+                    .map(function(m) {
+                        return +m[config.value_col];
+                    })
+                    .sort(function(a, b) {
+                        return a - b;
+                    }),
+                minValue = d3.min(
+                    values.filter(function(f) {
+                        return f > 0;
+                    })
+                ),
+                //minimum value > 0
+                llod = null,
+                imputed_value = null,
+                drop = null;
+
+            if (config.imputation_methods[measureKey] == 'data-driven') {
+                llod = minValue;
+                imputed_value = minValue / 2;
+                drop = false;
+            } else if (config.imputation_methods[measureKey] == 'user-defined') {
+                llod = config.imputation_values[measureKey];
+                imputed_value = config.imputation_values[measureKey] / 2;
+                drop = false;
+            } else if (config.imputation_methods[measureKey] == 'drop') {
+                llod = null;
+                imputed_value = null;
+                drop = true;
+            }
+            chart.imputed_data = imputeColumn(
+                chart.imputed_data,
+                config.measure_col,
+                config.value_col,
+                config.measure_values[measureKey],
+                llod,
+                imputed_value,
+                drop
+            );
+
+            var total_imputed = d3.sum(chart.raw_data, function(f) {
+                return f.impute_flag ? 1 : 0;
+            });
+        });
+    }
+
+    function deriveVariables() {
+        var config = this.config;
+
+        //filter the lab data to only the required measures
+        var included_measures = Object.values(config.measure_values);
+
+        var sub = this.imputed_data
+            .filter(function(f) {
+                return included_measures.indexOf(f[config.measure_col]) > -1;
+            })
+            .filter(function(f) {
+                return true;
+            }); //add a filter on selected visits here
+
+        var missingBaseline = 0;
+
+        //create an object mapping baseline values for id/measure pairs
+        var baseline_records = sub.filter(function(f) {
+            return +f[config.visitn_col] == +config.baseline_visitn;
+        });
+        var baseline_values = d3
+            .nest()
+            .key(function(d) {
+                return d[config.id_col];
+            })
+            .key(function(d) {
+                return d[config.measure_col];
+            })
+            .rollup(function(d) {
+                return d[0][config.value_col];
+            })
+            .map(baseline_records);
+
+        this.imputed_data = this.imputed_data.map(function(d) {
+            //coerce numeric values to number
+            var numerics = ['value_col', 'visitn_col', 'normal_col_low', 'normal_col_high'];
+            numerics.forEach(function(col) {
+                d[config[col]] = +d[config[col]];
+            });
+            //standardize key variables
+            d.key_measure = false;
+            if (included_measures.indexOf(d[config.measure_col]) > -1) {
+                d.key_measure = true;
+
+                //map the raw value to a variable called 'absolute'
+                d.absolute = d[config.value_col];
+
+                //get the value relative to the ULN (% of the upper limit of normal) for the measure
+                d.relative_uln = d[config.value_col] / d[config.normal_col_high];
+
+                //get value relative to baseline
+                if (baseline_values[d[config.id_col]]) {
+                    if (baseline_values[d[config.id_col]][d[config.measure_col]]) {
+                        d.baseline_absolute =
+                            baseline_values[d[config.id_col]][d[config.measure_col]];
+                        d.relative_baseline = d.absolute / d.baseline_absolute;
+                    } else {
+                        missingBaseline = missingBaseline + 1;
+                        d.baseline_absolute = null;
+                        d.relative_baseline = null;
+                    }
+                } else {
+                    missingBaseline = missingBaseline + 1;
+                    d.baseline_absolute = null;
+                    d.relative_baseline = null;
+                }
+            }
+            return d;
+        });
+
+        if (missingBaseline > 0)
+            console.warn(
+                'No baseline value found for ' + missingBaseline + ' of ' + sub.length + ' records.'
+            );
+    }
+
+    function cleanData() {
+        var _this = this;
+
+        this.imputed_data = this.initial_data.filter(function(d) {
+            return /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(d[_this.config.value_col]);
+        });
+        this.imputed_data.forEach(function(d) {
+            d.impute_flag = false;
+        });
+
+        imputeData.call(this);
+        deriveVariables.call(this);
+    }
+
     function onInit() {
         checkMeasureDetails.call(this);
         iterateOverData.call(this);
         addRRatioFilter.call(this);
+        cleanData.call(this); //clean visit-level data - imputation and variable derivations
     }
 
     function addRRatioSpan() {
@@ -1582,193 +1780,6 @@
                 : '';
     }
 
-    function imputeColumn(data, measure_column, value_column, measure, llod, imputed_value, drop) {
-        //returns a data set with imputed values (or drops records) for records at or below a lower threshold for a given measure
-        //data = the data set for imputation
-        //measure_column = the column with the text measure names
-        //value_column = the column with the numeric values to be changed via imputation
-        //measure = the measure to be imputed
-        //llod = the lower limit of detection - values at or below the llod are imputed
-        //imputed_value = value for imputed records
-        //drop = boolean flag indicating whether values at or below the llod should be dropped (default = false)
-
-        if (drop == undefined) drop = false;
-        if (drop) {
-            return data.filter(function(f) {
-                dropFlag = d[measure_column] == measure && +d[value_column] <= 0;
-                return !dropFlag;
-            });
-        } else {
-            data.forEach(function(d) {
-                if (
-                    d[measure_column] == measure &&
-                    +d[value_column] < +llod &&
-                    d[value_column] >= 0
-                ) {
-                    d.impute_flag = true;
-                    d[value_column + '_original'] = d[value_column];
-                    d[value_column] = imputed_value;
-                }
-            });
-
-            var impute_count = d3.sum(
-                data.filter(function(d) {
-                    return d[measure_column] === measure;
-                }),
-                function(f) {
-                    return f.impute_flag;
-                }
-            );
-
-            if (impute_count > 0)
-                console.warn(
-                    '' +
-                        impute_count +
-                        ' value(s) less than ' +
-                        llod +
-                        ' were imputed to ' +
-                        imputed_value +
-                        ' for ' +
-                        measure
-                );
-            return data;
-        }
-    }
-
-    function imputeData() {
-        var chart = this;
-        var config = this.config;
-
-        Object.keys(config.measure_values).forEach(function(measureKey) {
-            var values = chart.imputed_data
-                    .filter(function(f) {
-                        return f[config.measure_col] == config.measure_values[measureKey];
-                    })
-                    .map(function(m) {
-                        return +m[config.value_col];
-                    })
-                    .sort(function(a, b) {
-                        return a - b;
-                    }),
-                minValue = d3.min(
-                    values.filter(function(f) {
-                        return f > 0;
-                    })
-                ),
-                //minimum value > 0
-                llod = null,
-                imputed_value = null,
-                drop = null;
-
-            if (config.imputation_methods[measureKey] == 'data-driven') {
-                llod = minValue;
-                imputed_value = minValue / 2;
-                drop = false;
-            } else if (config.imputation_methods[measureKey] == 'user-defined') {
-                llod = config.imputation_values[measureKey];
-                imputed_value = config.imputation_values[measureKey] / 2;
-                drop = false;
-            } else if (config.imputation_methods[measureKey] == 'drop') {
-                llod = null;
-                imputed_value = null;
-                drop = true;
-            }
-            chart.imputed_data = imputeColumn(
-                chart.imputed_data,
-                config.measure_col,
-                config.value_col,
-                config.measure_values[measureKey],
-                llod,
-                imputed_value,
-                drop
-            );
-
-            var total_imputed = d3.sum(chart.raw_data, function(f) {
-                return f.impute_flag ? 1 : 0;
-            });
-        });
-    }
-
-    function deriveVariables() {
-        var config = this.config;
-
-        //filter the lab data to only the required measures
-        var included_measures = Object.values(config.measure_values);
-
-        var sub = this.imputed_data
-            .filter(function(f) {
-                return included_measures.indexOf(f[config.measure_col]) > -1;
-            })
-            .filter(function(f) {
-                return true;
-            }); //add a filter on selected visits here
-
-        var missingBaseline = 0;
-        this.imputed_data.forEach(function(d) {
-            //coerce numeric values to number
-            var numerics = ['value_col', 'visitn_col', 'normal_col_low', 'normal_col_high'];
-            numerics.forEach(function(col) {
-                d[config[col]] = +d[config[col]];
-            });
-            //standardize key variables
-            d.key_measure = false;
-            if (included_measures.indexOf(d[config.measure_col]) > -1) {
-                d.key_measure = true;
-
-                //map the raw value to a variable called 'absolute'
-                d.absolute = d[config.value_col];
-
-                //get the value relative to the ULN (% of the upper limit of normal) for the measure
-                d.relative_uln = d[config.value_col] / d[config.normal_col_high];
-
-                //get the value relative to baseline for the measure
-                var baseline_record = sub
-                    .filter(function(f) {
-                        return d[config.id_col] == f[config.id_col];
-                    })
-                    .filter(function(f) {
-                        return d[config.measure_col] == f[config.measure_col];
-                    })
-                    .filter(function(f) {
-                        return f[config.visitn_col] == +config.baseline_visitn;
-                    });
-
-                if (baseline_record.length > 0) {
-                    d.baseline_absolute = baseline_record[0][config.value_col];
-                    if (d.baseline_absolute > 0) {
-                        d.relative_baseline = d.absolute / d.baseline_absolute;
-                    } else {
-                        missingBaseline = missingBaseline + 1;
-                        d.relative_baseline = null;
-                    }
-                } else {
-                    missingBaseline = missingBaseline + 1;
-                    d.baseline_absolute = null;
-                    d.relative_baseline = null;
-                }
-            }
-        });
-
-        if (missingBaseline > 0)
-            console.warn(
-                'No baseline value found for ' + missingBaseline + ' of ' + sub.length + ' records.'
-            );
-    }
-
-    function cleanData() {
-        var _this = this;
-
-        this.imputed_data = this.initial_data.filter(function(d) {
-            return /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(d[_this.config.value_col]);
-        });
-        this.imputed_data.forEach(function(d) {
-            d.impute_flag = false;
-        });
-
-        imputeData.call(this);
-        deriveVariables.call(this);
-    }
-
     function dropMissingValues() {
         var config = this.config;
         //drop records with missing or invalid (negative) values
@@ -1797,7 +1808,6 @@
         updateAxisSettings.call(this); //update axis label based on display type
         updateControlCutpointLabels.call(this); //update cutpoint control labels given x- and y-axis variables
         updateRRatioSpan.call(this);
-        cleanData.call(this); //clean visit-level data - imputation and variable derivations
         this.raw_data = flattenData.call(this); //convert from visit-level data to participant-level data
         setLegendLabel.call(this); //update legend label based on group variable
         dropMissingValues.call(this);
