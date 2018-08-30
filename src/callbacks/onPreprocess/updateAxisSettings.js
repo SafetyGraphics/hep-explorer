@@ -1,5 +1,4 @@
 export default function updateAxisSettings() {
-    console.log(this);
     const config = this.config;
     const unit =
         config.display == 'relative_uln'

@@ -1352,7 +1352,6 @@
     }
 
     function updateAxisSettings() {
-        console.log(this);
         var config = this.config;
         var unit =
             config.display == 'relative_uln'
