@@ -4,7 +4,7 @@ import { initRugs } from './onLayout/initRugs';
 import { initVisitPath } from './onLayout/initVisitPath';
 import { initParticipantDetails } from './onLayout/initParticipantDetails';
 import { initResetButton } from './onLayout/initResetButton';
-import { initDisplayControlLabels } from './onLayout/initDisplayControlLabels';
+import { initDisplayControl } from './onLayout/initDisplayControl';
 import { layoutPanels } from './onLayout/layoutPanels';
 import { initTitle } from './onLayout/initTitle';
 import { initFilterLabel } from './onLayout/initFilterLabel';
@@ -18,6 +18,6 @@ export default function onLayout() {
     initVisitPath.call(this);
     initParticipantDetails.call(this);
     initResetButton.call(this);
-    initDisplayControlLabels.call(this);
+    initDisplayControl.call(this);
     initFilterLabel.call(this);
 }

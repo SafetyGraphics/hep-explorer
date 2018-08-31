@@ -1,4 +1,4 @@
-export function initDisplayControlLabels() {
+export function initDisplayControl() {
     var chart = this;
     var config = this.config;
     const displayControlWrap = this.controls.wrap
@@ -21,7 +21,7 @@ export function initDisplayControlLabels() {
         .text('Note: Baseline defined as Visit ' + chart.config.baseline_visitn)
         .style('display', config.display == 'relative_baseline' ? null : 'none');
 
-    displayControl.on('change', function(d) {
+    displayControl.select('select').on('change', function(d) {
         var currentLabel = this.value;
         var currentValue = config.display_options.find(f => f.label == currentLabel).value;
         config.display = currentValue;
