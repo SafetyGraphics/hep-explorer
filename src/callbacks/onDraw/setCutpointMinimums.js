@@ -30,18 +30,19 @@ export default function setCutpointMinimums() {
     var controlWraps = this.controls.wrap
         .selectAll('.control-group')
         .filter(d => /.-axis Reference Line/i.test(d.description))
-        .attr('min', d => lower_limits[d.description.split('-')[0]])
-        .on('change', function(d) {
-            const dimension = d.description.split('-')[0].toLowerCase();
-            const min = chart[dimension + '_dom'][0];
-            const input = d3.select(this).select('input');
+        .attr('min', d => lower_limits[d.description.split('-')[0]]);
 
-            //Prevent a cutpoint less than the lower domain.
-            if (input.property('value') < min) input.property('value', min);
+    controlWraps.select('select').on('change', function(d) {
+        const dimension = d.description.split('-')[0].toLowerCase();
+        const min = chart[dimension + '_dom'][0];
+        const input = d3.select(this).select('input');
 
-            //Update chart setting.
-            var measure = config[dimension].column;
-            config.cuts[measure][config.display] = input.property('value');
-            chart.draw();
-        });
+        //Prevent a cutpoint less than the lower domain.
+        if (input.property('value') < min) input.property('value', min);
+
+        //Update chart setting.
+        var measure = config[dimension].column;
+        config.cuts[measure][config.display] = input.property('value');
+        chart.draw();
+    });
 }

@@ -1398,7 +1398,7 @@
             });
     }
 
-    function initDisplayControlLabels() {
+    function initDisplayControl() {
         var chart = this;
         var config = this.config;
         var displayControlWrap = this.controls.wrap.selectAll('div').filter(function(controlInput) {
@@ -1423,7 +1423,7 @@
             .text('Note: Baseline defined as Visit ' + chart.config.baseline_visitn)
             .style('display', config.display == 'relative_baseline' ? null : 'none');
 
-        displayControl.on('change', function(d) {
+        displayControl.select('select').on('change', function(d) {
             var currentLabel = this.value;
             var currentValue = config.display_options.find(function(f) {
                 return f.label == currentLabel;
@@ -1545,7 +1545,7 @@
         initVisitPath.call(this);
         initParticipantDetails.call(this);
         initResetButton.call(this);
-        initDisplayControlLabels.call(this);
+        initDisplayControl.call(this);
         initFilterLabel.call(this);
     }
 
@@ -1980,20 +1980,21 @@
             })
             .attr('min', function(d) {
                 return lower_limits[d.description.split('-')[0]];
-            })
-            .on('change', function(d) {
-                var dimension = d.description.split('-')[0].toLowerCase();
-                var min = chart[dimension + '_dom'][0];
-                var input = d3.select(this).select('input');
-
-                //Prevent a cutpoint less than the lower domain.
-                if (input.property('value') < min) input.property('value', min);
-
-                //Update chart setting.
-                var measure = config[dimension].column;
-                config.cuts[measure][config.display] = input.property('value');
-                chart.draw();
             });
+
+        controlWraps.select('select').on('change', function(d) {
+            var dimension = d.description.split('-')[0].toLowerCase();
+            var min = chart[dimension + '_dom'][0];
+            var input = d3.select(this).select('input');
+
+            //Prevent a cutpoint less than the lower domain.
+            if (input.property('value') < min) input.property('value', min);
+
+            //Update chart setting.
+            var measure = config[dimension].column;
+            config.cuts[measure][config.display] = input.property('value');
+            chart.draw();
+        });
     }
 
     function syncCutpoints() {
@@ -2037,6 +2038,7 @@
     }
 
     function onDraw() {
+        console.log('drawing');
         //clear participant Details
         clearParticipantDetails.call(this);
 
@@ -3258,6 +3260,7 @@
     }
 
     function onResize() {
+        console.log('resizing');
         //add point interactivity, custom title and formatting
         addPointMouseover.call(this);
         addPointClick.call(this);
