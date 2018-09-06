@@ -32,10 +32,10 @@ export default function setCutpointMinimums() {
         .filter(d => /.-axis Reference Line/i.test(d.description))
         .attr('min', d => lower_limits[d.description.split('-')[0]]);
 
-    controlWraps.select('select').on('change', function(d) {
+    controlWraps.select('input').on('change', function(d) {
         const dimension = d.description.split('-')[0].toLowerCase();
         const min = chart[dimension + '_dom'][0];
-        const input = d3.select(this).select('input');
+        const input = d3.select(this);
 
         //Prevent a cutpoint less than the lower domain.
         if (input.property('value') < min) input.property('value', min);

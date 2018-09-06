@@ -1982,10 +1982,10 @@
                 return lower_limits[d.description.split('-')[0]];
             });
 
-        controlWraps.select('select').on('change', function(d) {
+        controlWraps.select('input').on('change', function(d) {
             var dimension = d.description.split('-')[0].toLowerCase();
             var min = chart[dimension + '_dom'][0];
-            var input = d3.select(this).select('input');
+            var input = d3.select(this);
 
             //Prevent a cutpoint less than the lower domain.
             if (input.property('value') < min) input.property('value', min);
