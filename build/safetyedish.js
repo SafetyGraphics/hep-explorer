@@ -2038,7 +2038,6 @@
     }
 
     function onDraw() {
-        console.log('drawing');
         //clear participant Details
         clearParticipantDetails.call(this);
 
@@ -2851,7 +2850,7 @@
 
     function toggleLegend() {
         var hideLegend = this.config.color_by == 'NONE';
-        this.wrap.select('.legend').style('display', hideLegend ? 'None' : null);
+        this.wrap.select('.legend').style('display', hideLegend ? 'None' : 'block');
     }
 
     function dragStarted() {
@@ -3260,7 +3259,6 @@
     }
 
     function onResize() {
-        console.log('resizing');
         //add point interactivity, custom title and formatting
         addPointMouseover.call(this);
         addPointClick.call(this);
