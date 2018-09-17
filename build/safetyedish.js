@@ -2038,7 +2038,6 @@
     }
 
     function onDraw() {
-        console.log('drawing');
         //clear participant Details
         clearParticipantDetails.call(this);
 
