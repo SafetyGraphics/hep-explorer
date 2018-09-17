@@ -6,6 +6,7 @@ import setCutpointMinimums from './onDraw/setCutpointMinimums';
 import syncCutpoints from './onDraw/syncCutpoints';
 
 export default function onDraw() {
+    console.log('drawing');
     //clear participant Details
     clearParticipantDetails.call(this);
 
