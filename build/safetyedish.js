@@ -343,23 +343,19 @@
             cuts: {
                 ALT: {
                     relative_baseline: 3.8,
-                    relative_uln: 3,
-                    absolute: 1.0
+                    relative_uln: 3
                 },
                 AST: {
                     relative_baseline: 3.8,
-                    relative_uln: 3,
-                    absolute: 1.0
+                    relative_uln: 3
                 },
                 TB: {
                     relative_baseline: 4.8,
-                    relative_uln: 2,
-                    absolute: 40
+                    relative_uln: 2
                 },
                 ALP: {
                     relative_baseline: 3.8,
-                    relative_uln: 1,
-                    absolute: 1.0
+                    relative_uln: 1
                 },
                 xMeasure: null, //set in syncSettings
                 yMeasure: null, //set in syncSettings
@@ -373,11 +369,10 @@
             },
             imputation_values: null,
             missingValues: ['', 'NA', 'N/A'],
-            display: 'relative_uln', //or "relative_baseline" or "absolute"
+            display: 'relative_uln', //or "relative_baseline"
             display_options: [
                 { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
-                { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' },
-                { label: 'Raw Values', value: 'absolute' }
+                { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' }
             ],
             baseline_visitn: '1',
             measureBounds: [0.01, 0.99],
