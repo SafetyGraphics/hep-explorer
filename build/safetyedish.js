@@ -381,8 +381,10 @@
             point_size: 'Uniform',
             visit_window: 30,
             showTitle: true,
+            warningText:
+                'Caution: This interactive graphic is not validated. Any clinical recommendations based on this tool should be confirmed using your organizations standard operating procedures.',
+            //all values set in onLayout/quadrants/*.js
             quadrants: [
-                //all values set in onLayout/quadrants/*.js
                 {
                     label: "Possible Hy's Law Range",
                     position: 'upper-right',
@@ -1476,6 +1478,22 @@
         }
     }
 
+    function initWarning() {
+        if (this.config.warningText) {
+            this.warningDiv = this.controls.wrap
+                .insert('div', '*')
+                .attr('class', 'warning')
+                .style('border', '1px solid #faebcc')
+                .style('border-radius', '0.2em')
+                .style('margin-right', '1em')
+                .style('margin-bottom', '1em')
+                .style('padding', '0.4em')
+                .style('color', '#8a6d3b')
+                .style('background-color', '#fcf8e3')
+                .text(this.config.warningText);
+        }
+    }
+
     function initFilterLabel() {
         var config = this.config;
         //check to see if at least 1 filter exists
@@ -1532,9 +1550,10 @@
     }
 
     function onLayout() {
-        addRRatioSpan.call(this);
         layoutPanels.call(this);
+        initWarning.call(this);
         initTitle.call(this);
+        addRRatioSpan.call(this);
         initQuadrants.call(this);
         initRugs.call(this);
         initVisitPath.call(this);

@@ -7,12 +7,14 @@ import { initResetButton } from './onLayout/initResetButton';
 import { initDisplayControl } from './onLayout/initDisplayControl';
 import { layoutPanels } from './onLayout/layoutPanels';
 import { initTitle } from './onLayout/initTitle';
+import { initWarning } from './onLayout/initWarning';
 import { initFilterLabel } from './onLayout/initFilterLabel';
 
 export default function onLayout() {
-    addRRatioSpan.call(this);
     layoutPanels.call(this);
+    initWarning.call(this);
     initTitle.call(this);
+    addRRatioSpan.call(this);
     initQuadrants.call(this);
     initRugs.call(this);
     initVisitPath.call(this);

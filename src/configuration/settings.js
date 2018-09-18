@@ -65,8 +65,10 @@ export default function settings() {
         point_size: 'Uniform',
         visit_window: 30,
         showTitle: true,
+        warningText:
+            'Caution: This interactive graphic is not validated. Any clinical recommendations based on this tool should be confirmed using your organizations standard operating procedures.',
+        //all values set in onLayout/quadrants/*.js
         quadrants: [
-            //all values set in onLayout/quadrants/*.js
             {
                 label: "Possible Hy's Law Range",
                 position: 'upper-right',
