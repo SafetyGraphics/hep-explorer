@@ -17,6 +17,8 @@ export function initParticipantDetails() {
         .style('border-bottom', '2px solid black')
         .style('padding', '.2em');
 
+    splot.append('div').attr('class', 'chart');
+
     var mtable = this.participantDetails.wrap.append('div').attr('class', 'measureTable');
     mtable
         .append('h3')

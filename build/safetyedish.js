@@ -1337,6 +1337,8 @@
             .style('border-bottom', '2px solid black')
             .style('padding', '.2em');
 
+        splot.append('div').attr('class', 'chart');
+
         var mtable = this.participantDetails.wrap.append('div').attr('class', 'measureTable');
         mtable
             .append('h3')
@@ -2719,19 +2721,42 @@
         aspect: 2
     };
 
+    var controlInputs$1 = [
+        {
+            type: 'dropdown',
+            label: 'Y-axis Display Type',
+            description: null,
+            option: 'y.column',
+            start: null,
+            values: ['relative_uln', 'relative_baseline', 'absolute'],
+            require: true
+        }
+    ];
+
     function onResize$1() {
         this.marks[1].circles.attr('fill-opacity', function(d) {
             return d.values.raw[0].flagged ? 1 : 0;
         });
     }
 
-    function init$1(d) {
-        var chart = this;
-        var config = this.config;
+    function onDraw$1() {
+        var spaghetti = this;
+        var eDish = this.parent;
 
+        //calculate the y domain
+        spaghetti.config.y.domain = d3.extent(eDish.imputed_data, function(f) {
+            return f[spaghetti.config.y.column];
+        });
+        spaghetti.y_dom = spaghetti.config.y.domain;
+    }
+
+    function init$1(d) {
+        var chart = this; //the full eDish object
+        var config = this.config; //the eDish config
         var matches = d.values.raw[0].raw.filter(function(f) {
             return f.key_measure;
         });
+
         //flag variables above the cut-off
         matches.forEach(function(d) {
             var measure = d[config['measure_col']];
@@ -2758,11 +2783,19 @@
         defaultSettings.marks[1].per = [config.id_col, config.visitn_col, config.measure_col];
 
         //draw that chart
-
+        var spaghettiElement = this.element + ' .participantDetails .spaghettiPlot .chart';
+        var spaghettiControls = webcharts.createControls(spaghettiElement, {
+            location: 'top',
+            inputs: controlInputs$1
+        });
         chart.spaghetti = webcharts.createChart(
-            this.element + ' .participantDetails .spaghettiPlot',
-            defaultSettings
+            spaghettiElement,
+            defaultSettings,
+            spaghettiControls
         );
+
+        chart.spaghetti.parent = chart; //link the full eDish object
+        chart.spaghetti.on('draw', onDraw$1);
         chart.spaghetti.on('resize', onResize$1);
         chart.spaghetti.init(matches);
     }
