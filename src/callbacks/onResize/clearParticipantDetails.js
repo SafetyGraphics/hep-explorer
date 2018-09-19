@@ -1,6 +1,6 @@
-import { clearVisitPath } from './addPointClick/clearVisitPath';
-import { clearParticipantHeader } from './addPointClick/clearParticipantHeader';
-import { hideMeasureTable } from './addPointClick/hideMeasureTable';
+import { clearVisitPath } from './addPointClick/visitPath/clearVisitPath';
+import { clearParticipantHeader } from './addPointClick/participantHeader/clearParticipantHeader';
+import { hideMeasureTable } from './addPointClick/measureTable/hideMeasureTable';
 import { clearRugs } from './addPointMouseover/clearRugs';
 import { formatPoints } from './formatPoints';
 

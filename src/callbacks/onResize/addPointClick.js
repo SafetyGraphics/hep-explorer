@@ -1,7 +1,7 @@
 import { clearParticipantDetails } from './clearParticipantDetails';
-import { drawVisitPath } from './addPointClick/drawVisitPath';
-import { drawMeasureTable } from './addPointClick/drawMeasureTable';
-import { makeParticipantHeader } from './addPointClick/makeParticipantHeader';
+import { drawVisitPath } from './addPointClick/visitPath/drawVisitPath';
+import { drawMeasureTable } from './addPointClick/measureTable/drawMeasureTable';
+import { makeParticipantHeader } from './addPointClick/participantHeader/makeParticipantHeader';
 import { drawRugs } from './addPointMouseover/drawRugs';
 import { init as initSpaghettiPlot } from './addPointClick/spaghettiPlot/init';
 

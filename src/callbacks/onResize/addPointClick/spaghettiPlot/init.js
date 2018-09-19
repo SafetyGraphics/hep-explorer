@@ -1,5 +1,5 @@
-import { defaultSettings as spaghettiSettings } from './defaultSettings';
-import { controlInputs } from './controlInputs';
+import { defaultSettings as spaghettiSettings } from './settings/defaultSettings';
+import { controlInputs } from './settings/controlInputs';
 import { createChart, createControls } from 'webcharts';
 import onLayout from './onLayout';
 import onPreprocess from './onPreprocess';
