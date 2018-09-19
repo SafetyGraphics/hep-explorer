@@ -1423,7 +1423,7 @@
             .text('Note: Baseline defined as Visit ' + chart.config.baseline_visitn)
             .style('display', config.display == 'relative_baseline' ? null : 'none');
 
-        displayControl.select('select').on('change', function(d) {
+        displayControl.on('change', function(d) {
             var currentLabel = this.value;
             var currentValue = config.display_options.find(function(f) {
                 return f.label == currentLabel;
