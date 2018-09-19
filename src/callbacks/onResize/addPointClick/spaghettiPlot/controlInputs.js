@@ -1,11 +1,17 @@
 export const controlInputs = [
     {
+        type: 'subsetter',
+        label: 'Select Labs',
+        value_col: null,
+        multiple: true
+    },
+    {
         type: 'dropdown',
         label: 'Y-axis Display Type',
         description: null,
-        option: 'y.column',
+        option: 'displayLabel',
         start: null,
-        values: ['relative_uln', 'relative_baseline', 'absolute'],
+        values: null,
         require: true
     }
 ];

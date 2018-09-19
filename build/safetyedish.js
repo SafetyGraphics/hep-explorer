@@ -275,6 +275,21 @@
         };
     })();
 
+    var defineProperty = function(obj, key, value) {
+        if (key in obj) {
+            Object.defineProperty(obj, key, {
+                value: value,
+                enumerable: true,
+                configurable: true,
+                writable: true
+            });
+        } else {
+            obj[key] = value;
+        }
+
+        return obj;
+    };
+
     /*------------------------------------------------------------------------------------------------\
   Clone a variable (http://stackoverflow.com/a/728694).
 \------------------------------------------------------------------------------------------------*/
@@ -1332,7 +1347,7 @@
         splot
             .append('h3')
             .attr('class', 'id')
-            .html('Lab Values vs. Upper Limit of Normal by Visit')
+            .html('Standardized Lab Values by Visit')
             .style('border-top', '2px solid black')
             .style('border-bottom', '2px solid black')
             .style('padding', '.2em');
@@ -1343,7 +1358,7 @@
         mtable
             .append('h3')
             .attr('class', 'id')
-            .html('Lab Summary Table')
+            .html('Raw Lab Values Summary Table')
             .style('border-top', '2px solid black')
             .style('border-bottom', '2px solid black')
             .style('padding', '.2em');
@@ -2697,13 +2712,17 @@
             type: 'ordinal',
             label: 'Visit'
         },
-        y: {
-            column: 'relative_uln',
-            type: 'linear',
-            label: 'Lab Value (x ULN)',
-            domain: null,
-            format: '.1f'
-        },
+        y: defineProperty(
+            {
+                column: 'relative_uln',
+                type: 'linear',
+                label: 'Lab Value (x ULN)',
+                domain: null,
+                format: '.1f'
+            },
+            'domain',
+            [0, null]
+        ),
         marks: [
             {
                 type: 'line',
@@ -2715,6 +2734,7 @@
                 per: []
             }
         ],
+        margin: { top: 20 },
         gridlines: 'xy',
         color_by: null,
         colors: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33', '#a65628'],
@@ -2723,30 +2743,122 @@
 
     var controlInputs$1 = [
         {
+            type: 'subsetter',
+            label: 'Select Labs',
+            value_col: null,
+            multiple: true
+        },
+        {
             type: 'dropdown',
             label: 'Y-axis Display Type',
             description: null,
-            option: 'y.column',
+            option: 'displayLabel',
             start: null,
-            values: ['relative_uln', 'relative_baseline', 'absolute'],
+            values: null,
             require: true
         }
     ];
 
-    function onResize$1() {
-        this.marks[1].circles.attr('fill-opacity', function(d) {
-            return d.values.raw[0].flagged ? 1 : 0;
+    function onLayout$1() {
+        var spaghetti = this;
+        var eDish = this.parent;
+
+        //customize the display control
+        var displayControlWrap = spaghetti.controls.wrap
+            .selectAll('div')
+            .filter(function(controlInput) {
+                return controlInput.label === 'Y-axis Display Type';
+            });
+
+        var displayControl = displayControlWrap.select('select');
+
+        //set the start value
+        var start_value = eDish.config.display_options.find(function(f) {
+            return f.value == eDish.config.display;
+        }).label;
+
+        displayControl.selectAll('option').attr('selected', function(d) {
+            return d == start_value ? 'selected' : null;
         });
+
+        displayControl.on('change', function(d) {
+            var currentLabel = this.value;
+            var currentValue = eDish.config.display_options.find(function(f) {
+                return f.label == currentLabel;
+            }).value;
+            spaghetti.config.y.column = currentValue;
+            spaghetti.draw();
+        });
+    }
+
+    function onPreprocess$1() {
+        var config = this.config;
+        var unit = this.config.y.column == 'relative_uln' ? ' [xULN]' : ' [xBaseline]';
+        config.y.label = 'Standardized Lab Values' + unit;
+    }
+
+    function drawCutLine(d) {
+        //bit of a hack to make this work with paths and circles
+        var spaghetti = this;
+        var config = this.config;
+        var raw = d.values.raw ? d.values.raw[0] : d.values[0].values.raw[0];
+        var cut = raw[config.y.column + '_cut'];
+        var param = raw[config.color_by];
+        spaghetti.cutLine = spaghetti.svg
+            .append('line')
+            .attr('y1', spaghetti.y(cut))
+            .attr('y2', spaghetti.y(cut))
+            .attr('x1', 0)
+            .attr('x2', spaghetti.plot_width)
+            .attr('stroke', spaghetti.colorScale(param))
+            .attr('stroke-dasharray', '3 3');
+        spaghetti.cutLabel = spaghetti.svg
+            .append('text')
+            .attr('y', spaghetti.y(cut))
+            .attr('dy', '-0.2em')
+            .attr('x', spaghetti.plot_width)
+            .attr('text-anchor', 'end')
+            .attr('alignment-baseline', 'baseline')
+            .attr('fill', spaghetti.colorScale(param))
+            .text(d3.format('0.1f')(cut));
+    }
+
+    function onResize$1() {
+        var spaghetti = this;
+        var y_col = this.config.y.column;
+        this.marks[1].circles.attr('fill-opacity', function(d) {
+            return d.values.raw[0][y_col + '_flagged'] ? 1 : 0;
+        });
+
+        this.marks[1].circles
+            .on('mouseover', function(d) {
+                drawCutLine.call(spaghetti, d);
+            })
+            .on('mouseout', function() {
+                spaghetti.cutLine.remove();
+                spaghetti.cutLabel.remove();
+            });
+
+        this.marks[0].paths
+            .on('mouseover', function(d) {
+                drawCutLine.call(spaghetti, d);
+            })
+            .on('mouseout', function() {
+                spaghetti.cutLine.remove();
+                spaghetti.cutLabel.remove();
+            });
     }
 
     function onDraw$1() {
         var spaghetti = this;
-        var eDish = this.parent;
-
-        //calculate the y domain
-        spaghetti.config.y.domain = d3.extent(eDish.imputed_data, function(f) {
+        var max_value = d3.max(spaghetti.filtered_data, function(f) {
             return f[spaghetti.config.y.column];
         });
+        var max_cut = d3.max(spaghetti.filtered_data, function(f) {
+            return f[spaghetti.config.y.column + '_cut'];
+        });
+        var y_max = d3.max([max_value, max_cut]);
+        spaghetti.config.y.domain = [0, y_max];
         spaghetti.y_dom = spaghetti.config.y.domain;
     }
 
@@ -2757,37 +2869,52 @@
             return f.key_measure;
         });
 
-        //flag variables above the cut-off
-        matches.forEach(function(d) {
-            var measure = d[config['measure_col']];
-            var label = Object.keys(config.measure_values).find(function(key) {
-                return config.measure_values[key] == measure;
-            });
-            d.cut = config.cuts[label].relative_uln;
-
-            d.flagged = d.relative_uln >= d.cut;
-        });
-
         if ('spaghetti' in chart) {
             chart.spaghetti.destroy();
         }
 
         //sync settings
         defaultSettings.x.column = config.visitn_col;
-        defaultSettings.y.domain = d3.extent(chart.imputed_data, function(f) {
-            return f.relative_uln;
-        });
-
         defaultSettings.color_by = config.measure_col;
         defaultSettings.marks[0].per = [config.id_col, config.measure_col];
         defaultSettings.marks[1].per = [config.id_col, config.visitn_col, config.measure_col];
 
-        //draw that chart
+        //flag variables above the cut-off
+        matches.forEach(function(d) {
+            var measure = d[config['measure_col']];
+            var label = Object.keys(config.measure_values).find(function(key) {
+                return config.measure_values[key] == measure;
+            });
+
+            d.relative_uln_cut = config.cuts[label].relative_uln;
+            d.relative_baseline_cut = config.cuts[label].relative_baseline;
+
+            d.relative_uln_flagged = d.relative_uln >= d.relative_uln_cut;
+            d.relative_baseline_flagged = d.relative_baseline >= d.relative_baseline_cut;
+        });
+
+        //update the controls
         var spaghettiElement = this.element + ' .participantDetails .spaghettiPlot .chart';
+
+        //Add y axis type options
+        controlInputs$1.find(function(f) {
+            return f.label == 'Y-axis Display Type';
+        }).values = config.display_options.map(function(m) {
+            return m.label;
+        });
+
+        //sync parameter filter
+        controlInputs$1.find(function(f) {
+            return f.label == 'Select Labs';
+        }).value_col =
+            config.measure_col;
+
         var spaghettiControls = webcharts.createControls(spaghettiElement, {
             location: 'top',
             inputs: controlInputs$1
         });
+
+        //draw that chart
         chart.spaghetti = webcharts.createChart(
             spaghettiElement,
             defaultSettings,
@@ -2795,9 +2922,21 @@
         );
 
         chart.spaghetti.parent = chart; //link the full eDish object
+        chart.spaghetti.on('layout', onLayout$1);
+        chart.spaghetti.on('preprocess', onPreprocess$1);
         chart.spaghetti.on('draw', onDraw$1);
         chart.spaghetti.on('resize', onResize$1);
         chart.spaghetti.init(matches);
+
+        //add a footnote
+        chart.spaghetti.wrap
+            .append('div')
+            .attr('class', 'footnote')
+            .style('font-size', '0.7em')
+            .style('padding-top', '0.1em')
+            .text(
+                'Filled points are above the current reference value. Mouseover a line to see the reference line for that lab.'
+            );
     }
 
     function addPointClick() {
