@@ -1,4 +1,6 @@
-import { addSparkLines } from './addSparkLines';
+import { addSparkLines } from './sparkLine/addSparkLines';
+import { addSparkClick } from './sparkLine/addSparkClick';
+
 export function drawMeasureTable(d) {
     var chart = this;
     var config = chart.config;
@@ -20,6 +22,7 @@ export function drawMeasureTable(d) {
         .key(d => d[config.measure_col])
         .rollup(function(d) {
             var measureObj = {};
+            measureObj.eDish = chart;
             measureObj.key = d[0][config.measure_col];
             measureObj.raw = d;
             measureObj.values = d.map(d => +d[config.value_col]);
@@ -53,6 +56,9 @@ export function drawMeasureTable(d) {
 
     //draw the measure table
     this.participantDetails.wrap.selectAll('*').style('display', null);
-    this.measureTable.on('draw', addSparkLines);
+    this.measureTable.on('draw', function() {
+        addSparkLines.call(this);
+        addSparkClick.call(this);
+    });
     this.measureTable.draw(nested);
 }

@@ -2571,6 +2571,83 @@
         }
     }
 
+    function insertAfter(newNode, referenceNode) {
+        referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+    }
+
+    var defaultSettings = {
+        max_width: 400,
+        aspect: 4,
+        x: {
+            column: null,
+            type: 'ordinal',
+            label: 'Visit'
+        },
+        y: defineProperty(
+            {
+                column: 'absolute',
+                type: 'linear',
+                label: 'Lab Value',
+                domain: [0, null],
+                format: '.1f'
+            },
+            'domain',
+            [0, null]
+        ),
+        marks: [
+            {
+                type: 'line',
+                per: []
+            },
+            {
+                type: 'circle',
+                radius: 4,
+                per: []
+            }
+        ],
+        margin: { top: 20 },
+        gridlines: 'xy',
+        colors: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33', '#a65628']
+    };
+
+    function init$1(d) {
+        //layout the new cells on the DOM (slightly easier than using D3)
+        var summaryRow_node = this.parentNode;
+        var chartRow_node = document.createElement('tr');
+        var chartCell_node = document.createElement('td');
+        insertAfter(chartRow_node, summaryRow_node);
+        chartRow_node.appendChild(chartCell_node);
+
+        //layout the svg with D3
+        var cellCount = d3.select(summaryRow_node).selectAll('td')[0].length;
+        var chartCell = d3
+            .select(chartCell_node)
+            .attr('colspan', cellCount)
+            .text('test');
+
+        //update the defaultSettings
+        var config = d.eDish.config;
+        defaultSettings.x.column = config.visitn_col;
+        defaultSettings.marks[0].per = [config.id_col, config.measure_col];
+        defaultSettings.marks[1].per = [config.id_col, config.visitn_col, config.measure_col];
+
+        //draw the chart
+        var lineChart = webcharts.createChart(chartCell_node, defaultSettings);
+        console.log(d);
+        lineChart.init(d.raw);
+    }
+
+    function addSparkClick() {
+        if (this.data.raw.length > 0) {
+            this.tbody
+                .selectAll('tr')
+                .select('td.spark')
+                .on('click', function(d) {
+                    init$1.call(this, d);
+                });
+        }
+    }
+
     function drawMeasureTable(d) {
         var chart = this;
         var config = chart.config;
@@ -2602,6 +2679,7 @@
             })
             .rollup(function(d) {
                 var measureObj = {};
+                measureObj.eDish = chart;
                 measureObj.key = d[0][config.measure_col];
                 measureObj.raw = d;
                 measureObj.values = d.map(function(d) {
@@ -2639,7 +2717,10 @@
 
         //draw the measure table
         this.participantDetails.wrap.selectAll('*').style('display', null);
-        this.measureTable.on('draw', addSparkLines);
+        this.measureTable.on('draw', function() {
+            addSparkLines.call(this);
+            addSparkClick.call(this);
+        });
         this.measureTable.draw(nested);
     }
 
@@ -2705,7 +2786,7 @@
             .attr('div', 'value');
     }
 
-    var defaultSettings = {
+    var defaultSettings$1 = {
         max_width: 600,
         x: {
             column: null,
@@ -2862,7 +2943,7 @@
         spaghetti.y_dom = spaghetti.config.y.domain;
     }
 
-    function init$1(d) {
+    function init$2(d) {
         var chart = this; //the full eDish object
         var config = this.config; //the eDish config
         var matches = d.values.raw[0].raw.filter(function(f) {
@@ -2874,10 +2955,10 @@
         }
 
         //sync settings
-        defaultSettings.x.column = config.visitn_col;
-        defaultSettings.color_by = config.measure_col;
-        defaultSettings.marks[0].per = [config.id_col, config.measure_col];
-        defaultSettings.marks[1].per = [config.id_col, config.visitn_col, config.measure_col];
+        defaultSettings$1.x.column = config.visitn_col;
+        defaultSettings$1.color_by = config.measure_col;
+        defaultSettings$1.marks[0].per = [config.id_col, config.measure_col];
+        defaultSettings$1.marks[1].per = [config.id_col, config.visitn_col, config.measure_col];
 
         //flag variables above the cut-off
         matches.forEach(function(d) {
@@ -2917,7 +2998,7 @@
         //draw that chart
         chart.spaghetti = webcharts.createChart(
             spaghettiElement,
-            defaultSettings,
+            defaultSettings$1,
             spaghettiControls
         );
 
@@ -2962,7 +3043,7 @@
 
             drawVisitPath.call(chart, d); //draw the path showing participant's pattern over time
             drawMeasureTable.call(chart, d); //draw table showing measure values with sparklines
-            init$1.call(chart, d);
+            init$2.call(chart, d);
             makeParticipantHeader.call(chart, d);
             drawRugs.call(chart, d, 'x');
             drawRugs.call(chart, d, 'y');
@@ -3107,7 +3188,7 @@
 
     // credit to https://bl.ocks.org/dimitardanailov/99950eee511375b97de749b597147d19
 
-    function init$2() {
+    function init$3() {
         var drag = d3.behavior
             .drag()
             .origin(function(d) {
@@ -3271,7 +3352,7 @@
             });
     }
 
-    function init$3() {
+    function init$4() {
         // Draw box plots
         this.svg.selectAll('g.boxplot').remove();
 
@@ -3458,13 +3539,13 @@
         //draw the quadrants and add drag interactivity
         updateSummaryTable.call(this);
         drawQuadrants.call(this);
-        init$2.call(this);
+        init$3.call(this);
 
         // hide the legend if no group options are given
         toggleLegend.call(this);
 
         // add boxplots
-        init$3.call(this);
+        init$4.call(this);
 
         //axis formatting
         adjustTicks.call(this);
