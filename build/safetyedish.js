@@ -826,7 +826,9 @@
             )
             .values()
             .sort();
-        var specifiedMeasures = Object.values(config.measure_values);
+        var specifiedMeasures = Object.keys(config.measure_values).map(function(e) {
+            return config.measure_values[e];
+        });
         var missingMeasures = [];
         Object.keys(config.measure_values).forEach(function(d) {
             if (measures.indexOf(config.measure_values[d]) == -1) {
@@ -998,7 +1000,9 @@
         var config = this.config;
 
         //filter the lab data to only the required measures
-        var included_measures = Object.values(config.measure_values);
+        var included_measures = Object.keys(config.measure_values).map(function(e) {
+            return config.measure_values[e];
+        });
 
         var sub = this.imputed_data
             .filter(function(f) {
@@ -2710,8 +2714,16 @@
                 return m.values;
             })
             .sort(function(a, b) {
-                var a_order = Object.values(config.measure_values).indexOf(a.key);
-                var b_order = Object.values(config.measure_values).indexOf(b.key);
+                var a_order = Object.keys(config.measure_values)
+                    .map(function(e) {
+                        return config.measure_values[e];
+                    })
+                    .indexOf(a.key);
+                var b_order = Object.keys(config.measure_values)
+                    .map(function(e) {
+                        return config.measure_values[e];
+                    })
+                    .indexOf(b.key);
                 return b_order - a_order;
             });
 
