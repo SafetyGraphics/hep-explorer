@@ -1,8 +1,8 @@
 export function initWarning() {
     if (this.config.warningText) {
-        this.warningDiv = this.controls.wrap
-            .insert('div', '*')
-            .attr('class', 'warning')
+        this.warningDiv = this.controls.messages.wrap
+            .append('div')
+            .attr('class', 'caution')
             .style('border', '1px solid #faebcc')
             .style('border-radius', '0.2em')
             .style('margin-right', '1em')

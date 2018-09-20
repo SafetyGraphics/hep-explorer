@@ -1499,11 +1499,26 @@
         }
     }
 
+    function initMessages() {
+        this.controls.messages = {};
+        this.controls.messages.wrap = this.controls.wrap.insert('div', '*');
+        this.controls.messages.count = 0;
+        this.controls.messages.header = this.controls.messages.wrap.append('div');
+        this.controls.messages.header
+            .append('span')
+            .attr('class', 'toggle')
+            .html('&#9660;');
+        this.controls.messages.header
+            .append('span')
+            .attr('class', 'title')
+            .text('Messages');
+    }
+
     function initWarning() {
         if (this.config.warningText) {
-            this.warningDiv = this.controls.wrap
-                .insert('div', '*')
-                .attr('class', 'warning')
+            this.warningDiv = this.controls.messages.wrap
+                .append('div')
+                .attr('class', 'caution')
                 .style('border', '1px solid #faebcc')
                 .style('border-radius', '0.2em')
                 .style('margin-right', '1em')
@@ -1572,6 +1587,7 @@
 
     function onLayout() {
         layoutPanels.call(this);
+        initMessages.call(this);
         initWarning.call(this);
         initTitle.call(this);
         addRRatioSpan.call(this);
@@ -1822,17 +1838,29 @@
             return f[config.x.column] <= 0 || f[config.y.column] <= 0;
         });
 
-        this.wrap.select('.se-footnote').remove();
+        if (this.missingDiv) this.missingDiv.remove();
         if (missing_count > 0) {
             this.wrap
                 .append('span')
                 .classed('se-footnote', true)
-                .text(
-                    'Data not shown for ' +
-                        missing_count +
-                        ' participant(s) with invalid data. This could be due to negative or 0 lab values or to missing baseline values when viewing mDish.'
-                );
+                .text();
 
+            var warningText =
+                'Warning: Data not shown for ' +
+                missing_count +
+                ' participant(s) with invalid data. This could be due to negative or 0 lab values or to missing baseline values when viewing mDish.';
+
+            this.missingDiv = this.controls.messages.wrap
+                .append('div')
+                .attr('class', 'warning')
+                .style('border', '1px solid #ebccd1')
+                .style('border-radius', '0.2em')
+                .style('margin-right', '1em')
+                .style('margin-bottom', '1em')
+                .style('padding', '0.4em')
+                .style('color', '#a94442')
+                .style('background-color', '#f2dede')
+                .text(warningText);
             this.raw_data = this.raw_data.filter(function(f) {
                 return (f[config.x.column] > 0) & (f[config.y.column] > 0);
             });
