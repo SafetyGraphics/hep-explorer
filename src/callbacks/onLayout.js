@@ -7,9 +7,9 @@ import { initResetButton } from './onLayout/initResetButton';
 import { initDisplayControl } from './onLayout/initDisplayControl';
 import { layoutPanels } from './onLayout/layoutPanels';
 import { initTitle } from './onLayout/initTitle';
-import { initMessages } from './onLayout/initMessages';
+import { init as initMessages } from './onLayout/messages/init';
 import { initWarning } from './onLayout/initWarning';
-import { initFilterLabel } from './onLayout/initFilterLabel';
+import { initControlLabels } from './onLayout/initControlLabels';
 
 export default function onLayout() {
     layoutPanels.call(this);
@@ -23,5 +23,5 @@ export default function onLayout() {
     initParticipantDetails.call(this);
     initResetButton.call(this);
     initDisplayControl.call(this);
-    initFilterLabel.call(this);
+    initControlLabels.call(this);
 }

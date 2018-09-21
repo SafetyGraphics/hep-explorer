@@ -397,7 +397,7 @@
             visit_window: 30,
             showTitle: true,
             warningText:
-                'Caution: This interactive graphic is not validated. Any clinical recommendations based on this tool should be confirmed using your organizations standard operating procedures.',
+                'This graphic has been thoroughly tested, but is not validated. Any clinical recommendations based on this tool should be confirmed using your organizations standard operating procedures.',
             //all values set in onLayout/quadrants/*.js
             quadrants: [
                 {
@@ -1480,8 +1480,6 @@
             this.titleDiv = this.controls.wrap
                 .insert('div', '*')
                 .attr('class', 'title')
-                .style('border-top', '1px solid black')
-                .style('border-bottom', '1px solid black')
                 .style('margin-right', '1em')
                 .style('margin-bottom', '1em');
 
@@ -1499,40 +1497,159 @@
         }
     }
 
-    function initMessages() {
-        this.controls.messages = {};
-        this.controls.messages.wrap = this.controls.wrap.insert('div', '*');
-        this.controls.messages.count = 0;
-        this.controls.messages.header = this.controls.messages.wrap.append('div');
-        this.controls.messages.header
-            .append('span')
-            .attr('class', 'toggle')
-            .html('&#9660;');
-        this.controls.messages.header
-            .append('span')
+    function add(messageText, type, label, messages) {
+        var messageObj = {
+            id: messages.list.length + 1,
+            type: type,
+            message: messageText,
+            label: label,
+            hidden: false
+        };
+        messages.list.push(messageObj);
+        messages.update(messages);
+    }
+
+    function remove(id, label, messages) {
+        // hide the the message(s) by id or label
+        if (id) {
+            var matches = messages.list.filter(function(f) {
+                return +f.id == +id;
+            });
+        } else if (label.length) {
+            var matches = messages.list.filter(function(f) {
+                return label == 'all' ? true : f.label == label;
+            });
+        }
+        matches.forEach(function(d) {
+            d.hidden = true;
+        });
+        messages.update(messages);
+    }
+
+    function update(messages) {
+        function jsUcfirst(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        var visibleMessages = messages.list.filter(function(f) {
+            return f.hidden == false;
+        });
+
+        //update title
+        messages.header.title.text('Messages (' + visibleMessages.length + ')');
+
+        //
+        var messageDivs = messages.wrap.selectAll('div.message').data(visibleMessages, function(d) {
+            return d.id;
+        });
+
+        messageDivs
+            .enter()
+            .append('div')
+            .attr('class', function(d) {
+                return d.type + ' message';
+            })
+            .html(function(d) {
+                return '<strong>' + jsUcfirst(d.type) + '</strong>: ' + d.message;
+            })
+            .style('border-radius', '.5em')
+            .style('margin-right', '1em')
+            .style('margin-bottom', '1em')
+            .style('padding', '0.4em');
+
+        messageDivs.each(function(d) {
+            var type = d.type;
+            var thisMessage = d3.select(this);
+            if (type == 'caution') {
+                thisMessage
+                    .style('border', '1px solid #faebcc')
+                    .style('color', '#8a6d3b')
+                    .style('background-color', '#fcf8e3');
+            } else if (type == 'warning') {
+                thisMessage
+                    .style('border', '1px solid #ebccd1')
+                    .style('color', '#a94442')
+                    .style('background-color', '#f2dede');
+            } else {
+                thisMessage
+                    .style('border', '1px solid #999')
+                    .style('color', '#999')
+                    .style('background-color', null);
+            }
+        });
+
+        messageDivs.exit().remove();
+    }
+
+    function init$1() {
+        var chart = this;
+        this.messages = {
+            add: add,
+            remove: remove,
+            update: update
+        };
+        //  this.messages.add = addMessage;
+        //  this.messages.remove = removeMessage;
+        this.messages.list = [];
+        this.messages.wrap = this.controls.wrap.insert('div', '*').style('margin', '0 1em 1em 0');
+        this.messages.header = this.messages.wrap
+            .append('div')
+            .style('border-top', '1px solid black')
+            .style('border-bottom', '1px solid black')
+            .style('font-weight', 'strong')
+            .style('margin', '0 1em 1em 0');
+
+        this.messages.header.title = this.messages.header
+            .append('div')
             .attr('class', 'title')
-            .text('Messages');
+            .style('display', 'inline-block')
+            .text('Messages (0)');
+
+        this.messages.header.clear = this.messages.header
+            .append('div')
+            .text('Clear')
+            .style('font-size', '0.8em')
+            .style('vertical-align', 'center')
+            .style('display', 'inline-block')
+            .style('float', 'right')
+            .style('color', 'blue')
+            .style('cursor', 'pointer')
+            .style('text-decoration', 'underline')
+            .on('click', function() {
+                chart.messages.remove(null, 'all', chart.messages);
+            });
     }
 
     function initWarning() {
         if (this.config.warningText) {
-            this.warningDiv = this.controls.messages.wrap
-                .append('div')
-                .attr('class', 'caution')
-                .style('border', '1px solid #faebcc')
-                .style('border-radius', '0.2em')
-                .style('margin-right', '1em')
-                .style('margin-bottom', '1em')
-                .style('padding', '0.4em')
-                .style('color', '#8a6d3b')
-                .style('background-color', '#fcf8e3')
-                .text(this.config.warningText);
+            this.messages.add(
+                this.config.warningText,
+                'caution',
+                'validationCaution',
+                this.messages
+            );
         }
     }
 
-    function initFilterLabel() {
+    function initControlLabels() {
         var config = this.config;
-        //check to see if at least 1 filter exists
+
+        //Add settings label
+        var first_control = this.controls.wrap.select('div.control-group');
+        this.controls.setting_header = first_control
+            .insert('div', '*')
+            .attr('class', 'subtitle')
+            .style('border-top', '1px solid black')
+            .style('border-bottom', '1px solid black')
+            .style('margin-right', '1em')
+            .style('margin-bottom', '1em');
+        this.controls.setting_header
+            .append('span')
+            .text('Settings')
+            .style('font-weight', 'strong')
+            .style('display', 'block');
+
+        //Add filter label if at least 1 filter exists
         if (config.r_ratio_filter || config.filters.length > 0) {
             //insert a header before the first filter
             var control_wraps = this.controls.wrap.selectAll('div');
@@ -1554,7 +1671,6 @@
             this.controls.filter_header
                 .append('span')
                 .text('Filters')
-                .style('font-size', '1.5em')
                 .style('font-weight', 'strong')
                 .style('display', 'block');
             var population = d3
@@ -1587,7 +1703,7 @@
 
     function onLayout() {
         layoutPanels.call(this);
-        initMessages.call(this);
+        init$1.call(this);
         initWarning.call(this);
         initTitle.call(this);
         addRRatioSpan.call(this);
@@ -1597,7 +1713,7 @@
         initParticipantDetails.call(this);
         initResetButton.call(this);
         initDisplayControl.call(this);
-        initFilterLabel.call(this);
+        initControlLabels.call(this);
     }
 
     function updateAxisSettings() {
@@ -1838,7 +1954,7 @@
             return f[config.x.column] <= 0 || f[config.y.column] <= 0;
         });
 
-        if (this.missingDiv) this.missingDiv.remove();
+        this.messages.remove(null, 'missingData', this.messages); //hide any previous missing data messages
         if (missing_count > 0) {
             this.wrap
                 .append('span')
@@ -1846,21 +1962,10 @@
                 .text();
 
             var warningText =
-                'Warning: Data not shown for ' +
+                'Data not shown for ' +
                 missing_count +
                 ' participant(s) with invalid data. This could be due to negative or 0 lab values or to missing baseline values when viewing mDish.';
-
-            this.missingDiv = this.controls.messages.wrap
-                .append('div')
-                .attr('class', 'warning')
-                .style('border', '1px solid #ebccd1')
-                .style('border-radius', '0.2em')
-                .style('margin-right', '1em')
-                .style('margin-bottom', '1em')
-                .style('padding', '0.4em')
-                .style('color', '#a94442')
-                .style('background-color', '#f2dede')
-                .text(warningText);
+            this.messages.add(warningText, 'warning', 'missingData', this.messages);
             this.raw_data = this.raw_data.filter(function(f) {
                 return (f[config.x.column] > 0) & (f[config.y.column] > 0);
             });
@@ -2642,7 +2747,7 @@
         colors: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33', '#a65628']
     };
 
-    function init$1(d) {
+    function init$2(d) {
         //layout the new cells on the DOM (slightly easier than using D3)
         var summaryRow_node = this.parentNode;
         var chartRow_node = document.createElement('tr');
@@ -2675,7 +2780,7 @@
                 .selectAll('tr')
                 .select('td.spark')
                 .on('click', function(d) {
-                    init$1.call(this, d);
+                    init$2.call(this, d);
                 });
         }
     }
@@ -2983,7 +3088,7 @@
         spaghetti.y_dom = spaghetti.config.y.domain;
     }
 
-    function init$2(d) {
+    function init$3(d) {
         var chart = this; //the full eDish object
         var config = this.config; //the eDish config
         var matches = d.values.raw[0].raw.filter(function(f) {
@@ -3083,7 +3188,7 @@
 
             drawVisitPath.call(chart, d); //draw the path showing participant's pattern over time
             drawMeasureTable.call(chart, d); //draw table showing measure values with sparklines
-            init$2.call(chart, d);
+            init$3.call(chart, d);
             makeParticipantHeader.call(chart, d);
             drawRugs.call(chart, d, 'x');
             drawRugs.call(chart, d, 'y');
@@ -3228,7 +3333,7 @@
 
     // credit to https://bl.ocks.org/dimitardanailov/99950eee511375b97de749b597147d19
 
-    function init$3() {
+    function init$4() {
         var drag = d3.behavior
             .drag()
             .origin(function(d) {
@@ -3392,7 +3497,7 @@
             });
     }
 
-    function init$4() {
+    function init$5() {
         // Draw box plots
         this.svg.selectAll('g.boxplot').remove();
 
@@ -3579,13 +3684,13 @@
         //draw the quadrants and add drag interactivity
         updateSummaryTable.call(this);
         drawQuadrants.call(this);
-        init$3.call(this);
+        init$4.call(this);
 
         // hide the legend if no group options are given
         toggleLegend.call(this);
 
         // add boxplots
-        init$4.call(this);
+        init$5.call(this);
 
         //axis formatting
         adjustTicks.call(this);
