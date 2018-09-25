@@ -31,6 +31,5 @@ export function addPointClick() {
         chart.participantDetails.wrap.selectAll('*').style('display', null);
         makeParticipantHeader.call(chart, d);
         initSpaghettiPlot.call(chart, d);
-        //note: measure table initiatied in spaghetti.onDraw() so that color scale can be synced
     });
 }
