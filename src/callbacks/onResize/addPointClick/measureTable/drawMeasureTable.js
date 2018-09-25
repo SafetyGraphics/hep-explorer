@@ -6,11 +6,10 @@ export function drawMeasureTable(d) {
     var nested = makeNestedData.call(this, d);
 
     //draw the measure table
-    this.participantDetails.wrap.selectAll('*').style('display', null);
     this.measureTable.on('draw', function() {
-        addFootnote.call(this);
         addSparkLines.call(this);
         addSparkClick.call(this);
+        addFootnote.call(this);
     });
     this.measureTable.draw(nested);
 }
