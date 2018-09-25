@@ -2565,7 +2565,7 @@
                 return [lower_extent, upper_extent];
             })
             .entries(chart.initial_data);
-
+        console.log(chart);
         //make nest by measure
         var nested = d3
             .nest()
@@ -2588,6 +2588,11 @@
                 measureObj.population_extent = ranges.find(function(f) {
                     return measureObj.key == f.key;
                 }).values;
+                var hasColor =
+                    chart.spaghetti.colorScale.domain().indexOf(d[0][config.measure_col]) > -1;
+                measureObj.color = hasColor
+                    ? chart.spaghetti.colorScale(d[0][config.measure_col])
+                    : 'black';
                 measureObj.spark_data = d.map(function(m) {
                     var obj = {
                         id: +m[config.id_col],
@@ -2645,14 +2650,15 @@
                             .append('span')
                             .html('&#x25BD;')
                             .style('cursor', 'pointer')
-                            .style('color', 'blue')
+                            .style('color', '#999')
                             .style('vertical-align', 'middle'),
                         width = 100,
                         height = 25,
                         offset = 4,
                         overTime = row_d.spark_data.sort(function(a, b) {
                             return +a.visitn - +b.visitn;
-                        });
+                        }),
+                        color = row_d.color;
                     var x = d3.scale
                         .ordinal()
                         .domain(
@@ -2742,7 +2748,7 @@
                             class: 'sparkLine',
                             d: draw_sparkline,
                             fill: 'none',
-                            stroke: 'black'
+                            stroke: color
                         });
 
                     //draw outliers
@@ -2762,8 +2768,8 @@
                             return y(d.value);
                         })
                         .attr('r', '2px')
-                        .attr('stroke', 'orange')
-                        .attr('fill', 'orange');
+                        .attr('stroke', color)
+                        .attr('fill', color);
                 });
         }
     }
@@ -2950,24 +2956,34 @@
     }
 
     function addFootnote() {
-        this.wrap
+        var footnoteText = [
+            'Y-Axis for each chart is based on the range of values for the entire population. Points shown for values outside the normal range. Click a sparkline to see a larger version of the chart.'
+        ];
+        var footnotes = this.wrap.selectAll('span.footnote').data(footnoteText, function(d) {
+            return d;
+        });
+
+        footnotes
+            .enter()
             .append('span')
+            .attr('class', 'footnote')
             .style('font-size', '0.7em')
             .style('padding-top', '0.1em')
-            .text(
-                'Y-Axis for each chart is based on the range of values for the entire population. Values outside the normal range are shown in orange. Click a sparkline to see a larger version of the chart.'
-            );
+            .text(function(d) {
+                return d;
+            });
+
+        footnotes.exit().remove();
     }
 
     function drawMeasureTable(d) {
         var nested = makeNestedData.call(this, d);
 
         //draw the measure table
-        this.participantDetails.wrap.selectAll('*').style('display', null);
         this.measureTable.on('draw', function() {
-            addFootnote.call(this);
             addSparkLines.call(this);
             addSparkClick.call(this);
+            addFootnote.call(this);
         });
         this.measureTable.draw(nested);
     }
@@ -3184,6 +3200,9 @@
 
     function onDraw$1() {
         var spaghetti = this;
+        var eDish = this.parent;
+
+        //make sure y domain includes the current cut point for all measures
         var max_value = d3.max(spaghetti.filtered_data, function(f) {
             return f[spaghetti.config.y.column];
         });
@@ -3193,6 +3212,13 @@
         var y_max = d3.max([max_value, max_cut]);
         spaghetti.config.y.domain = [0, y_max];
         spaghetti.y_dom = spaghetti.config.y.domain;
+
+        //initialize the measureTable
+        if (spaghetti.config.firstDraw) {
+            console.log('making measure table');
+            drawMeasureTable.call(eDish, this.participant_data);
+            spaghetti.config.firstDraw = false;
+        }
     }
 
     function init$3(d) {
@@ -3211,6 +3237,7 @@
         defaultSettings$1.color_by = config.measure_col;
         defaultSettings$1.marks[0].per = [config.id_col, config.measure_col];
         defaultSettings$1.marks[1].per = [config.id_col, config.visitn_col, config.measure_col];
+        defaultSettings$1.firstDraw = true; //only initailize the measure table on first draw
 
         //flag variables above the cut-off
         matches.forEach(function(d) {
@@ -3255,6 +3282,7 @@
         );
 
         chart.spaghetti.parent = chart; //link the full eDish object
+        chart.spaghetti.participant_data = d; //include the passed data (used to initialize the measure table)
         chart.spaghetti.on('layout', onLayout$1);
         chart.spaghetti.on('preprocess', onPreprocess$1);
         chart.spaghetti.on('draw', onDraw$1);
@@ -3294,11 +3322,13 @@
                 .attr('stroke-width', 3);
 
             drawVisitPath.call(chart, d); //draw the path showing participant's pattern over time
-            drawMeasureTable.call(chart, d); //draw table showing measure values with sparklines
-            init$3.call(chart, d);
-            makeParticipantHeader.call(chart, d);
             drawRugs.call(chart, d, 'x');
             drawRugs.call(chart, d, 'y');
+
+            chart.participantDetails.wrap.selectAll('*').style('display', null);
+            makeParticipantHeader.call(chart, d);
+            init$3.call(chart, d);
+            //    drawMeasureTable.call(chart, d); //draw table showing measure values with sparklines
         });
     }
 

@@ -13,7 +13,7 @@ export function makeNestedData(d) {
             return [lower_extent, upper_extent];
         })
         .entries(chart.initial_data);
-
+    console.log(chart);
     //make nest by measure
     var nested = d3
         .nest()
@@ -30,6 +30,11 @@ export function makeNestedData(d) {
             measureObj.n = measureObj.values.length;
             measureObj.spark = 'spark!';
             measureObj.population_extent = ranges.find(f => measureObj.key == f.key).values;
+            var hasColor =
+                chart.spaghetti.colorScale.domain().indexOf(d[0][config.measure_col]) > -1;
+            measureObj.color = hasColor
+                ? chart.spaghetti.colorScale(d[0][config.measure_col])
+                : 'black';
             measureObj.spark_data = d.map(function(m) {
                 var obj = {
                     id: +m[config.id_col],

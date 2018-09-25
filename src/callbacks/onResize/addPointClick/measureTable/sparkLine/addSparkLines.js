@@ -16,12 +16,13 @@ export function addSparkLines(d) {
                         .append('span')
                         .html('&#x25BD;')
                         .style('cursor', 'pointer')
-                        .style('color', 'blue')
+                        .style('color', '#999')
                         .style('vertical-align', 'middle'),
                     width = 100,
                     height = 25,
                     offset = 4,
-                    overTime = row_d.spark_data.sort((a, b) => +a.visitn - +b.visitn);
+                    overTime = row_d.spark_data.sort((a, b) => +a.visitn - +b.visitn),
+                    color = row_d.color;
                 var x = d3.scale
                     .ordinal()
                     .domain(overTime.map(m => m.visitn))
@@ -95,7 +96,7 @@ export function addSparkLines(d) {
                         class: 'sparkLine',
                         d: draw_sparkline,
                         fill: 'none',
-                        stroke: 'black'
+                        stroke: color
                     });
 
                 //draw outliers
@@ -109,8 +110,8 @@ export function addSparkLines(d) {
                     .attr('cx', d => x(d.visitn))
                     .attr('cy', d => y(d.value))
                     .attr('r', '2px')
-                    .attr('stroke', 'orange')
-                    .attr('fill', 'orange');
+                    .attr('stroke', color)
+                    .attr('fill', color);
             });
     }
 }
