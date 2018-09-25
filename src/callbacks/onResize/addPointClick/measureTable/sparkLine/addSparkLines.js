@@ -86,48 +86,22 @@ export function addSparkLines(d) {
                         class: 'sparkLine',
                         d: draw_sparkline,
                         fill: 'none',
-                        stroke: '#999'
+                        stroke: 'black'
                     });
 
-                /*
-                draw_lln = d3.svg
-                    .line()
-                    .interpolate('cardinal')
-                    .x(d => x(d.visitn))
-                    .y(d => y(d.lln)),
-                lln = svg
-                    .append('path')
-                    .datum(overTime)
-                    .attr({
-                        class: 'sparkLine',
-                        d: draw_lln,
-                        fill: 'none',
-                        stroke: 'green'
-                    }),
-                */
-                //draw min and max points
-                var minimumData = overTime.filter(
-                    di => di.value === d3.min(overTime.map(dii => dii.value))
-                )[0];
-                var minimumMonth = svg.append('circle').attr({
-                    class: 'circle minimum',
-                    cx: x(minimumData.visitn),
-                    cy: y(minimumData.value),
-                    r: '2px',
-                    stroke: 'blue',
-                    fill: 'none'
-                });
-                var maximumData = overTime.filter(
-                    di => di.value === d3.max(overTime.map(dii => dii.value))
-                )[0];
-                var maximumMonth = svg.append('circle').attr({
-                    class: 'circle maximum',
-                    cx: x(maximumData.visitn),
-                    cy: y(maximumData.value),
-                    r: '2px',
-                    stroke: 'orange',
-                    fill: 'none'
-                });
+                //draw outliers
+                var outliers = overTime.filter(f => f.outlier);
+                var outlier_circles = svg
+                    .selectAll('circle.outlier')
+                    .data(outliers)
+                    .enter()
+                    .append('circle')
+                    .attr('class', 'circle outlier')
+                    .attr('cx', d => x(d.visitn))
+                    .attr('cy', d => y(d.value))
+                    .attr('r', '2px')
+                    .attr('stroke', 'orange')
+                    .attr('fill', 'orange');
             });
     }
 }

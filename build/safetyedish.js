@@ -2542,6 +2542,90 @@
             .attr('font-size', 8);
     }
 
+    function makeNestedData(d) {
+        var chart = this;
+        var config = chart.config;
+        var allMatches = d.values.raw[0].raw;
+
+        var ranges = d3
+            .nest()
+            .key(function(d) {
+                return d[config.measure_col];
+            })
+            .rollup(function(d) {
+                var vals = d
+                    .map(function(m) {
+                        return m[config.value_col];
+                    })
+                    .sort(function(a, b) {
+                        return a - b;
+                    });
+                var lower_extent = d3.quantile(vals, config.measureBounds[0]),
+                    upper_extent = d3.quantile(vals, config.measureBounds[1]);
+                return [lower_extent, upper_extent];
+            })
+            .entries(chart.initial_data);
+
+        //make nest by measure
+        var nested = d3
+            .nest()
+            .key(function(d) {
+                return d[config.measure_col];
+            })
+            .rollup(function(d) {
+                var measureObj = {};
+                measureObj.eDish = chart;
+                measureObj.key = d[0][config.measure_col];
+                measureObj.raw = d;
+                measureObj.values = d.map(function(d) {
+                    return +d[config.value_col];
+                });
+                measureObj.max = +d3.format('0.2f')(d3.max(measureObj.values));
+                measureObj.min = +d3.format('0.2f')(d3.min(measureObj.values));
+                measureObj.median = +d3.format('0.2f')(d3.median(measureObj.values));
+                measureObj.n = measureObj.values.length;
+                measureObj.spark = 'spark!';
+                measureObj.population_extent = ranges.find(function(f) {
+                    return measureObj.key == f.key;
+                }).values;
+                measureObj.spark_data = d.map(function(m) {
+                    var obj = {
+                        id: +m[config.id_col],
+                        lab: +m[config.measure_col],
+                        visitn: +m[config.visitn_col],
+                        value: +m[config.value_col],
+                        lln: +m[config.normal_col_low],
+                        uln: +m[config.normal_col_high],
+                        outlier_low: +m[config.value_col] < +m[config.normal_col_low],
+                        outlier_high: +m[config.value_col] > +m[config.normal_col_high]
+                    };
+                    obj.outlier = obj.outlier_low || obj.outlier_high;
+                    return obj;
+                });
+                return measureObj;
+            })
+            .entries(allMatches);
+
+        var nested = nested
+            .map(function(m) {
+                return m.values;
+            })
+            .sort(function(a, b) {
+                var a_order = Object.keys(config.measure_values)
+                    .map(function(e) {
+                        return config.measure_values[e];
+                    })
+                    .indexOf(a.key);
+                var b_order = Object.keys(config.measure_values)
+                    .map(function(e) {
+                        return config.measure_values[e];
+                    })
+                    .indexOf(b.key);
+                return b_order - a_order;
+            });
+        return nested;
+    }
+
     function addSparkLines(d) {
         if (this.data.raw.length > 0) {
             //don't try to draw sparklines if the table is empty
@@ -2648,62 +2732,28 @@
                             class: 'sparkLine',
                             d: draw_sparkline,
                             fill: 'none',
-                            stroke: '#999'
+                            stroke: 'black'
                         });
 
-                    /*
-            draw_lln = d3.svg
-                .line()
-                .interpolate('cardinal')
-                .x(d => x(d.visitn))
-                .y(d => y(d.lln)),
-            lln = svg
-                .append('path')
-                .datum(overTime)
-                .attr({
-                    class: 'sparkLine',
-                    d: draw_lln,
-                    fill: 'none',
-                    stroke: 'green'
-                }),
-            */
-                    //draw min and max points
-                    var minimumData = overTime.filter(function(di) {
-                        return (
-                            di.value ===
-                            d3.min(
-                                overTime.map(function(dii) {
-                                    return dii.value;
-                                })
-                            )
-                        );
-                    })[0];
-                    var minimumMonth = svg.append('circle').attr({
-                        class: 'circle minimum',
-                        cx: x(minimumData.visitn),
-                        cy: y(minimumData.value),
-                        r: '2px',
-                        stroke: 'blue',
-                        fill: 'none'
+                    //draw outliers
+                    var outliers = overTime.filter(function(f) {
+                        return f.outlier;
                     });
-                    var maximumData = overTime.filter(function(di) {
-                        return (
-                            di.value ===
-                            d3.max(
-                                overTime.map(function(dii) {
-                                    return dii.value;
-                                })
-                            )
-                        );
-                    })[0];
-                    var maximumMonth = svg.append('circle').attr({
-                        class: 'circle maximum',
-                        cx: x(maximumData.visitn),
-                        cy: y(maximumData.value),
-                        r: '2px',
-                        stroke: 'orange',
-                        fill: 'none'
-                    });
+                    var outlier_circles = svg
+                        .selectAll('circle.outlier')
+                        .data(outliers)
+                        .enter()
+                        .append('circle')
+                        .attr('class', 'circle outlier')
+                        .attr('cx', function(d) {
+                            return x(d.visitn);
+                        })
+                        .attr('cy', function(d) {
+                            return y(d.value);
+                        })
+                        .attr('r', '2px')
+                        .attr('stroke', 'orange')
+                        .attr('fill', 'orange');
                 });
         }
     }
@@ -2716,36 +2766,46 @@
         max_width: 400,
         aspect: 4,
         x: {
-            column: null,
+            column: 'visitn',
             type: 'ordinal',
             label: 'Visit'
         },
-        y: defineProperty(
-            {
-                column: 'absolute',
-                type: 'linear',
-                label: 'Lab Value',
-                domain: [0, null],
-                format: '.1f'
-            },
-            'domain',
-            [0, null]
-        ),
+        y: {
+            column: 'value',
+            type: 'linear',
+            label: 'Lab Value',
+            domain: [0, null],
+            format: '.1f'
+        },
         marks: [
             {
                 type: 'line',
-                per: []
+                per: ['lab']
             },
             {
                 type: 'circle',
                 radius: 4,
-                per: []
+                per: ['lab', 'visitn'],
+                values: { outlier: [true] },
+                attributes: {
+                    stroke: 'orange',
+                    fill: 'orange',
+                    'fill-opacity': 1
+                }
             }
         ],
         margin: { top: 20 },
-        gridlines: 'xy',
-        colors: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33', '#a65628']
+        gridlines: 'x',
+        colors: ['black']
     };
+
+    function drawBoxPlot() {}
+
+    function drawLimits() {}
+
+    function drawNormalRange() {}
+
+    function drawOutliers(d) {}
 
     function init$2(d) {
         //layout the new cells on the DOM (slightly easier than using D3)
@@ -2755,23 +2815,26 @@
         insertAfter(chartRow_node, summaryRow_node);
         chartRow_node.appendChild(chartCell_node);
 
+        //update the row styles
+        d3.select(summaryRow_node).style('border-bottom', 'none');
+        d3
+            .select(chartRow_node)
+            .style('background', 'none')
+            .style('border-bottom', '0.5px solid black');
+
         //layout the svg with D3
         var cellCount = d3.select(summaryRow_node).selectAll('td')[0].length;
-        var chartCell = d3
-            .select(chartCell_node)
-            .attr('colspan', cellCount)
-            .text('test');
-
-        //update the defaultSettings
-        var config = d.eDish.config;
-        defaultSettings.x.column = config.visitn_col;
-        defaultSettings.marks[0].per = [config.id_col, config.measure_col];
-        defaultSettings.marks[1].per = [config.id_col, config.visitn_col, config.measure_col];
+        var chartCell = d3.select(chartCell_node).attr('colspan', cellCount);
 
         //draw the chart
         var lineChart = webcharts.createChart(chartCell_node, defaultSettings);
-        console.log(d);
-        lineChart.init(d.raw);
+        lineChart.on('resize', function() {
+            drawOutliers.call(this, d);
+            drawBoxPlot.call(this, d);
+            drawLimits.call(this, d);
+            drawNormalRange.call(this, d);
+        });
+        lineChart.init(d.spark_data);
     }
 
     function addSparkClick() {
@@ -2786,79 +2849,7 @@
     }
 
     function drawMeasureTable(d) {
-        var chart = this;
-        var config = chart.config;
-        var allMatches = d.values.raw[0].raw;
-        var ranges = d3
-            .nest()
-            .key(function(d) {
-                return d[config.measure_col];
-            })
-            .rollup(function(d) {
-                var vals = d
-                    .map(function(m) {
-                        return m[config.value_col];
-                    })
-                    .sort(function(a, b) {
-                        return a - b;
-                    });
-                var lower_extent = d3.quantile(vals, config.measureBounds[0]),
-                    upper_extent = d3.quantile(vals, config.measureBounds[1]);
-                return [lower_extent, upper_extent];
-            })
-            .entries(chart.initial_data);
-
-        //make nest by measure
-        var nested = d3
-            .nest()
-            .key(function(d) {
-                return d[config.measure_col];
-            })
-            .rollup(function(d) {
-                var measureObj = {};
-                measureObj.eDish = chart;
-                measureObj.key = d[0][config.measure_col];
-                measureObj.raw = d;
-                measureObj.values = d.map(function(d) {
-                    return +d[config.value_col];
-                });
-                measureObj.max = +d3.format('0.2f')(d3.max(measureObj.values));
-                measureObj.min = +d3.format('0.2f')(d3.min(measureObj.values));
-                measureObj.median = +d3.format('0.2f')(d3.median(measureObj.values));
-                measureObj.n = measureObj.values.length;
-                measureObj.spark = 'spark!';
-                measureObj.population_extent = ranges.find(function(f) {
-                    return measureObj.key == f.key;
-                }).values;
-                measureObj.spark_data = d.map(function(m) {
-                    return {
-                        visitn: +m[config.visitn_col],
-                        value: +m[config.value_col],
-                        lln: +m[config.normal_col_low],
-                        uln: +m[config.normal_col_high]
-                    };
-                });
-                return measureObj;
-            })
-            .entries(allMatches);
-
-        var nested = nested
-            .map(function(m) {
-                return m.values;
-            })
-            .sort(function(a, b) {
-                var a_order = Object.keys(config.measure_values)
-                    .map(function(e) {
-                        return config.measure_values[e];
-                    })
-                    .indexOf(a.key);
-                var b_order = Object.keys(config.measure_values)
-                    .map(function(e) {
-                        return config.measure_values[e];
-                    })
-                    .indexOf(b.key);
-                return b_order - a_order;
-            });
+        var nested = makeNestedData.call(this, d);
 
         //draw the measure table
         this.participantDetails.wrap.selectAll('*').style('display', null);
