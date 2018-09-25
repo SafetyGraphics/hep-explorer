@@ -5,7 +5,7 @@ export default function checkMeasureDetails() {
         .set(this.raw_data.map(d => d[config.measure_col]))
         .values()
         .sort();
-    const specifiedMeasures = Object.values(config.measure_values);
+    const specifiedMeasures = Object.keys(config.measure_values).map(e => config.measure_values[e]);
     var missingMeasures = [];
     Object.keys(config.measure_values).forEach(function(d) {
         if (measures.indexOf(config.measure_values[d]) == -1) {

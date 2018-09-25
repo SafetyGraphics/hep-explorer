@@ -3,8 +3,6 @@ export function initTitle() {
         this.titleDiv = this.controls.wrap
             .insert('div', '*')
             .attr('class', 'title')
-            .style('border-top', '1px solid black')
-            .style('border-bottom', '1px solid black')
             .style('margin-right', '1em')
             .style('margin-bottom', '1em');
 

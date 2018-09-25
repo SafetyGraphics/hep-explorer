@@ -1,5 +1,5 @@
-import { defaultSettings as spaghettiSettings } from './defaultSettings';
-import { controlInputs } from './controlInputs';
+import { defaultSettings as spaghettiSettings } from './settings/defaultSettings';
+import { controlInputs } from './settings/controlInputs';
 import { createChart, createControls } from 'webcharts';
 import onLayout from './onLayout';
 import onPreprocess from './onPreprocess';
@@ -20,6 +20,7 @@ export function init(d) {
     spaghettiSettings.color_by = config.measure_col;
     spaghettiSettings.marks[0].per = [config.id_col, config.measure_col];
     spaghettiSettings.marks[1].per = [config.id_col, config.visitn_col, config.measure_col];
+    spaghettiSettings.firstDraw = true; //only initailize the measure table on first draw
 
     //flag variables above the cut-off
     matches.forEach(function(d) {
@@ -55,6 +56,7 @@ export function init(d) {
     chart.spaghetti = createChart(spaghettiElement, spaghettiSettings, spaghettiControls);
 
     chart.spaghetti.parent = chart; //link the full eDish object
+    chart.spaghetti.participant_data = d; //include the passed data (used to initialize the measure table)
     chart.spaghetti.on('layout', onLayout);
     chart.spaghetti.on('preprocess', onPreprocess);
     chart.spaghetti.on('draw', onDraw);
@@ -68,6 +70,6 @@ export function init(d) {
         .style('font-size', '0.7em')
         .style('padding-top', '0.1em')
         .text(
-            'Filled points are above the current reference value. Mouseover a line to see the reference line for that lab.'
+            'Points are shown for values above the current reference value. Mouseover a line to see the reference line for that lab.'
         );
 }
