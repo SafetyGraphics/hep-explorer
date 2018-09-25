@@ -10,7 +10,14 @@ export function addSparkLines(d) {
                 const cell = d3
                         .select(this)
                         .select('td.spark')
+                        .classed('minimized', true)
                         .text(''),
+                    toggle = cell
+                        .append('span')
+                        .html('&#x25BD;')
+                        .style('cursor', 'pointer')
+                        .style('color', 'blue')
+                        .style('vertical-align', 'middle'),
                     width = 100,
                     height = 25,
                     offset = 4,
@@ -19,6 +26,7 @@ export function addSparkLines(d) {
                     .ordinal()
                     .domain(overTime.map(m => m.visitn))
                     .rangePoints([offset, width - offset]);
+
                 //y-domain includes 99th population percentile + any participant outliers
                 var y_min = d3.min(d3.merge([row_d.values, row_d.population_extent])) * 0.99;
                 var y_max = d3.max(d3.merge([row_d.values, row_d.population_extent])) * 1.01;
@@ -26,6 +34,7 @@ export function addSparkLines(d) {
                     .linear()
                     .domain([y_min, y_max])
                     .range([height - offset, offset]);
+
                 //render the svg
                 var svg = cell
                     .append('svg')

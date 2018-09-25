@@ -1,5 +1,5 @@
 export const defaultSettings = {
-    max_width: 400,
+    max_width: 800,
     aspect: 4,
     x: {
         column: 'visitn',
@@ -9,8 +9,8 @@ export const defaultSettings = {
     y: {
         column: 'value',
         type: 'linear',
-        label: 'Lab Value',
-        domain: [0, null],
+        label: '',
+        //    domain: [0, null],
         format: '.1f'
     },
     marks: [
@@ -27,7 +27,8 @@ export const defaultSettings = {
                 stroke: 'orange',
                 fill: 'orange',
                 'fill-opacity': 1
-            }
+            },
+            tooltip: 'Visit: [visitn]\nValue: [value]\nULN: [uln]\nLLN: [lln]'
         }
     ],
     margin: { top: 20 },

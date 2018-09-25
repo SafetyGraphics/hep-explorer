@@ -2596,6 +2596,7 @@
                         value: +m[config.value_col],
                         lln: +m[config.normal_col_low],
                         uln: +m[config.normal_col_high],
+                        population_extent: measureObj.population_extent,
                         outlier_low: +m[config.value_col] < +m[config.normal_col_low],
                         outlier_high: +m[config.value_col] > +m[config.normal_col_high]
                     };
@@ -2638,7 +2639,14 @@
                     var cell = d3
                             .select(this)
                             .select('td.spark')
+                            .classed('minimized', true)
                             .text(''),
+                        toggle = cell
+                            .append('span')
+                            .html('&#x25BD;')
+                            .style('cursor', 'pointer')
+                            .style('color', 'blue')
+                            .style('vertical-align', 'middle'),
                         width = 100,
                         height = 25,
                         offset = 4,
@@ -2653,6 +2661,7 @@
                             })
                         )
                         .rangePoints([offset, width - offset]);
+
                     //y-domain includes 99th population percentile + any participant outliers
                     var y_min = d3.min(d3.merge([row_d.values, row_d.population_extent])) * 0.99;
                     var y_max = d3.max(d3.merge([row_d.values, row_d.population_extent])) * 1.01;
@@ -2660,6 +2669,7 @@
                         .linear()
                         .domain([y_min, y_max])
                         .range([height - offset, offset]);
+
                     //render the svg
                     var svg = cell
                         .append('svg')
@@ -2763,7 +2773,7 @@
     }
 
     var defaultSettings = {
-        max_width: 400,
+        max_width: 800,
         aspect: 4,
         x: {
             column: 'visitn',
@@ -2773,8 +2783,8 @@
         y: {
             column: 'value',
             type: 'linear',
-            label: 'Lab Value',
-            domain: [0, null],
+            label: '',
+            //    domain: [0, null],
             format: '.1f'
         },
         marks: [
@@ -2791,7 +2801,8 @@
                     stroke: 'orange',
                     fill: 'orange',
                     'fill-opacity': 1
-                }
+                },
+                tooltip: 'Visit: [visitn]\nValue: [value]\nULN: [uln]\nLLN: [lln]'
             }
         ],
         margin: { top: 20 },
@@ -2799,13 +2810,69 @@
         colors: ['black']
     };
 
-    function drawBoxPlot() {}
+    function setDomain$1(d) {
+        //y-domain includes 99th population percentile + any participant outliers
+        var raw_values = this.raw_data.map(function(m) {
+            return m.value;
+        });
+        var population_extent = this.raw_data[0].population_extent;
+        var y_min = d3.min(d3.merge([raw_values, population_extent])) * 0.99;
+        var y_max = d3.max(d3.merge([raw_values, population_extent])) * 1.01;
+        this.y.domain([y_min, y_max]);
+        this.y_dom = [y_min, y_max];
+    }
 
-    function drawLimits() {}
+    function drawPopulationExtent() {
+        var lineChart = this;
+        console.log(this);
+        this.svg
+            .selectAll('line.guidelines')
+            .data(lineChart.raw_data[0].population_extent)
+            .enter()
+            .append('line')
+            .attr('class', 'guidelines')
+            .attr('x1', 0)
+            .attr('x2', lineChart.plot_width)
+            .attr('y1', function(d) {
+                return lineChart.y(d);
+            })
+            .attr('y2', function(d) {
+                return lineChart.y(d);
+            })
+            .attr('stroke', '#ccc')
+            .attr('stroke-dasharray', '2 2');
+    }
 
-    function drawNormalRange() {}
-
-    function drawOutliers(d) {}
+    function drawNormalRange() {
+        var lineChart = this;
+        var upper = this.raw_data.map(function(m) {
+            return { visitn: m.visitn, value: m.uln };
+        });
+        var lower = this.raw_data
+            .map(function(m) {
+                return { visitn: m.visitn, value: m.lln };
+            })
+            .reverse();
+        var normal_data = d3.merge([upper, lower]);
+        var drawnormal = d3.svg
+            .line()
+            .x(function(d) {
+                return lineChart.x(d.visitn) + lineChart.x.rangeBand() / 2;
+            })
+            .y(function(d) {
+                return lineChart.y(d.value);
+            });
+        var normalpath = this.svg
+            .append('path')
+            .datum(normal_data)
+            .attr({
+                class: 'normalrange',
+                d: drawnormal,
+                fill: '#eee',
+                stroke: 'none'
+            });
+        normalpath.moveToBack();
+    }
 
     function init$2(d) {
         //layout the new cells on the DOM (slightly easier than using D3)
@@ -2816,7 +2883,6 @@
         chartRow_node.appendChild(chartCell_node);
 
         //update the row styles
-        d3.select(summaryRow_node).style('border-bottom', 'none');
         d3
             .select(chartRow_node)
             .style('background', 'none')
@@ -2828,13 +2894,17 @@
 
         //draw the chart
         var lineChart = webcharts.createChart(chartCell_node, defaultSettings);
+        lineChart.on('draw', function() {
+            setDomain$1.call(this);
+        });
         lineChart.on('resize', function() {
-            drawOutliers.call(this, d);
-            drawBoxPlot.call(this, d);
-            drawLimits.call(this, d);
-            drawNormalRange.call(this, d);
+            drawPopulationExtent.call(this);
+            drawNormalRange.call(this);
         });
         lineChart.init(d.spark_data);
+
+        lineChart.row = chartRow_node;
+        return lineChart;
     }
 
     function addSparkClick() {
@@ -2843,7 +2913,38 @@
                 .selectAll('tr')
                 .select('td.spark')
                 .on('click', function(d) {
-                    init$2.call(this, d);
+                    if (d3.select(this).classed('minimized')) {
+                        d3.select(this).classed('minimized', false);
+                        d3.select(this.parentNode).style('border-bottom', 'none');
+
+                        this.lineChart = init$2.call(this, d);
+                        d3
+                            .select(this)
+                            .select('svg')
+                            .style('display', 'none');
+
+                        d3
+                            .select(this)
+                            .select('span')
+                            .html('&#x25B3; Minimize Chart');
+                    } else {
+                        d3.select(this).classed('minimized', true);
+
+                        d3.select(this.parentNode).style('border-bottom', '0.5px solid black');
+
+                        d3
+                            .select(this)
+                            .select('span')
+                            .html('&#x25BD;');
+
+                        d3
+                            .select(this)
+                            .select('svg')
+                            .style('display', null);
+
+                        d3.select(this.lineChart.row).remove();
+                        this.lineChart.destroy();
+                    }
                 });
         }
     }
