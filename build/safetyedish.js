@@ -3155,9 +3155,13 @@
     function onResize$1() {
         var spaghetti = this;
         var y_col = this.config.y.column;
-        this.marks[1].circles.attr('fill-opacity', function(d) {
-            return d.values.raw[0][y_col + '_flagged'] ? 1 : 0;
-        });
+        this.marks[1].circles
+            .attr('stroke-opacity', function(d) {
+                return d.values.raw[0][y_col + '_flagged'] ? 1 : 0;
+            })
+            .attr('fill-opacity', function(d) {
+                return d.values.raw[0][y_col + '_flagged'] ? 1 : 0;
+            });
 
         this.marks[1].circles
             .on('mouseover', function(d) {
@@ -3264,7 +3268,7 @@
             .style('font-size', '0.7em')
             .style('padding-top', '0.1em')
             .text(
-                'Filled points are above the current reference value. Mouseover a line to see the reference line for that lab.'
+                'Points are shown for values above the current reference value. Mouseover a line to see the reference line for that lab.'
             );
     }
 

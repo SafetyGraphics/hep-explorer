@@ -4,11 +4,15 @@ export default function onResize() {
     var spaghetti = this;
     var config = this.config;
 
-    //fill circles above the cut point
+    //hide circles not above the cut point
     const y_col = this.config.y.column;
-    this.marks[1].circles.attr('fill-opacity', function(d) {
-        return d.values.raw[0][y_col + '_flagged'] ? 1 : 0;
-    });
+    this.marks[1].circles
+        .attr('stroke-opacity', function(d) {
+            return d.values.raw[0][y_col + '_flagged'] ? 1 : 0;
+        })
+        .attr('fill-opacity', function(d) {
+            return d.values.raw[0][y_col + '_flagged'] ? 1 : 0;
+        });
 
     this.marks[1].circles
         .on('mouseover', function(d) {
