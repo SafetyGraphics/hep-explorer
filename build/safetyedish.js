@@ -397,7 +397,7 @@
             visit_window: 30,
             showTitle: true,
             warningText:
-                'This graphic has been thoroughly tested, but is not validated. Any clinical recommendations based on this tool should be confirmed using your organizations standard operating procedures.',
+                "This graphic has been thoroughly tested, but is not validated. Any clinical recommendations based on this tool should be confirmed using your organization's standard operating procedures.",
             //all values set in onLayout/quadrants/*.js
             quadrants: [
                 {
