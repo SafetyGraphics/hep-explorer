@@ -2804,8 +2804,6 @@
                 per: ['lab', 'visitn'],
                 values: { outlier: [true] },
                 attributes: {
-                    stroke: 'orange',
-                    fill: 'orange',
                     'fill-opacity': 1
                 },
                 tooltip: 'Visit: [visitn]\nValue: [value]\nULN: [uln]\nLLN: [lln]'
@@ -2813,7 +2811,7 @@
         ],
         margin: { top: 20 },
         gridlines: 'x',
-        colors: ['black']
+        colors: []
     };
 
     function setDomain$1(d) {
@@ -2899,6 +2897,7 @@
         var chartCell = d3.select(chartCell_node).attr('colspan', cellCount);
 
         //draw the chart
+        defaultSettings.colors = [d.color];
         var lineChart = webcharts.createChart(chartCell_node, defaultSettings);
         lineChart.on('draw', function() {
             setDomain$1.call(this);
@@ -3328,7 +3327,6 @@
             chart.participantDetails.wrap.selectAll('*').style('display', null);
             makeParticipantHeader.call(chart, d);
             init$3.call(chart, d);
-            //    drawMeasureTable.call(chart, d); //draw table showing measure values with sparklines
         });
     }
 

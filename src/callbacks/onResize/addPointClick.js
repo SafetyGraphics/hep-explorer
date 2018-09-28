@@ -31,6 +31,5 @@ export function addPointClick() {
         chart.participantDetails.wrap.selectAll('*').style('display', null);
         makeParticipantHeader.call(chart, d);
         initSpaghettiPlot.call(chart, d);
-        //    drawMeasureTable.call(chart, d); //draw table showing measure values with sparklines
     });
 }
