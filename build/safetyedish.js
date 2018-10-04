@@ -1489,11 +1489,6 @@
                 .style('font-size', '1.5em')
                 .style('font-weight', 'strong')
                 .style('display', 'block');
-
-            this.titleDiv
-                .append('span')
-                .text('Use controls to update chart or click a point to see participant details.')
-                .style('font-size', '0.8em');
         }
     }
 
@@ -1704,11 +1699,22 @@
         }
     }
 
+    function addFootnote() {
+        this.wrap
+            .append('div')
+            .attr('class', 'footnote')
+            .text('Use controls to update chart or click a point to see participant details.')
+            .style('font-size', '0.7em')
+            .style('padding-top', '0.1em');
+    }
+
     function onLayout() {
         layoutPanels.call(this);
         init$1.call(this);
         initWarning.call(this);
         initTitle.call(this);
+        addFootnote.call(this);
+
         addRRatioSpan.call(this);
         initQuadrants.call(this);
         initRugs.call(this);
@@ -2958,7 +2964,7 @@
         }
     }
 
-    function addFootnote() {
+    function addFootnote$1() {
         var footnoteText = [
             'Y-Axis for each chart is based on the range of values for the entire population. Points shown for values outside the normal range. Click a sparkline to see a larger version of the chart.'
         ];
@@ -2986,7 +2992,7 @@
         this.measureTable.on('draw', function() {
             addSparkLines.call(this);
             addSparkClick.call(this);
-            addFootnote.call(this);
+            addFootnote$1.call(this);
         });
         this.measureTable.draw(nested);
     }

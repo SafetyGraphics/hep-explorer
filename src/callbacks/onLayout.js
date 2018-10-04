@@ -10,12 +10,15 @@ import { initTitle } from './onLayout/initTitle';
 import { init as initMessages } from './onLayout/messages/init';
 import { initWarning } from './onLayout/initWarning';
 import { initControlLabels } from './onLayout/initControlLabels';
+import { addFootnote } from './onLayout/addFootnote';
 
 export default function onLayout() {
     layoutPanels.call(this);
     initMessages.call(this);
     initWarning.call(this);
     initTitle.call(this);
+    addFootnote.call(this);
+
     addRRatioSpan.call(this);
     initQuadrants.call(this);
     initRugs.call(this);
