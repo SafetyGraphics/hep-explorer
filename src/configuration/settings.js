@@ -6,7 +6,6 @@ export default function settings() {
         visit_col: 'VISIT',
         visitn_col: 'VISITNUM',
         studyday_col: 'DY',
-        unit_col: 'STRESU',
         normal_col_low: 'STNRLO',
         normal_col_high: 'STNRHI',
         id_col: 'USUBJID',
@@ -23,7 +22,8 @@ export default function settings() {
         },
         x_options: ['ALT', 'AST', 'ALP'],
         y_options: ['TB'],
-        size_options: ['ALT', 'AST', 'ALP', 'TB'],
+        point_size: 'Uniform',
+        point_size_options: ['ALT', 'AST', 'ALP', 'TB'],
         cuts: {
             ALT: {
                 relative_baseline: 3.8,
@@ -62,7 +62,6 @@ export default function settings() {
         measureBounds: [0.01, 0.99],
         populationProfileURL: null,
         participantProfileURL: null,
-        point_size: 'Uniform',
         visit_window: 30,
         showTitle: true,
         warningText:

@@ -354,7 +354,8 @@
             },
             x_options: ['ALT', 'AST', 'ALP'],
             y_options: ['TB'],
-            size_options: ['ALT', 'AST', 'ALP', 'TB'],
+            point_size: 'Uniform',
+            point_size_options: ['ALT', 'AST', 'ALP', 'TB'],
             cuts: {
                 ALT: {
                     relative_baseline: 3.8,
@@ -393,7 +394,6 @@
             measureBounds: [0.01, 0.99],
             populationProfileURL: null,
             participantProfileURL: null,
-            point_size: 'Uniform',
             visit_window: 30,
             showTitle: true,
             warningText:
@@ -473,6 +473,10 @@
         settings.marks[0].per[0] = settings.id_col;
 
         //set grouping config
+        if (typeof settings.group_cols == 'string') {
+            settings.group_cols = [{ value_col: settings.group_cols, label: settings.group_cols }];
+        }
+
         if (!(settings.group_cols instanceof Array && settings.group_cols.length)) {
             settings.group_cols = [{ value_col: 'NONE', label: 'None' }];
         } else {
@@ -636,7 +640,7 @@
                 label: 'Point Size',
                 description: 'Parameter to set point radius',
                 options: ['point_size'],
-                start: 'None', // set in syncControlInputs()
+                start: null, // set in syncControlInputs()
                 values: ['Uniform'],
                 require: true
             },
@@ -771,12 +775,14 @@
             return ci.label === 'Point Size';
         });
 
-        settings.size_options.forEach(function(d) {
+        pointSizeControl.start = settings.point_size || 'Uniform';
+
+        settings.point_size_options.forEach(function(d) {
             pointSizeControl.values.push(d);
         });
 
         //drop the pointSize control if NONE is the only option
-        if (settings.size_options.length == 0)
+        if (settings.point_size_options.length == 0)
             controlInputs = controlInputs.filter(function(controlInput) {
                 return controlInput.label != 'Point Size';
             });
@@ -848,7 +854,7 @@
 
         //check that x_options, y_options and size_options all have value keys/values in measure_values
         var valid_options = Object.keys(config.measure_values);
-        var all_options = ['x_options', 'y_options', 'size_options'];
+        var all_options = ['x_options', 'y_options', 'point_size_options'];
         all_options.forEach(function(options) {
             config[options].forEach(function(option) {
                 if (valid_options.indexOf(option) == -1) {

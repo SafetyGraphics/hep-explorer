@@ -3,6 +3,10 @@ export default function syncSettings(settings) {
     settings.marks[0].per[0] = settings.id_col;
 
     //set grouping config
+    if (typeof settings.group_cols == 'string') {
+        settings.group_cols = [{ value_col: settings.group_cols, label: settings.group_cols }];
+    }
+
     if (!(settings.group_cols instanceof Array && settings.group_cols.length)) {
         settings.group_cols = [{ value_col: 'NONE', label: 'None' }];
     } else {
