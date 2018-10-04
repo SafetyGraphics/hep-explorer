@@ -20,10 +20,15 @@ export function initControlLabels() {
     //Add filter label if at least 1 filter exists
     if (config.r_ratio_filter || config.filters.length > 0) {
         //insert a header before the first filter
-        const control_wraps = this.controls.wrap.selectAll('div');
-        var first_filter = config.r_ratio_filter
-            ? control_wraps.filter(controlInput => controlInput.label === 'Minimum R Ratio')
-            : control_wraps.filter(controlInput => controlInput.type === 'subsetter');
+        const control_wraps = this.controls.wrap
+            .selectAll('div')
+            .filter(
+                controlInput =>
+                    controlInput.label === 'Minimum R Ratio' || controlInput.type === 'subsetter'
+            )
+            .classed('subsetter', true);
+
+        var first_filter = this.controls.wrap.select('div.subsetter');
 
         this.controls.filter_header = first_filter
             .insert('div', '*')

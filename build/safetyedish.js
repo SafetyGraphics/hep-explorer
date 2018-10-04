@@ -1652,14 +1652,17 @@
         //Add filter label if at least 1 filter exists
         if (config.r_ratio_filter || config.filters.length > 0) {
             //insert a header before the first filter
-            var control_wraps = this.controls.wrap.selectAll('div');
-            var first_filter = config.r_ratio_filter
-                ? control_wraps.filter(function(controlInput) {
-                      return controlInput.label === 'Minimum R Ratio';
-                  })
-                : control_wraps.filter(function(controlInput) {
-                      return controlInput.type === 'subsetter';
-                  });
+            var control_wraps = this.controls.wrap
+                .selectAll('div')
+                .filter(function(controlInput) {
+                    return (
+                        controlInput.label === 'Minimum R Ratio' ||
+                        controlInput.type === 'subsetter'
+                    );
+                })
+                .classed('subsetter', true);
+
+            var first_filter = this.controls.wrap.select('div.subsetter');
 
             this.controls.filter_header = first_filter
                 .insert('div', '*')
