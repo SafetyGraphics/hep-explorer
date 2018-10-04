@@ -25,6 +25,7 @@ export function init(d) {
     var chartCell = d3.select(chartCell_node).attr('colspan', cellCount);
 
     //draw the chart
+    settings.colors = [d.color];
     var lineChart = createChart(chartCell_node, settings);
     lineChart.on('draw', function() {
         setDomain.call(this);

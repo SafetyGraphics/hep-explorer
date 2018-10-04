@@ -24,8 +24,6 @@ export const defaultSettings = {
             per: ['lab', 'visitn'],
             values: { outlier: [true] },
             attributes: {
-                stroke: 'orange',
-                fill: 'orange',
                 'fill-opacity': 1
             },
             tooltip: 'Visit: [visitn]\nValue: [value]\nULN: [uln]\nLLN: [lln]'
@@ -33,5 +31,5 @@ export const defaultSettings = {
     ],
     margin: { top: 20 },
     gridlines: 'x',
-    colors: ['black']
+    colors: []
 };
