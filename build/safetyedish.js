@@ -337,7 +337,6 @@
             visit_col: 'VISIT',
             visitn_col: 'VISITNUM',
             studyday_col: 'DY',
-            unit_col: 'STRESU',
             normal_col_low: 'STNRLO',
             normal_col_high: 'STNRHI',
             id_col: 'USUBJID',
@@ -572,6 +571,10 @@
             });
             settings.details = defaultDetails;
         }
+
+        //parse x_ and y_options to array if needed
+        if (typeof settings.x_options == 'string') settings.x_options = [settings.x_options];
+        if (typeof settings.y_options == 'string') settings.y_options = [settings.y_options];
 
         // track initial Cutpoint (lets us detect when cutpoint should change)
         settings.cuts.x = settings.x.column;
@@ -1831,7 +1834,6 @@
             'visit_col',
             'visitn_col',
             'studyday_col',
-            'unit_col',
             'normal_col_low',
             'normal_col_high'
         ];

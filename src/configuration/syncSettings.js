@@ -80,6 +80,10 @@ export default function syncSettings(settings) {
         settings.details = defaultDetails;
     }
 
+    //parse x_ and y_options to array if needed
+    if (typeof settings.x_options == 'string') settings.x_options = [settings.x_options];
+    if (typeof settings.y_options == 'string') settings.y_options = [settings.y_options];
+
     // track initial Cutpoint (lets us detect when cutpoint should change)
     settings.cuts.x = settings.x.column;
     settings.cuts.y = settings.y.column;
