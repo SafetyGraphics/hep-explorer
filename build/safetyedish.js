@@ -1,10 +1,10 @@
 (function(global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined'
-        ? (module.exports = factory(require('webcharts')))
+        ? (module.exports = factory(require('webcharts'), require('d3')))
         : typeof define === 'function' && define.amd
-            ? define(['webcharts'], factory)
-            : (global.safetyedish = factory(global.webCharts));
-})(this, function(webcharts) {
+            ? define(['webcharts', 'd3'], factory)
+            : (global.safetyedish = factory(global.webCharts, global.d3));
+})(this, function(webcharts, d3$1) {
     'use strict';
 
     if (typeof Object.assign != 'function') {
@@ -1005,6 +1005,41 @@
         });
     }
 
+    function dropRows() {
+        var _this = this;
+
+        var config = this.config;
+        this.dropped_rows = [];
+
+        /////////////////////////
+        // Remove invalid rows
+        /////////////////////////
+
+        this.imputed_data = this.initial_data
+            .filter(function(d) {
+                //Remove non-numeric value_col
+                var numericValueCol = /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(
+                    d[_this.config.value_col]
+                );
+                if (!numericValueCol) {
+                    d.dropReason = 'Value Column ("' + config.value_col + '") is not numeric.';
+                    _this.dropped_rows.push(d);
+                }
+                return numericValueCol;
+            })
+            .filter(function(d) {
+                //Remove non-numeric visit_col
+                var numericVisitCol = /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(
+                    d[_this.config.visitn_col]
+                );
+                if (!numericVisitCol) {
+                    d.dropReason = 'Visit Column ("' + config.visitn_col + '")is not numeric.';
+                    _this.dropped_rows.push(d);
+                }
+                return numericVisitCol;
+            });
+    }
+
     function deriveVariables() {
         var config = this.config;
 
@@ -1084,11 +1119,8 @@
     }
 
     function cleanData() {
-        var _this = this;
+        this.imputedData = dropRows.call(this);
 
-        this.imputed_data = this.initial_data.filter(function(d) {
-            return /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(d[_this.config.value_col]);
-        });
         this.imputed_data.forEach(function(d) {
             d.impute_flag = false;
         });
@@ -1501,13 +1533,14 @@
         }
     }
 
-    function add(messageText, type, label, messages) {
+    function add(messageText, type, label, messages, callback) {
         var messageObj = {
             id: messages.list.length + 1,
             type: type,
             message: messageText,
             label: label,
-            hidden: false
+            hidden: false,
+            callback: callback
         };
         messages.list.push(messageObj);
         messages.update(messages);
@@ -1580,6 +1613,10 @@
                     .style('color', '#999')
                     .style('background-color', null);
             }
+
+            if (d.callback) {
+                d.callback.call(this);
+            }
         });
 
         messageDivs.exit().remove();
@@ -1624,7 +1661,7 @@
             });
     }
 
-    function initWarning() {
+    function initCustomWarning() {
         if (this.config.warningText) {
             this.messages.add(
                 this.config.warningText,
@@ -1632,6 +1669,71 @@
                 'validationCaution',
                 this.messages
             );
+        }
+    }
+
+    function downloadCSV(data) {
+        var CSVarray = [];
+
+        //add headers to CSV array
+        var headers = Object.keys(data[0]).map(function(header) {
+            return '"' + header.replace(/"/g, '""') + '"';
+        });
+        CSVarray.push(headers);
+
+        //add rows to CSV array
+        data.forEach(function(d, i) {
+            var row = Object.keys(data[0]).map(function(col) {
+                var value = d[col];
+
+                if (typeof value === 'string') value = value.replace(/"/g, '""');
+
+                return '"' + value + '"';
+            });
+
+            CSVarray.push(row);
+        });
+
+        //transform blob array into a blob of characters
+        var blob = new Blob([CSVarray.join('\n')], {
+            type: 'text/csv;charset=utf-8;'
+        });
+
+        var fileName =
+            'eDishDroppedRows_' + d3$1.time.format('%Y-%m-%dT%H-%M-%S')(new Date()) + '.csv';
+        var link = d3.select(this);
+
+        if (navigator.msSaveBlob)
+            //IE
+            navigator.msSaveBlob(blob, fileName);
+        else if (link.node().download !== undefined) {
+            //21st century browsers
+            var url = URL.createObjectURL(blob);
+            link.node().setAttribute('href', url);
+            link.node().setAttribute('download', fileName);
+        }
+    }
+
+    function initDroppedRowsWarning() {
+        var chart = this;
+        if (this.dropped_rows.length > 0) {
+            var warningText =
+                this.dropped_rows.length +
+                ' rows were removed because of invalid data. Click <a class="rowDownload">here</a> to download a csv with a brief explanation of why each row was removed.';
+
+            this.messages.add(warningText, 'caution', 'droppedRows', this.messages, function() {
+                //custom callback to activate the droppedRows download
+                d3
+                    .select(this)
+                    .select('a.rowDownload')
+                    //  .style('color', 'blue')
+                    //  .style('text-decoration', 'underline')
+                    //  .style('cursor', 'pointer')
+                    .datum(chart.dropped_rows)
+                    .on('click', function(d) {
+                        downloadCSV.call(this, d);
+                    });
+            });
         }
     }
 
@@ -1719,11 +1821,14 @@
 
     function onLayout() {
         layoutPanels.call(this);
-        init$1.call(this);
-        initWarning.call(this);
-        initTitle.call(this);
-        addFootnote.call(this);
 
+        //init messages section
+        init$1.call(this);
+        initCustomWarning.call(this);
+        initDroppedRowsWarning.call(this);
+        initTitle.call(this);
+
+        addFootnote.call(this);
         addRRatioSpan.call(this);
         initQuadrants.call(this);
         initRugs.call(this);
@@ -2410,7 +2515,6 @@
         var matches = allMatches.filter(function(f) {
             return f[config.measure_col] == x_measure || f[config.measure_col] == y_measure;
         });
-
         //get coordinates by visit
         var visits = d3
             .set(

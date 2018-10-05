@@ -40,6 +40,10 @@ export function update(messages) {
                 .style('color', '#999')
                 .style('background-color', null);
         }
+
+        if (d.callback) {
+            d.callback.call(this);
+        }
     });
 
     messageDivs.exit().remove();

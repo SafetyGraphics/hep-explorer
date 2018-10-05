@@ -8,17 +8,21 @@ import { initDisplayControl } from './onLayout/initDisplayControl';
 import { layoutPanels } from './onLayout/layoutPanels';
 import { initTitle } from './onLayout/initTitle';
 import { init as initMessages } from './onLayout/messages/init';
-import { initWarning } from './onLayout/initWarning';
+import { initCustomWarning } from './onLayout/initCustomWarning';
+import { initDroppedRowsWarning } from './onLayout/initDroppedRowsWarning';
 import { initControlLabels } from './onLayout/initControlLabels';
 import { addFootnote } from './onLayout/addFootnote';
 
 export default function onLayout() {
     layoutPanels.call(this);
-    initMessages.call(this);
-    initWarning.call(this);
-    initTitle.call(this);
-    addFootnote.call(this);
 
+    //init messages section
+    initMessages.call(this);
+    initCustomWarning.call(this);
+    initDroppedRowsWarning.call(this);
+    initTitle.call(this);
+
+    addFootnote.call(this);
     addRRatioSpan.call(this);
     initQuadrants.call(this);
     initRugs.call(this);
