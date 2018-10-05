@@ -1,15 +1,15 @@
 import { time } from 'd3';
 
-export function downloadCSV(data) {
+export function downloadCSV(data, cols) {
     const CSVarray = [];
 
     //add headers to CSV array
-    const headers = Object.keys(data[0]).map(header => `"${header.replace(/"/g, '""')}"`);
+    var cols = cols ? cols : Object.keys(data[0]);
+    const headers = cols.map(header => `"${header.replace(/"/g, '""')}"`);
     CSVarray.push(headers);
-
     //add rows to CSV array
     data.forEach((d, i) => {
-        const row = Object.keys(data[0]).map(col => {
+        const row = cols.map(col => {
             let value = d[col];
 
             if (typeof value === 'string') value = value.replace(/"/g, '""');

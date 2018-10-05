@@ -17,7 +17,15 @@ export function initDroppedRowsWarning() {
                 .style('cursor', 'pointer')
                 .datum(chart.dropped_rows)
                 .on('click', function(d) {
-                    downloadCSV.call(this, d);
+                    const systemVars = d3.merge([
+                        ['dropReason', 'NONE'],
+                        Object.keys(chart.config.measure_values)
+                    ]);
+                    var cols = d3.merge([
+                        ['dropReason'],
+                        Object.keys(d[0]).filter(f => systemVars.indexOf(f) == -1)
+                    ]);
+                    downloadCSV.call(this, d, cols);
                 });
         });
     }

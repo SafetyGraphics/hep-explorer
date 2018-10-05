@@ -1033,7 +1033,7 @@
                     d[_this.config.visitn_col]
                 );
                 if (!numericVisitCol) {
-                    d.dropReason = 'Visit Column ("' + config.visitn_col + '")is not numeric.';
+                    d.dropReason = 'Visit Column ("' + config.visitn_col + '") is not numeric.';
                     _this.dropped_rows.push(d);
                 }
                 return numericVisitCol;
@@ -1672,18 +1672,18 @@
         }
     }
 
-    function downloadCSV(data) {
+    function downloadCSV(data, cols) {
         var CSVarray = [];
 
         //add headers to CSV array
-        var headers = Object.keys(data[0]).map(function(header) {
+        var cols = cols ? cols : Object.keys(data[0]);
+        var headers = cols.map(function(header) {
             return '"' + header.replace(/"/g, '""') + '"';
         });
         CSVarray.push(headers);
-
         //add rows to CSV array
         data.forEach(function(d, i) {
-            var row = Object.keys(data[0]).map(function(col) {
+            var row = cols.map(function(col) {
                 var value = d[col];
 
                 if (typeof value === 'string') value = value.replace(/"/g, '""');
@@ -1731,7 +1731,17 @@
                     .style('cursor', 'pointer')
                     .datum(chart.dropped_rows)
                     .on('click', function(d) {
-                        downloadCSV.call(this, d);
+                        var systemVars = d3.merge([
+                            ['dropReason', 'NONE'],
+                            Object.keys(chart.config.measure_values)
+                        ]);
+                        var cols = d3.merge([
+                            ['dropReason'],
+                            Object.keys(d[0]).filter(function(f) {
+                                return systemVars.indexOf(f) == -1;
+                            })
+                        ]);
+                        downloadCSV.call(this, d, cols);
                     });
             });
         }
