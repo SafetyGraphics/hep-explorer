@@ -12,9 +12,9 @@ export function initDroppedRowsWarning() {
             d3
                 .select(this)
                 .select('a.rowDownload')
-                //  .style('color', 'blue')
-                //  .style('text-decoration', 'underline')
-                //  .style('cursor', 'pointer')
+                .style('color', 'blue')
+                .style('text-decoration', 'underline')
+                .style('cursor', 'pointer')
                 .datum(chart.dropped_rows)
                 .on('click', function(d) {
                     downloadCSV.call(this, d);

@@ -24,7 +24,7 @@ export default function dropRows() {
                 d[this.config.visitn_col]
             );
             if (!numericVisitCol) {
-                d.dropReason = `Visit Column ("${config.visitn_col}")is not numeric.`;
+                d.dropReason = `Visit Column ("${config.visitn_col}") is not numeric.`;
                 this.dropped_rows.push(d);
             }
             return numericVisitCol;
