@@ -3236,7 +3236,7 @@
 
     function onLayout$1() {
         var spaghetti = this;
-        var eDish = this.parent;
+        var eDish = this.edish;
 
         //customize the display control
         var displayControlWrap = spaghetti.controls.wrap
@@ -3330,7 +3330,7 @@
 
     function onDraw$1() {
         var spaghetti = this;
-        var eDish = this.parent;
+        var eDish = this.edish;
 
         //make sure y domain includes the current cut point for all measures
         var max_value = d3.max(spaghetti.filtered_data, function(f) {
@@ -3411,7 +3411,7 @@
             spaghettiControls
         );
 
-        chart.spaghetti.parent = chart; //link the full eDish object
+        chart.spaghetti.edish = chart; //link the full eDish object
         chart.spaghetti.participant_data = d; //include the passed data (used to initialize the measure table)
         chart.spaghetti.on('layout', onLayout$1);
         chart.spaghetti.on('preprocess', onPreprocess$1);
