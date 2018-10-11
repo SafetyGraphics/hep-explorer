@@ -5,7 +5,9 @@ export default function updateAxisSettings() {
             ? ' [xULN]'
             : config.display == 'relative_baseline'
                 ? ' [xBaseline]'
-                : config.display == 'absolute' ? ' [raw values]' : null;
+                : config.display == 'absolute'
+                    ? ' [raw values]'
+                    : null;
 
     //Update axis labels.
     config.x.label = config.measure_values[config.x.column] + unit;

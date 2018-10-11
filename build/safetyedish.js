@@ -513,7 +513,9 @@
                     value_col: filter.value_col ? filter.value_col : filter,
                     label: filter.label
                         ? filter.label
-                        : filter.value_col ? filter.value_col : filter
+                        : filter.value_col
+                            ? filter.value_col
+                            : filter
                 };
 
                 if (
@@ -536,7 +538,9 @@
                         value_col: group.value_col ? group.value_col : filter,
                         label: group.label
                             ? group.label
-                            : group.value_col ? group.value_col : filter
+                            : group.value_col
+                                ? group.value_col
+                                : filter
                     };
                     if (
                         defaultDetails.find(function(f) {
@@ -566,7 +570,9 @@
                         value_col: detail.value_col ? detail.value_col : detail,
                         label: detail.label
                             ? detail.label
-                            : detail.value_col ? detail.value_col : detail
+                            : detail.value_col
+                                ? detail.value_col
+                                : detail
                     });
             });
             settings.details = defaultDetails;
@@ -810,7 +816,9 @@
                     value_col: filter.value_col ? filter.value_col : filter,
                     label: filter.label
                         ? filter.label
-                        : filter.value_col ? filter.value_col : filter
+                        : filter.value_col
+                            ? filter.value_col
+                            : filter
                 };
                 return filter;
             });
@@ -1723,8 +1731,7 @@
 
             this.messages.add(warningText, 'caution', 'droppedRows', this.messages, function() {
                 //custom callback to activate the droppedRows download
-                d3
-                    .select(this)
+                d3.select(this)
                     .select('a.rowDownload')
                     .style('color', 'blue')
                     .style('text-decoration', 'underline')
@@ -1856,7 +1863,9 @@
                 ? ' [xULN]'
                 : config.display == 'relative_baseline'
                     ? ' [xBaseline]'
-                    : config.display == 'absolute' ? ' [raw values]' : null;
+                    : config.display == 'absolute'
+                        ? ' [raw values]'
+                        : null;
 
         //Update axis labels.
         config.x.label = config.measure_values[config.x.column] + unit;
@@ -2608,8 +2617,7 @@
 
         var totalLength = path.node().getTotalLength();
 
-        path
-            .attr('stroke-dasharray', totalLength + ' ' + totalLength)
+        path.attr('stroke-dasharray', totalLength + ' ' + totalLength)
             .attr('stroke-dashoffset', totalLength)
             .transition()
             .duration(2000)
@@ -2845,8 +2853,7 @@
                         });
 
                     //draw lines at the population guidelines
-                    svg
-                        .selectAll('lines.guidelines')
+                    svg.selectAll('lines.guidelines')
                         .data(row_d.population_extent)
                         .enter()
                         .append('line')
@@ -3018,8 +3025,7 @@
         chartRow_node.appendChild(chartCell_node);
 
         //update the row styles
-        d3
-            .select(chartRow_node)
+        d3.select(chartRow_node)
             .style('background', 'none')
             .style('border-bottom', '0.5px solid black');
 
@@ -3054,13 +3060,11 @@
                         d3.select(this.parentNode).style('border-bottom', 'none');
 
                         this.lineChart = init$2.call(this, d);
-                        d3
-                            .select(this)
+                        d3.select(this)
                             .select('svg')
                             .style('display', 'none');
 
-                        d3
-                            .select(this)
+                        d3.select(this)
                             .select('span')
                             .html('&#x25B3; Minimize Chart');
                     } else {
@@ -3068,13 +3072,11 @@
 
                         d3.select(this.parentNode).style('border-bottom', '0.5px solid black');
 
-                        d3
-                            .select(this)
+                        d3.select(this)
                             .select('span')
                             .html('&#x25BD;');
 
-                        d3
-                            .select(this)
+                        d3.select(this)
                             .select('svg')
                             .style('display', null);
 
@@ -3164,16 +3166,14 @@
             .style('text-align', 'center')
             .style('padding', '0.5em');
 
-        lis
-            .append('div')
+        lis.append('div')
             .text(function(d) {
                 return d.label;
             })
             .attr('div', 'label')
             .style('font-size', '0.8em');
 
-        lis
-            .append('div')
+        lis.append('div')
             .text(function(d) {
                 return raw[d.value_col];
             })
@@ -3396,8 +3396,7 @@
         //sync parameter filter
         controlInputs$1.find(function(f) {
             return f.label == 'Select Labs';
-        }).value_col =
-            config.measure_col;
+        }).value_col = config.measure_col;
 
         var spaghettiControls = webcharts.createControls(spaghettiElement, {
             location: 'top',
@@ -3444,8 +3443,7 @@
                 .attr('fill', 'white')
                 .classed('disabled', true); //disable mouseover while viewing participant details
 
-            d3
-                .select(this)
+            d3.select(this)
                 .attr('stroke', function(d) {
                     return chart.colorScale(d.values.raw[0][config.color_by]);
                 }) //highlight selected point
@@ -3535,8 +3533,7 @@
         var dimension = d3.select(this).classed('x') ? 'x' : 'y';
         var chart = d3.select(this).datum().chart;
 
-        d3
-            .select(this)
+        d3.select(this)
             .select('line.cut-line')
             .attr('stroke-width', '2')
             .attr('stroke-dasharray', '2,2');
@@ -3586,8 +3583,7 @@
     function dragEnded() {
         var chart = d3.select(this).datum().chart;
 
-        d3
-            .select(this)
+        d3.select(this)
             .select('line.cut-line')
             .attr('stroke-width', '1')
             .attr('stroke-dasharray', '5,5');
@@ -3785,12 +3781,10 @@
             true,
             this.config.y.type == 'log'
         );
-        ybox
-            .select('g.boxplot')
-            .attr(
-                'transform',
-                'translate(' + (this.plot_width + this.config.margin.right / 2) + ',0)'
-            );
+        ybox.select('g.boxplot').attr(
+            'transform',
+            'translate(' + (this.plot_width + this.config.margin.right / 2) + ',0)'
+        );
 
         //X-axis box plot
         var xValues = this.current_data.map(function(d) {
@@ -3810,9 +3804,10 @@
             false, // horizontal?
             this.config.y.type == 'log' // log?
         );
-        xbox
-            .select('g.boxplot')
-            .attr('transform', 'translate(0,' + -(this.config.margin.top / 2) + ')');
+        xbox.select('g.boxplot').attr(
+            'transform',
+            'translate(0,' + -(this.config.margin.top / 2) + ')'
+        );
     }
 
     function setPointSize() {

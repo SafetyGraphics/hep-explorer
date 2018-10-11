@@ -9,8 +9,7 @@ export function initDroppedRowsWarning() {
 
         this.messages.add(warningText, 'caution', 'droppedRows', this.messages, function() {
             //custom callback to activate the droppedRows download
-            d3
-                .select(this)
+            d3.select(this)
                 .select('a.rowDownload')
                 .style('color', 'blue')
                 .style('text-decoration', 'underline')
