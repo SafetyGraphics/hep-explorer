@@ -14,6 +14,10 @@ export default function settings() {
         details: null,
         r_ratio_filter: true,
         r_ratio_cut: 0,
+        analysisFlag: {
+            value_col: null,
+            values: []
+        },
         measure_values: {
             ALT: 'Aminotransferase, alanine (ALT)',
             AST: 'Aminotransferase, aspartate (AST)',

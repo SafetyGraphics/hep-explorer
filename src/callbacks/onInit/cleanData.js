@@ -1,6 +1,7 @@
 import imputeData from './cleanData/imputeData';
 import dropRows from './cleanData/dropRows';
 import deriveVariables from './cleanData/deriveVariables';
+import makeAnalysisFlag from './cleanData/makeAnalysisFlag';
 
 export function cleanData() {
     var chart = this,
@@ -15,4 +16,5 @@ export function cleanData() {
 
     imputeData.call(this);
     deriveVariables.call(this);
+    makeAnalysisFlag.call(this);
 }

@@ -345,6 +345,10 @@
             details: null,
             r_ratio_filter: true,
             r_ratio_cut: 0,
+            analysisFlag: {
+                value_col: null,
+                values: []
+            },
             measure_values: {
                 ALT: 'Aminotransferase, alanine (ALT)',
                 AST: 'Aminotransferase, aspartate (AST)',
@@ -1126,6 +1130,26 @@
             );
     }
 
+    function makeAnalysisFlag() {
+        var chart = this;
+        var config = this.config;
+        console.log(chart.imputed_data);
+        this.imputed_data = this.imputed_data.map(function(d) {
+            var hasAnalysisSetting =
+                (config.analysisFlag.value_col != null) & (config.analysisFlag.values.length > 0);
+            d.analysisFlag = hasAnalysisSetting
+                ? config.analysisFlag.values.indexOf(d[config.analysisFlag.value_col]) > -1
+                : true;
+            return d;
+        });
+
+        console.log(
+            d3.mean(chart.imputed_data, function(d) {
+                return d.analysisFlag;
+            }) + '% of records flagged for analysis.'
+        );
+    }
+
     function cleanData() {
         this.imputedData = dropRows.call(this);
 
@@ -1135,6 +1159,7 @@
 
         imputeData.call(this);
         deriveVariables.call(this);
+        makeAnalysisFlag.call(this);
     }
 
     function onInit() {
@@ -1947,6 +1972,8 @@
     function flattenData() {
         var chart = this;
         var config = this.config;
+        console.log(chart.config.analysisFlag);
+        console.log(chart);
 
         //make a data set with one row per ID
 
@@ -1977,7 +2004,7 @@
         //merge in the absolute and relative values
         colList = d3.merge([
             colList,
-            ['absolute', 'relative_uln', 'relative_baseline', 'baseline_raw']
+            ['absolute', 'relative_uln', 'relative_baseline', 'baseline_raw', 'analysisFlag']
         ]);
 
         //get maximum values for each measure type
@@ -1992,9 +2019,13 @@
                 participant_obj.days_y = null;
                 Object.keys(config.measure_values).forEach(function(mKey) {
                     //get all raw data for the current measure
-                    var matches = d.filter(function(f) {
-                        return config.measure_values[mKey] == f[config.measure_col];
-                    }); //get matching measures
+                    var matches = d
+                        .filter(function(f) {
+                            return config.measure_values[mKey] == f[config.measure_col];
+                        }) //get matching measures
+                        .filter(function(f) {
+                            return f.analysisFlag;
+                        });
 
                     if (matches.length == 0) {
                         console.log('No matches found');

@@ -5,6 +5,8 @@ import calculateRRatio from './flattenData/calculateRRatio';
 export function flattenData() {
     var chart = this;
     var config = this.config;
+    console.log(chart.config.analysisFlag);
+    console.log(chart);
 
     //make a data set with one row per ID
 
@@ -33,7 +35,7 @@ export function flattenData() {
     //merge in the absolute and relative values
     colList = d3.merge([
         colList,
-        ['absolute', 'relative_uln', 'relative_baseline', 'baseline_raw']
+        ['absolute', 'relative_uln', 'relative_baseline', 'baseline_raw', 'analysisFlag']
     ]);
 
     //get maximum values for each measure type
@@ -46,7 +48,9 @@ export function flattenData() {
             participant_obj.days_y = null;
             Object.keys(config.measure_values).forEach(function(mKey) {
                 //get all raw data for the current measure
-                var matches = d.filter(f => config.measure_values[mKey] == f[config.measure_col]); //get matching measures
+                var matches = d
+                    .filter(f => config.measure_values[mKey] == f[config.measure_col]) //get matching measures
+                    .filter(f => f.analysisFlag);
 
                 if (matches.length == 0) {
                     console.log('No matches found');
