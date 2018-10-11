@@ -3,6 +3,10 @@ export default function syncSettings(settings) {
     settings.marks[0].per[0] = settings.id_col;
 
     //set grouping config
+    if (typeof settings.group_cols == 'string') {
+        settings.group_cols = [{ value_col: settings.group_cols, label: settings.group_cols }];
+    }
+
     if (!(settings.group_cols instanceof Array && settings.group_cols.length)) {
         settings.group_cols = [{ value_col: 'NONE', label: 'None' }];
     } else {
@@ -75,6 +79,10 @@ export default function syncSettings(settings) {
         });
         settings.details = defaultDetails;
     }
+
+    //parse x_ and y_options to array if needed
+    if (typeof settings.x_options == 'string') settings.x_options = [settings.x_options];
+    if (typeof settings.y_options == 'string') settings.y_options = [settings.y_options];
 
     // track initial Cutpoint (lets us detect when cutpoint should change)
     settings.cuts.x = settings.x.column;

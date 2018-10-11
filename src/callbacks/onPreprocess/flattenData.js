@@ -16,7 +16,6 @@ export function flattenData() {
         'visit_col',
         'visitn_col',
         'studyday_col',
-        'unit_col',
         'normal_col_low',
         'normal_col_high'
     ];

@@ -12,16 +12,18 @@ export function initParticipantDetails() {
     splot
         .append('h3')
         .attr('class', 'id')
-        .html('Lab Values vs. Upper Limit of Normal by Visit')
+        .html('Standardized Lab Values by Visit')
         .style('border-top', '2px solid black')
         .style('border-bottom', '2px solid black')
         .style('padding', '.2em');
+
+    splot.append('div').attr('class', 'chart');
 
     var mtable = this.participantDetails.wrap.append('div').attr('class', 'measureTable');
     mtable
         .append('h3')
         .attr('class', 'id')
-        .html('Lab Summary Table')
+        .html('Raw Lab Values Summary Table')
         .style('border-top', '2px solid black')
         .style('border-bottom', '2px solid black')
         .style('padding', '.2em');

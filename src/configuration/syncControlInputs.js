@@ -91,12 +91,14 @@ export default function syncControlInputs(controlInputs, settings) {
 
     const pointSizeControl = controlInputs.find(ci => ci.label === 'Point Size');
 
-    settings.size_options.forEach(function(d) {
+    pointSizeControl.start = settings.point_size || 'Uniform';
+
+    settings.point_size_options.forEach(function(d) {
         pointSizeControl.values.push(d);
     });
 
     //drop the pointSize control if NONE is the only option
-    if (settings.size_options.length == 0)
+    if (settings.point_size_options.length == 0)
         controlInputs = controlInputs.filter(controlInput => controlInput.label != 'Point Size');
 
     //////////////////////////////////

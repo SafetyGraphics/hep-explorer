@@ -10,7 +10,8 @@ export const defaultSettings = {
         type: 'linear',
         label: 'Lab Value (x ULN)',
         domain: null,
-        format: '.1f'
+        format: '.1f',
+        domain: [0, null]
     },
     marks: [
         {
@@ -23,6 +24,7 @@ export const defaultSettings = {
             per: []
         }
     ],
+    margin: { top: 20 },
     gridlines: 'xy',
     color_by: null,
     colors: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33', '#a65628'],

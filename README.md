@@ -1,8 +1,13 @@
 # Interactive Safety eDISH graphic
 
-# Background
+Evaluation of Drug-Induced Serious Hepatotoxicity, or eDISH, plots are a key tool used to assess liver toxicity in clinical trials. An live demo using sample data is [available here](https://asa-dia-interactivesafetygraphics.github.io/safety-eDISH/test/) and shown below.
 
-Evaluation of Drug-Induced Serious Hepatotoxicity, or eDISH, plots are a key tool used to assess liver toxicity in clinical trials. Standard properties and workflows for static eDish plots are well documented  by [Watkins et al.](https://link.springer.com/article/10.2165%2F11586600-000000000-00000),  [Merz et al.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4212156/) and others. This library contains a web-based implementation of the traditional eDISH plot that allows a user to interactively explore participant data in ways that are not possible in static plots. 
+![edishgif](https://user-images.githubusercontent.com/3680095/45834450-02b3a000-bcbc-11e8-8172-324c2fe43521.gif)
+
+
+## Background
+
+ Standard properties and workflows for static eDish plots are well documented  by [Watkins et al.](https://link.springer.com/article/10.2165%2F11586600-000000000-00000),  [Merz et al.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4212156/) and others. This library contains a web-based implementation of the traditional eDISH plot that allows a user to interactively explore participant data in ways that are not possible in static plots. 
 
 ## Interactive Functionality
 

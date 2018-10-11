@@ -7,17 +7,28 @@ import { initResetButton } from './onLayout/initResetButton';
 import { initDisplayControl } from './onLayout/initDisplayControl';
 import { layoutPanels } from './onLayout/layoutPanels';
 import { initTitle } from './onLayout/initTitle';
-import { initFilterLabel } from './onLayout/initFilterLabel';
+import { init as initMessages } from './onLayout/messages/init';
+import { initCustomWarning } from './onLayout/initCustomWarning';
+import { initDroppedRowsWarning } from './onLayout/initDroppedRowsWarning';
+import { initControlLabels } from './onLayout/initControlLabels';
+import { addFootnote } from './onLayout/addFootnote';
 
 export default function onLayout() {
-    addRRatioSpan.call(this);
     layoutPanels.call(this);
+
+    //init messages section
+    initMessages.call(this);
+    initCustomWarning.call(this);
+    initDroppedRowsWarning.call(this);
     initTitle.call(this);
+
+    addFootnote.call(this);
+    addRRatioSpan.call(this);
     initQuadrants.call(this);
     initRugs.call(this);
     initVisitPath.call(this);
     initParticipantDetails.call(this);
     initResetButton.call(this);
     initDisplayControl.call(this);
-    initFilterLabel.call(this);
+    initControlLabels.call(this);
 }

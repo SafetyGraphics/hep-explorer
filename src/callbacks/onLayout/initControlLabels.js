@@ -1,13 +1,34 @@
-export function initFilterLabel() {
+export function initControlLabels() {
     const chart = this;
     const config = this.config;
-    //check to see if at least 1 filter exists
+
+    //Add settings label
+    const first_control = this.controls.wrap.select('div.control-group');
+    this.controls.setting_header = first_control
+        .insert('div', '*')
+        .attr('class', 'subtitle')
+        .style('border-top', '1px solid black')
+        .style('border-bottom', '1px solid black')
+        .style('margin-right', '1em')
+        .style('margin-bottom', '1em');
+    this.controls.setting_header
+        .append('span')
+        .text('Settings')
+        .style('font-weight', 'strong')
+        .style('display', 'block');
+
+    //Add filter label if at least 1 filter exists
     if (config.r_ratio_filter || config.filters.length > 0) {
         //insert a header before the first filter
-        const control_wraps = this.controls.wrap.selectAll('div');
-        var first_filter = config.r_ratio_filter
-            ? control_wraps.filter(controlInput => controlInput.label === 'Minimum R Ratio')
-            : control_wraps.filter(controlInput => controlInput.type === 'subsetter');
+        const control_wraps = this.controls.wrap
+            .selectAll('div')
+            .filter(
+                controlInput =>
+                    controlInput.label === 'Minimum R Ratio' || controlInput.type === 'subsetter'
+            )
+            .classed('subsetter', true);
+
+        var first_filter = this.controls.wrap.select('div.subsetter');
 
         this.controls.filter_header = first_filter
             .insert('div', '*')
@@ -19,7 +40,6 @@ export function initFilterLabel() {
         this.controls.filter_header
             .append('span')
             .text('Filters')
-            .style('font-size', '1.5em')
             .style('font-weight', 'strong')
             .style('display', 'block');
         const population = d3.set(this.initial_data.map(m => m[config.id_col])).values().length;

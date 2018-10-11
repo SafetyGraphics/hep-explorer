@@ -44,7 +44,8 @@ document.onreadystatechange = function () {
               'AST':'Aspartate Aminotransferase (U/L)',
               'TB':'Bilirubin (umol/L)',
               'ALP':'Alkaline Phosphatase (U/L)'
-            }
+            },
+            r_ratio_filter:false
         };
         const chart = safetyedish('#container', settings);
         d3.csv('adlbc.csv', function(data) {
