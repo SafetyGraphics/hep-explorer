@@ -1102,6 +1102,7 @@
                 d.absolute = d[config.value_col];
 
                 //get the value relative to the ULN (% of the upper limit of normal) for the measure
+                d.uln = d[config.normal_col_high];
                 d.relative_uln = d[config.value_col] / d[config.normal_col_high];
 
                 //get value relative to baseline
@@ -1609,7 +1610,7 @@
             .enter()
             .append('div')
             .attr('class', function(d) {
-                return d.type + ' message';
+                return d.type + ' message ' + d.label;
             })
             .html(function(d) {
                 return '<strong>' + jsUcfirst(d.type) + '</strong>: ' + d.message;
@@ -1994,7 +1995,7 @@
         //merge in the absolute and relative values
         colList = d3.merge([
             colList,
-            ['absolute', 'relative_uln', 'relative_baseline', 'baseline_raw', 'analysisFlag']
+            ['absolute', 'relative_uln', 'relative_baseline', 'baseline_absolute', 'analysisFlag']
         ]);
 
         //get maximum values for each measure type
@@ -2018,10 +2019,18 @@
                         });
 
                     if (matches.length == 0) {
-                        console.warn(
-                            'No analysis records found for ' + d[0][config.id_col] + ' for ' + mKey
-                        );
+                        if (config.debug) {
+                            console.warn(
+                                'No analysis records found for ' +
+                                    d[0][config.id_col] +
+                                    ' for ' +
+                                    mKey
+                            );
+                        }
+
                         participant_obj.drop_participant = true;
+                        participant_obj.drop_reason =
+                            'No analysis results found 1+ key measure, including ' + mKey + '.';
                         return participant_obj;
                     } else {
                         participant_obj.drop_participant = false;
@@ -2078,9 +2087,22 @@
                 })
             );
 
+        chart.dropped_participants = flat_data
+            .filter(function(f) {
+                return f.values.drop_participant;
+            })
+            .map(function(d) {
+                return {
+                    id: d.key,
+                    drop_reason: d.values.drop_reason,
+                    allrecords: chart.initial_data.filter(function(f) {
+                        return f[config.id_col] == d.key;
+                    })
+                };
+            });
         var flat_data = flat_data
             .filter(function(f) {
-                return f.values.drop_participant == false;
+                return !f.values.drop_participant;
             })
             .map(function(m) {
                 m.values[config.id_col] = m.key;
@@ -2111,29 +2133,108 @@
                 : '';
     }
 
+    function showMissingDataWarning() {
+        var chart = this;
+        var config = chart.config;
+
+        if (config.debug) {
+            //confirm participants are only dropped once (?!)
+            var unique_dropped_participants = d3
+                .set(
+                    this.dropped_participants.map(function(m) {
+                        return m.id;
+                    })
+                )
+                .values().length;
+            console.log(
+                'Of ' +
+                    this.dropped_participants.length +
+                    ' dropped participants, ' +
+                    unique_dropped_participants +
+                    ' are unique.'
+            );
+            console.log(this.dropped_participants);
+        }
+
+        chart.messages.remove(null, 'droppedPts', chart.messages); //remove message from previous render
+        if (this.dropped_participants.length > 0) {
+            var warningText =
+                this.dropped_participants.length +
+                ' participants are not plotted because of invalid or missing data for the current chart. Click <a class="ptDownload">here</a> to download a csv with a brief explanation of why each participant was not plotted.';
+
+            this.messages.add(warningText, 'caution', 'droppedPts', this.messages, function() {
+                //custom callback to activate the droppedRows download
+                d3.select(this)
+                    .select('a.ptDownload')
+                    .style('color', 'blue')
+                    .style('text-decoration', 'underline')
+                    .style('cursor', 'pointer')
+                    .datum(chart.dropped_participants)
+                    .on('click', function(d) {
+                        var cols = Object.keys(d[0]);
+                        downloadCSV.call(this, d, cols);
+                    });
+            });
+        }
+    }
+
     function dropMissingValues() {
+        var chart = this;
         var config = this.config;
         //drop records with missing or invalid (negative) values
         var missing_count = d3.sum(this.raw_data, function(f) {
             return f[config.x.column] <= 0 || f[config.y.column] <= 0;
         });
 
-        this.messages.remove(null, 'missingData', this.messages); //hide any previous missing data messages
         if (missing_count > 0) {
-            this.wrap
-                .append('span')
-                .classed('se-footnote', true)
-                .text();
+            this.raw_data = this.raw_data.map(function(d) {
+                d.nonPositiveFlag = d[config.x.column] <= 0 || d[config.y.column] <= 0;
+                var type = config.display == 'relative_uln' ? 'eDish' : 'mDish';
+                // generate an informative reason the participant was dropped
+                var dropText =
+                    type +
+                    ' values could not be generated for ' +
+                    config.x.column +
+                    ' or ' +
+                    config.y.column +
+                    '. ';
 
-            var warningText =
-                'Data not shown for ' +
-                missing_count +
-                ' participant(s) with invalid data. This could be due to negative or 0 lab values or to missing baseline values when viewing mDish.';
-            this.messages.add(warningText, 'warning', 'missingData', this.messages);
-            this.raw_data = this.raw_data.filter(function(f) {
-                return (f[config.x.column] > 0) & (f[config.y.column] > 0);
+                // x type is mdish and baseline is missing
+                if ((type == 'mDish') & !d[config.x.column + '_baseline_absolute']) {
+                    dropText = dropText + 'Baseline for ' + config.x.column + ' is missing. ';
+                }
+
+                // y type is mdish and baseline is missing
+                if ((type == 'mDish') & !d[config.y.column + '_baseline_absolute']) {
+                    dropText = dropText + 'Baseline for ' + config.y.column + ' is missing. ';
+                }
+
+                d.drop_reason = d.nonPositiveFlag ? dropText : '';
+                return d;
+            });
+
+            this.dropped_participants = d3.merge([
+                this.dropped_participants,
+                this.raw_data
+                    .filter(function(f) {
+                        return f.nonPositiveFlag;
+                    })
+                    .map(function(m) {
+                        return { id: m[config.id_col], drop_reason: m.drop_reason };
+                    })
+            ]);
+
+            this.dropped_participants.map(function(m) {
+                m.raw = chart.initial_data.filter(function(f) {
+                    return f[config.id_col] == m.id;
+                });
             });
         }
+
+        this.raw_data = this.raw_data.filter(function(f) {
+            return !f.nonPositiveFlag;
+        });
+        showMissingDataWarning.call(this);
     }
 
     function onPreprocess() {
@@ -2988,7 +3089,6 @@
 
     function drawPopulationExtent() {
         var lineChart = this;
-        console.log(this);
         this.svg
             .selectAll('line.guidelines')
             .data(lineChart.raw_data[0].population_extent)

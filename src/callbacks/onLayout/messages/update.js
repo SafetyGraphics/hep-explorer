@@ -14,7 +14,7 @@ export function update(messages) {
     messageDivs
         .enter()
         .append('div')
-        .attr('class', d => d.type + ' message')
+        .attr('class', d => d.type + ' message ' + d.label)
         .html(d => '<strong>' + jsUcfirst(d.type) + '</strong>: ' + d.message)
         .style('border-radius', '.5em')
         .style('margin-right', '1em')

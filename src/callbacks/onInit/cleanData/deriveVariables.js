@@ -35,6 +35,7 @@ export default function deriveVariables() {
             d.absolute = d[config.value_col];
 
             //get the value relative to the ULN (% of the upper limit of normal) for the measure
+            d.uln = d[config.normal_col_high];
             d.relative_uln = d[config.value_col] / d[config.normal_col_high];
 
             //get value relative to baseline

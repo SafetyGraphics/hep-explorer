@@ -33,7 +33,7 @@ export function flattenData() {
     //merge in the absolute and relative values
     colList = d3.merge([
         colList,
-        ['absolute', 'relative_uln', 'relative_baseline', 'baseline_raw', 'analysisFlag']
+        ['absolute', 'relative_uln', 'relative_baseline', 'baseline_absolute', 'analysisFlag']
     ]);
 
     //get maximum values for each measure type
@@ -51,10 +51,15 @@ export function flattenData() {
                     .filter(f => f.analysisFlag);
 
                 if (matches.length == 0) {
-                    console.warn(
-                        'No analysis records found for ' + d[0][config.id_col] + ' for ' + mKey
-                    );
+                    if (config.debug) {
+                        console.warn(
+                            'No analysis records found for ' + d[0][config.id_col] + ' for ' + mKey
+                        );
+                    }
+
                     participant_obj.drop_participant = true;
+                    participant_obj.drop_reason =
+                        'No analysis results found 1+ key measure, including ' + mKey + '.';
                     return participant_obj;
                 } else {
                     participant_obj.drop_participant = false;
@@ -101,7 +106,14 @@ export function flattenData() {
         })
         .entries(this.imputed_data.filter(f => f.key_measure));
 
-    var flat_data = flat_data.filter(f => f.values.drop_participant == false).map(function(m) {
+    chart.dropped_participants = flat_data.filter(f => f.values.drop_participant).map(function(d) {
+        return {
+            id: d.key,
+            drop_reason: d.values.drop_reason,
+            allrecords: chart.initial_data.filter(f => f[config.id_col] == d.key)
+        };
+    });
+    var flat_data = flat_data.filter(f => !f.values.drop_participant).map(function(m) {
         m.values[config.id_col] = m.key;
 
         //link the raw data to the flattened object
