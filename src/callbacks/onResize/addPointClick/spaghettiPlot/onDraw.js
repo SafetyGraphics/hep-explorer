@@ -13,7 +13,6 @@ export default function onDraw() {
 
     //initialize the measureTable
     if (spaghetti.config.firstDraw) {
-        console.log('making measure table');
         drawMeasureTable.call(eDish, this.participant_data);
         spaghetti.config.firstDraw = false;
     }

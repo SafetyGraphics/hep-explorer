@@ -5,8 +5,6 @@ import calculateRRatio from './flattenData/calculateRRatio';
 export function flattenData() {
     var chart = this;
     var config = this.config;
-    console.log(chart.config.analysisFlag);
-    console.log(chart);
 
     //make a data set with one row per ID
 
@@ -53,7 +51,9 @@ export function flattenData() {
                     .filter(f => f.analysisFlag);
 
                 if (matches.length == 0) {
-                    console.log('No matches found');
+                    console.warn(
+                        'No analysis records found for ' + d[0][config.id_col] + ' for ' + mKey
+                    );
                     participant_obj.drop_participant = true;
                     return participant_obj;
                 } else {

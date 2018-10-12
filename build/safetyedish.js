@@ -1131,9 +1131,7 @@
     }
 
     function makeAnalysisFlag() {
-        var chart = this;
         var config = this.config;
-        console.log(chart.imputed_data);
         this.imputed_data = this.imputed_data.map(function(d) {
             var hasAnalysisSetting =
                 (config.analysisFlag.value_col != null) & (config.analysisFlag.values.length > 0);
@@ -1142,12 +1140,6 @@
                 : true;
             return d;
         });
-
-        console.log(
-            d3.mean(chart.imputed_data, function(d) {
-                return d.analysisFlag;
-            }) + '% of records flagged for analysis.'
-        );
     }
 
     function cleanData() {
@@ -1972,8 +1964,6 @@
     function flattenData() {
         var chart = this;
         var config = this.config;
-        console.log(chart.config.analysisFlag);
-        console.log(chart);
 
         //make a data set with one row per ID
 
@@ -2028,7 +2018,9 @@
                         });
 
                     if (matches.length == 0) {
-                        console.log('No matches found');
+                        console.warn(
+                            'No analysis records found for ' + d[0][config.id_col] + ' for ' + mKey
+                        );
                         participant_obj.drop_participant = true;
                         return participant_obj;
                     } else {
@@ -2735,7 +2727,6 @@
                 return [lower_extent, upper_extent];
             })
             .entries(chart.initial_data);
-        console.log(chart);
         //make nest by measure
         var nested = d3
             .nest()
@@ -3376,7 +3367,6 @@
 
         //initialize the measureTable
         if (spaghetti.config.firstDraw) {
-            console.log('making measure table');
             drawMeasureTable.call(eDish, this.participant_data);
             spaghetti.config.firstDraw = false;
         }
