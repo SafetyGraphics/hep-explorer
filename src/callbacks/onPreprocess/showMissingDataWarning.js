@@ -33,7 +33,7 @@ export function showMissingDataWarning() {
                 .style('cursor', 'pointer')
                 .datum(chart.dropped_participants)
                 .on('click', function(d) {
-                    var cols = Object.keys(d[0]);
+                    var cols = ['id', 'drop_reason'];
                     downloadCSV.call(this, d, cols);
                 });
         });

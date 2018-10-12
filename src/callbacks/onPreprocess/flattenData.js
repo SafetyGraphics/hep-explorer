@@ -59,7 +59,7 @@ export function flattenData() {
 
                     participant_obj.drop_participant = true;
                     participant_obj.drop_reason =
-                        'No analysis results found 1+ key measure, including ' + mKey + '.';
+                        'No analysis results found for 1+ key measure, including ' + mKey + '.';
                     return participant_obj;
                 } else {
                     participant_obj.drop_participant = false;
