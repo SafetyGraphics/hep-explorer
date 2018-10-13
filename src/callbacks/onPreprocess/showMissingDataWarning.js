@@ -22,7 +22,7 @@ export function showMissingDataWarning() {
     if (this.dropped_participants.length > 0) {
         var warningText =
             this.dropped_participants.length +
-            ' participants are not plotted because of invalid or missing data for the current chart. Click <a class="ptDownload">here</a> to download a csv with a brief explanation of why each participant was not plotted.';
+            ' participants are not plotted. They likely have invalid or missing data for key variables in the current chart. Click <a class="ptDownload">here</a> to download a csv with a brief explanation of why each participant was not plotted.';
 
         this.messages.add(warningText, 'caution', 'droppedPts', this.messages, function() {
             //custom callback to activate the droppedRows download

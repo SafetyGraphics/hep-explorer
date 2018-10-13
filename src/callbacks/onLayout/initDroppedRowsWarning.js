@@ -5,7 +5,7 @@ export function initDroppedRowsWarning() {
     if (this.dropped_rows.length > 0) {
         var warningText =
             this.dropped_rows.length +
-            ' rows were removed because of invalid data. Click <a class="rowDownload">here</a> to download a csv with a brief explanation of why each row was removed.';
+            ' rows were removed. This is probably because of non-numeric or missing data provided for key variables. Click <a class="rowDownload">here</a> to download a csv with a brief explanation of why each row was removed.';
 
         this.messages.add(warningText, 'caution', 'droppedRows', this.messages, function() {
             //custom callback to activate the droppedRows download

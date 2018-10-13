@@ -1605,19 +1605,46 @@
             return d.id;
         });
 
-        messageDivs
+        var newMessages = messageDivs
             .enter()
             .append('div')
             .attr('class', function(d) {
                 return d.type + ' message ' + d.label;
             })
             .html(function(d) {
-                return '<strong>' + jsUcfirst(d.type) + '</strong>: ' + d.message;
+                var messageText = '<strong>' + jsUcfirst(d.type) + '</strong>: ' + d.message;
+                return messageText.split('.')[0] + '.';
             })
             .style('border-radius', '.5em')
             .style('margin-right', '1em')
-            .style('margin-bottom', '1em')
-            .style('padding', '0.4em');
+            .style('margin-bottom', '0.5em')
+            .style('padding', '0.2em')
+            .style('font-size', '0.9em');
+
+        newMessages
+            .append('div.expand')
+            .html('•••')
+            .style('background', 'white')
+            .style('display', 'inline-block')
+            .style('border', '1px solid #999')
+            .style('padding', '0 0.2em')
+            .style('margin-left', '0.3em')
+            .style('font-size', '0.4em')
+            .style('border-radius', '0.6em')
+            .style('cursor', 'pointer')
+            .on('click', function(d) {
+                console.log(d);
+                d3.select(this.parentNode)
+                    .html(function(d) {
+                        return '<strong>' + jsUcfirst(d.type) + '</strong>: ' + d.message;
+                    })
+                    .each(function(d) {
+                        if (d.callback) {
+                            console.log('callback');
+                            d.callback.call(this.parentNode);
+                        }
+                    });
+            });
 
         messageDivs.each(function(d) {
             var type = d.type;
@@ -1744,7 +1771,7 @@
         if (this.dropped_rows.length > 0) {
             var warningText =
                 this.dropped_rows.length +
-                ' rows were removed because of invalid data. Click <a class="rowDownload">here</a> to download a csv with a brief explanation of why each row was removed.';
+                ' rows were removed. This is probably because of non-numeric or missing data provided for key variables. Click <a class="rowDownload">here</a> to download a csv with a brief explanation of why each row was removed.';
 
             this.messages.add(warningText, 'caution', 'droppedRows', this.messages, function() {
                 //custom callback to activate the droppedRows download
@@ -2159,7 +2186,7 @@
         if (this.dropped_participants.length > 0) {
             var warningText =
                 this.dropped_participants.length +
-                ' participants are not plotted because of invalid or missing data for the current chart. Click <a class="ptDownload">here</a> to download a csv with a brief explanation of why each participant was not plotted.';
+                ' participants are not plotted. They likely have invalid or missing data for key variables in the current chart. Click <a class="ptDownload">here</a> to download a csv with a brief explanation of why each participant was not plotted.';
 
             this.messages.add(warningText, 'caution', 'droppedPts', this.messages, function() {
                 //custom callback to activate the droppedRows download
