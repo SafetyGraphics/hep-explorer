@@ -56,7 +56,6 @@ export default function settings() {
             ALP: 'data-driven'
         },
         imputation_values: null,
-        missingValues: ['', 'NA', 'N/A'],
         display: 'relative_uln', //or "relative_baseline"
         display_options: [
             { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
