@@ -2956,7 +2956,10 @@
                             return { visitn: m.visitn, value: m.lln };
                         })
                         .reverse();
-                    var normal_data = d3.merge([upper, lower]);
+                    var normal_data = d3.merge([upper, lower]).filter(function(m) {
+                        return m.value;
+                    });
+
                     var drawnormal = d3.svg
                         .line()
                         .x(function(d) {
@@ -2965,6 +2968,7 @@
                         .y(function(d) {
                             return y(d.value);
                         });
+
                     var normalpath = svg
                         .append('path')
                         .datum(normal_data)
@@ -3117,7 +3121,9 @@
                 return { visitn: m.visitn, value: m.lln };
             })
             .reverse();
-        var normal_data = d3.merge([upper, lower]);
+        var normal_data = d3.merge([upper, lower]).filter(function(f) {
+            return f.value;
+        });
         var drawnormal = d3.svg
             .line()
             .x(function(d) {

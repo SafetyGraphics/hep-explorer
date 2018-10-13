@@ -8,7 +8,7 @@ export function drawNormalRange() {
             return { visitn: m.visitn, value: m.lln };
         })
         .reverse();
-    var normal_data = d3.merge([upper, lower]);
+    var normal_data = d3.merge([upper, lower]).filter(f => f.value);
     var drawnormal = d3.svg
         .line()
         .x(d => lineChart.x(d.visitn) + lineChart.x.rangeBand() / 2)
