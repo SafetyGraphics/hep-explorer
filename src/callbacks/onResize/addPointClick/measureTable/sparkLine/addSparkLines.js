@@ -70,8 +70,7 @@ export function addSparkLines(d) {
                     });
 
                 //draw lines at the population guidelines
-                svg
-                    .selectAll('lines.guidelines')
+                svg.selectAll('lines.guidelines')
                     .data(row_d.population_extent)
                     .enter()
                     .append('line')

@@ -6,6 +6,7 @@ export function drawMeasureTable(d) {
     var nested = makeNestedData.call(this, d);
 
     //draw the measure table
+    this.measureTable.edish = this;
     this.measureTable.on('draw', function() {
         addSparkLines.call(this);
         addSparkClick.call(this);

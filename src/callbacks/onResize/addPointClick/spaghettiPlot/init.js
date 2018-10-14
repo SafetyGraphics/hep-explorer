@@ -55,7 +55,7 @@ export function init(d) {
     //draw that chart
     chart.spaghetti = createChart(spaghettiElement, spaghettiSettings, spaghettiControls);
 
-    chart.spaghetti.parent = chart; //link the full eDish object
+    chart.spaghetti.edish = chart; //link the full eDish object
     chart.spaghetti.participant_data = d; //include the passed data (used to initialize the measure table)
     chart.spaghetti.on('layout', onLayout);
     chart.spaghetti.on('preprocess', onPreprocess);

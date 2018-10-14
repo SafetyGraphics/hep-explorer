@@ -15,8 +15,7 @@ export function init(d) {
     chartRow_node.appendChild(chartCell_node);
 
     //update the row styles
-    d3
-        .select(chartRow_node)
+    d3.select(chartRow_node)
         .style('background', 'none')
         .style('border-bottom', '0.5px solid black');
 

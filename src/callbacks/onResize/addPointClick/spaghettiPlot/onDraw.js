@@ -2,7 +2,7 @@ import { drawMeasureTable } from '../measureTable/drawMeasureTable';
 
 export default function onDraw() {
     var spaghetti = this;
-    var eDish = this.parent;
+    var eDish = this.edish;
 
     //make sure y domain includes the current cut point for all measures
     const max_value = d3.max(spaghetti.filtered_data, f => f[spaghetti.config.y.column]);
@@ -13,7 +13,6 @@ export default function onDraw() {
 
     //initialize the measureTable
     if (spaghetti.config.firstDraw) {
-        console.log('making measure table');
         drawMeasureTable.call(eDish, this.participant_data);
         spaghetti.config.firstDraw = false;
     }

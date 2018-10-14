@@ -68,8 +68,7 @@ export function drawVisitPath(d) {
 
     var totalLength = path.node().getTotalLength();
 
-    path
-        .attr('stroke-dasharray', totalLength + ' ' + totalLength)
+    path.attr('stroke-dasharray', totalLength + ' ' + totalLength)
         .attr('stroke-dashoffset', totalLength)
         .transition()
         .duration(2000)

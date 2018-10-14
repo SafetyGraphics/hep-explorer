@@ -1,6 +1,6 @@
 export default function onLayout() {
     var spaghetti = this;
-    var eDish = this.parent;
+    var eDish = this.edish;
 
     //customize the display control
     const displayControlWrap = spaghetti.controls.wrap

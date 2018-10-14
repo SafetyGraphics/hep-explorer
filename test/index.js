@@ -45,12 +45,15 @@ document.onreadystatechange = function () {
               'TB':'Bilirubin (umol/L)',
               'ALP':'Alkaline Phosphatase (U/L)'
             },
-            r_ratio_filter:false
+            r_ratio_filter:false,
         };
         const chart = safetyedish('#container', settings);
         d3.csv('adlbc.csv', function(data) {
             chart.init(data);
         });
-
+        //const chart = safetyedish('#container', {});
+        //d3.csv('../../viz-library/data/safetyData/ADBDS.csv', function(data) {
+        //    chart.init(data);
+        //});
     }
 }
