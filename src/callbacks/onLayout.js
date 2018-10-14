@@ -7,17 +7,24 @@ import { initResetButton } from './onLayout/initResetButton';
 import { initDisplayControl } from './onLayout/initDisplayControl';
 import { layoutPanels } from './onLayout/layoutPanels';
 import { initTitle } from './onLayout/initTitle';
-import { initFilterLabel } from './onLayout/initFilterLabel';
+import { init as initMessages } from './onLayout/messages/init';
+import { initWarning } from './onLayout/initWarning';
+import { initControlLabels } from './onLayout/initControlLabels';
+import { addFootnote } from './onLayout/addFootnote';
 
 export default function onLayout() {
-    addRRatioSpan.call(this);
     layoutPanels.call(this);
+    initMessages.call(this);
+    initWarning.call(this);
     initTitle.call(this);
+    addFootnote.call(this);
+
+    addRRatioSpan.call(this);
     initQuadrants.call(this);
     initRugs.call(this);
     initVisitPath.call(this);
     initParticipantDetails.call(this);
     initResetButton.call(this);
     initDisplayControl.call(this);
-    initFilterLabel.call(this);
+    initControlLabels.call(this);
 }

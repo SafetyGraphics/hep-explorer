@@ -1,4 +1,4 @@
-import { clearParticipantDetails } from '../clearParticipantDetails';
+import { clearParticipantDetails } from '../../clearParticipantDetails';
 
 export function makeParticipantHeader(d) {
     var chart = this;

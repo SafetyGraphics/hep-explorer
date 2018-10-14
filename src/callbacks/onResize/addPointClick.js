@@ -1,7 +1,7 @@
 import { clearParticipantDetails } from './clearParticipantDetails';
-import { drawVisitPath } from './addPointClick/drawVisitPath';
-import { drawMeasureTable } from './addPointClick/drawMeasureTable';
-import { makeParticipantHeader } from './addPointClick/makeParticipantHeader';
+import { drawVisitPath } from './addPointClick/visitPath/drawVisitPath';
+import { drawMeasureTable } from './addPointClick/measureTable/drawMeasureTable';
+import { makeParticipantHeader } from './addPointClick/participantHeader/makeParticipantHeader';
 import { drawRugs } from './addPointMouseover/drawRugs';
 import { init as initSpaghettiPlot } from './addPointClick/spaghettiPlot/init';
 
@@ -25,10 +25,11 @@ export function addPointClick() {
             .attr('stroke-width', 3);
 
         drawVisitPath.call(chart, d); //draw the path showing participant's pattern over time
-        drawMeasureTable.call(chart, d); //draw table showing measure values with sparklines
-        initSpaghettiPlot.call(chart, d);
-        makeParticipantHeader.call(chart, d);
         drawRugs.call(chart, d, 'x');
         drawRugs.call(chart, d, 'y');
+
+        chart.participantDetails.wrap.selectAll('*').style('display', null);
+        makeParticipantHeader.call(chart, d);
+        initSpaghettiPlot.call(chart, d);
     });
 }

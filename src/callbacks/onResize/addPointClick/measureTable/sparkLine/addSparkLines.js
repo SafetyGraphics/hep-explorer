@@ -10,15 +10,24 @@ export function addSparkLines(d) {
                 const cell = d3
                         .select(this)
                         .select('td.spark')
+                        .classed('minimized', true)
                         .text(''),
+                    toggle = cell
+                        .append('span')
+                        .html('&#x25BD;')
+                        .style('cursor', 'pointer')
+                        .style('color', '#999')
+                        .style('vertical-align', 'middle'),
                     width = 100,
                     height = 25,
                     offset = 4,
-                    overTime = row_d.spark_data.sort((a, b) => +a.visitn - +b.visitn);
+                    overTime = row_d.spark_data.sort((a, b) => +a.visitn - +b.visitn),
+                    color = row_d.color;
                 var x = d3.scale
                     .ordinal()
                     .domain(overTime.map(m => m.visitn))
                     .rangePoints([offset, width - offset]);
+
                 //y-domain includes 99th population percentile + any participant outliers
                 var y_min = d3.min(d3.merge([row_d.values, row_d.population_extent])) * 0.99;
                 var y_max = d3.max(d3.merge([row_d.values, row_d.population_extent])) * 1.01;
@@ -26,6 +35,7 @@ export function addSparkLines(d) {
                     .linear()
                     .domain([y_min, y_max])
                     .range([height - offset, offset]);
+
                 //render the svg
                 var svg = cell
                     .append('svg')
@@ -86,48 +96,22 @@ export function addSparkLines(d) {
                         class: 'sparkLine',
                         d: draw_sparkline,
                         fill: 'none',
-                        stroke: '#999'
+                        stroke: color
                     });
 
-                /*
-                draw_lln = d3.svg
-                    .line()
-                    .interpolate('cardinal')
-                    .x(d => x(d.visitn))
-                    .y(d => y(d.lln)),
-                lln = svg
-                    .append('path')
-                    .datum(overTime)
-                    .attr({
-                        class: 'sparkLine',
-                        d: draw_lln,
-                        fill: 'none',
-                        stroke: 'green'
-                    }),
-                */
-                //draw min and max points
-                var minimumData = overTime.filter(
-                    di => di.value === d3.min(overTime.map(dii => dii.value))
-                )[0];
-                var minimumMonth = svg.append('circle').attr({
-                    class: 'circle minimum',
-                    cx: x(minimumData.visitn),
-                    cy: y(minimumData.value),
-                    r: '2px',
-                    stroke: 'blue',
-                    fill: 'none'
-                });
-                var maximumData = overTime.filter(
-                    di => di.value === d3.max(overTime.map(dii => dii.value))
-                )[0];
-                var maximumMonth = svg.append('circle').attr({
-                    class: 'circle maximum',
-                    cx: x(maximumData.visitn),
-                    cy: y(maximumData.value),
-                    r: '2px',
-                    stroke: 'orange',
-                    fill: 'none'
-                });
+                //draw outliers
+                var outliers = overTime.filter(f => f.outlier);
+                var outlier_circles = svg
+                    .selectAll('circle.outlier')
+                    .data(outliers)
+                    .enter()
+                    .append('circle')
+                    .attr('class', 'circle outlier')
+                    .attr('cx', d => x(d.visitn))
+                    .attr('cy', d => y(d.value))
+                    .attr('r', '2px')
+                    .attr('stroke', color)
+                    .attr('fill', color);
             });
     }
 }

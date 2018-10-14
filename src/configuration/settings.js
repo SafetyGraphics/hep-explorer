@@ -6,7 +6,6 @@ export default function settings() {
         visit_col: 'VISIT',
         visitn_col: 'VISITNUM',
         studyday_col: 'DY',
-        unit_col: 'STRESU',
         normal_col_low: 'STNRLO',
         normal_col_high: 'STNRHI',
         id_col: 'USUBJID',
@@ -23,27 +22,24 @@ export default function settings() {
         },
         x_options: ['ALT', 'AST', 'ALP'],
         y_options: ['TB'],
-        size_options: ['ALT', 'AST', 'ALP', 'TB'],
+        point_size: 'Uniform',
+        point_size_options: ['ALT', 'AST', 'ALP', 'TB'],
         cuts: {
             ALT: {
                 relative_baseline: 3.8,
-                relative_uln: 3,
-                absolute: 1.0
+                relative_uln: 3
             },
             AST: {
                 relative_baseline: 3.8,
-                relative_uln: 3,
-                absolute: 1.0
+                relative_uln: 3
             },
             TB: {
                 relative_baseline: 4.8,
-                relative_uln: 2,
-                absolute: 40
+                relative_uln: 2
             },
             ALP: {
                 relative_baseline: 3.8,
-                relative_uln: 1,
-                absolute: 1.0
+                relative_uln: 1
             },
             xMeasure: null, //set in syncSettings
             yMeasure: null, //set in syncSettings
@@ -57,21 +53,21 @@ export default function settings() {
         },
         imputation_values: null,
         missingValues: ['', 'NA', 'N/A'],
-        display: 'relative_uln', //or "relative_baseline" or "absolute"
+        display: 'relative_uln', //or "relative_baseline"
         display_options: [
             { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
-            { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' },
-            { label: 'Raw Values', value: 'absolute' }
+            { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' }
         ],
         baseline_visitn: '1',
         measureBounds: [0.01, 0.99],
         populationProfileURL: null,
         participantProfileURL: null,
-        point_size: 'Uniform',
         visit_window: 30,
         showTitle: true,
+        warningText:
+            "This graphic has been thoroughly tested, but is not validated. Any clinical recommendations based on this tool should be confirmed using your organization's standard operating procedures.",
+        //all values set in onLayout/quadrants/*.js
         quadrants: [
-            //all values set in onLayout/quadrants/*.js
             {
                 label: "Possible Hy's Law Range",
                 position: 'upper-right',
