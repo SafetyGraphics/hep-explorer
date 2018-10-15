@@ -48,7 +48,8 @@ document.onreadystatechange = function () {
             analysisFlag:{
               value_col:"EPOCH",
               values:["Analysis"]
-            }
+            },
+            r_ratio_filter:false,
         };
         const chart = safetyedish('#container', settings);
         d3.csv('adlbc.csv', function(data) {
@@ -57,6 +58,9 @@ document.onreadystatechange = function () {
             })
             chart.init(data);
         });
-
+        //const chart = safetyedish('#container', {});
+        //d3.csv('../../viz-library/data/safetyData/ADBDS.csv', function(data) {
+        //    chart.init(data);
+        //});
     }
 }

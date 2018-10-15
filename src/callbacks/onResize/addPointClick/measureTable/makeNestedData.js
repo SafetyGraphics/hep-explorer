@@ -13,6 +13,7 @@ export function makeNestedData(d) {
             return [lower_extent, upper_extent];
         })
         .entries(chart.initial_data);
+
     //make nest by measure
     var nested = d3
         .nest()

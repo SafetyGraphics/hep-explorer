@@ -2854,6 +2854,7 @@
                 return [lower_extent, upper_extent];
             })
             .entries(chart.initial_data);
+
         //make nest by measure
         var nested = d3
             .nest()
@@ -3243,7 +3244,26 @@
 
     function addFootnote$1() {
         var footnoteText = [
-            'Y-Axis for each chart is based on the range of values for the entire population. Points shown for values outside the normal range. Click a sparkline to see a larger version of the chart.'
+            'The y-axis for each chart is set to the ' +
+                this.edish.config.measureBounds
+                    .map(function(bound) {
+                        var percentile = '' + Math.round(bound * 100);
+                        var lastDigit = +percentile.substring(percentile.length - 1);
+                        var text =
+                            percentile +
+                            ([0, 4, 5, 6, 7, 8, 9].indexOf(lastDigit) > -1
+                                ? 'th'
+                                : lastDigit === 3
+                                    ? 'rd'
+                                    : lastDigit === 2
+                                        ? 'nd'
+                                        : 'st');
+                        return text;
+                    })
+                    .join(' and ') +
+                " percentiles of the entire population's results for that measure. " +
+                'Values outside the normal range are plotted as individual points. ' +
+                'Click a sparkline to view a more detailed version of the chart.'
         ];
         var footnotes = this.wrap.selectAll('span.footnote').data(footnoteText, function(d) {
             return d;
@@ -3266,6 +3286,7 @@
         var nested = makeNestedData.call(this, d);
 
         //draw the measure table
+        this.measureTable.edish = this;
         this.measureTable.on('draw', function() {
             addSparkLines.call(this);
             addSparkClick.call(this);
