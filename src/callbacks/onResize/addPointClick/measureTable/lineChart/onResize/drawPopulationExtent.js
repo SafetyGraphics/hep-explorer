@@ -1,6 +1,5 @@
 export function drawPopulationExtent() {
     var lineChart = this;
-
     this.svg
         .selectAll('line.guidelines')
         .data(lineChart.raw_data[0].population_extent)

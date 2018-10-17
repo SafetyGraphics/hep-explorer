@@ -1,18 +1,20 @@
 import imputeData from './cleanData/imputeData';
+import dropRows from './cleanData/dropRows';
 import deriveVariables from './cleanData/deriveVariables';
+import makeAnalysisFlag from './cleanData/makeAnalysisFlag';
 
 export function cleanData() {
     var chart = this,
         config = this.config;
 
-    //Remove missing values via the ultimate number regular expression.
-    this.imputed_data = this.initial_data.filter(d => {
-        return /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(d[this.config.value_col]);
-    });
+    //drop rows with invalid data
+    this.imputedData = dropRows.call(this);
+
     this.imputed_data.forEach(function(d) {
         d.impute_flag = false;
     });
 
     imputeData.call(this);
     deriveVariables.call(this);
+    makeAnalysisFlag.call(this);
 }

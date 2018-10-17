@@ -11,15 +11,42 @@ export function update(messages) {
     //
     var messageDivs = messages.wrap.selectAll('div.message').data(visibleMessages, d => d.id);
 
-    messageDivs
+    var newMessages = messageDivs
         .enter()
         .append('div')
-        .attr('class', d => d.type + ' message')
-        .html(d => '<strong>' + jsUcfirst(d.type) + '</strong>: ' + d.message)
+        .attr('class', d => d.type + ' message ' + d.label)
+        .html(function(d) {
+            var messageText = '<strong>' + jsUcfirst(d.type) + '</strong>: ' + d.message;
+            return messageText.split('.')[0] + '.';
+        })
         .style('border-radius', '.5em')
         .style('margin-right', '1em')
-        .style('margin-bottom', '1em')
-        .style('padding', '0.4em');
+        .style('margin-bottom', '0.5em')
+        .style('padding', '0.2em')
+        .style('font-size', '0.9em');
+
+    newMessages
+        .append('div.expand')
+        .html('•••')
+        .style('background', 'white')
+        .style('display', 'inline-block')
+        .style('border', '1px solid #999')
+        .style('padding', '0 0.2em')
+        .style('margin-left', '0.3em')
+        .style('font-size', '0.4em')
+        .style('border-radius', '0.6em')
+        .style('cursor', 'pointer')
+        .on('click', function(d) {
+            console.log(d);
+            d3.select(this.parentNode)
+                .html(d => '<strong>' + jsUcfirst(d.type) + '</strong>: ' + d.message)
+                .each(function(d) {
+                    if (d.callback) {
+                        console.log('callback');
+                        d.callback.call(this.parentNode);
+                    }
+                });
+        });
 
     messageDivs.each(function(d) {
         var type = d.type;
@@ -39,6 +66,10 @@ export function update(messages) {
                 .style('border', '1px solid #999')
                 .style('color', '#999')
                 .style('background-color', null);
+        }
+
+        if (d.callback) {
+            d.callback.call(this);
         }
     });
 

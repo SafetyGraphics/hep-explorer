@@ -54,11 +54,13 @@ export function addSparkLines(d) {
                         return { visitn: m.visitn, value: m.lln };
                     })
                     .reverse();
-                var normal_data = d3.merge([upper, lower]);
+                var normal_data = d3.merge([upper, lower]).filter(m => m.value);
+
                 var drawnormal = d3.svg
                     .line()
                     .x(d => x(d.visitn))
                     .y(d => y(d.value));
+
                 var normalpath = svg
                     .append('path')
                     .datum(normal_data)

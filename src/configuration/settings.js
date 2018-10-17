@@ -14,6 +14,10 @@ export default function settings() {
         details: null,
         r_ratio_filter: true,
         r_ratio_cut: 0,
+        analysisFlag: {
+            value_col: null,
+            values: []
+        },
         measure_values: {
             ALT: 'Aminotransferase, alanine (ALT)',
             AST: 'Aminotransferase, aspartate (AST)',
@@ -52,7 +56,6 @@ export default function settings() {
             ALP: 'data-driven'
         },
         imputation_values: null,
-        missingValues: ['', 'NA', 'N/A'],
         display: 'relative_uln', //or "relative_baseline"
         display_options: [
             { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },

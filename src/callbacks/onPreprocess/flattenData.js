@@ -33,7 +33,7 @@ export function flattenData() {
     //merge in the absolute and relative values
     colList = d3.merge([
         colList,
-        ['absolute', 'relative_uln', 'relative_baseline', 'baseline_raw']
+        ['absolute', 'relative_uln', 'relative_baseline', 'baseline_absolute', 'analysisFlag']
     ]);
 
     //get maximum values for each measure type
@@ -46,11 +46,20 @@ export function flattenData() {
             participant_obj.days_y = null;
             Object.keys(config.measure_values).forEach(function(mKey) {
                 //get all raw data for the current measure
-                var matches = d.filter(f => config.measure_values[mKey] == f[config.measure_col]); //get matching measures
+                var matches = d
+                    .filter(f => config.measure_values[mKey] == f[config.measure_col]) //get matching measures
+                    .filter(f => f.analysisFlag);
 
                 if (matches.length == 0) {
-                    console.log('No matches found');
+                    if (config.debug) {
+                        console.warn(
+                            'No analysis records found for ' + d[0][config.id_col] + ' for ' + mKey
+                        );
+                    }
+
                     participant_obj.drop_participant = true;
+                    participant_obj.drop_reason =
+                        'No analysis results found for 1+ key measure, including ' + mKey + '.';
                     return participant_obj;
                 } else {
                     participant_obj.drop_participant = false;
@@ -97,7 +106,14 @@ export function flattenData() {
         })
         .entries(this.imputed_data.filter(f => f.key_measure));
 
-    var flat_data = flat_data.filter(f => f.values.drop_participant == false).map(function(m) {
+    chart.dropped_participants = flat_data.filter(f => f.values.drop_participant).map(function(d) {
+        return {
+            id: d.key,
+            drop_reason: d.values.drop_reason,
+            allrecords: chart.initial_data.filter(f => f[config.id_col] == d.key)
+        };
+    });
+    var flat_data = flat_data.filter(f => !f.values.drop_participant).map(function(m) {
         m.values[config.id_col] = m.key;
 
         //link the raw data to the flattened object
