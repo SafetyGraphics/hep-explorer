@@ -10,9 +10,6 @@
     if (typeof Object.assign != 'function') {
         Object.defineProperty(Object, 'assign', {
             value: function assign(target, varArgs) {
-                // .length of function is 2
-                'use strict';
-
                 if (target == null) {
                     // TypeError if undefined or null
                     throw new TypeError('Cannot convert undefined or null to object');
@@ -159,122 +156,6 @@
                       : typeof obj;
               };
 
-    var asyncGenerator = (function() {
-        function AwaitValue(value) {
-            this.value = value;
-        }
-
-        function AsyncGenerator(gen) {
-            var front, back;
-
-            function send(key, arg) {
-                return new Promise(function(resolve, reject) {
-                    var request = {
-                        key: key,
-                        arg: arg,
-                        resolve: resolve,
-                        reject: reject,
-                        next: null
-                    };
-
-                    if (back) {
-                        back = back.next = request;
-                    } else {
-                        front = back = request;
-                        resume(key, arg);
-                    }
-                });
-            }
-
-            function resume(key, arg) {
-                try {
-                    var result = gen[key](arg);
-                    var value = result.value;
-
-                    if (value instanceof AwaitValue) {
-                        Promise.resolve(value.value).then(
-                            function(arg) {
-                                resume('next', arg);
-                            },
-                            function(arg) {
-                                resume('throw', arg);
-                            }
-                        );
-                    } else {
-                        settle(result.done ? 'return' : 'normal', result.value);
-                    }
-                } catch (err) {
-                    settle('throw', err);
-                }
-            }
-
-            function settle(type, value) {
-                switch (type) {
-                    case 'return':
-                        front.resolve({
-                            value: value,
-                            done: true
-                        });
-                        break;
-
-                    case 'throw':
-                        front.reject(value);
-                        break;
-
-                    default:
-                        front.resolve({
-                            value: value,
-                            done: false
-                        });
-                        break;
-                }
-
-                front = front.next;
-
-                if (front) {
-                    resume(front.key, front.arg);
-                } else {
-                    back = null;
-                }
-            }
-
-            this._invoke = send;
-
-            if (typeof gen.return !== 'function') {
-                this.return = undefined;
-            }
-        }
-
-        if (typeof Symbol === 'function' && Symbol.asyncIterator) {
-            AsyncGenerator.prototype[Symbol.asyncIterator] = function() {
-                return this;
-            };
-        }
-
-        AsyncGenerator.prototype.next = function(arg) {
-            return this._invoke('next', arg);
-        };
-
-        AsyncGenerator.prototype.throw = function(arg) {
-            return this._invoke('throw', arg);
-        };
-
-        AsyncGenerator.prototype.return = function(arg) {
-            return this._invoke('return', arg);
-        };
-
-        return {
-            wrap: function(fn) {
-                return function() {
-                    return new AsyncGenerator(fn.apply(this, arguments));
-                };
-            },
-            await: function(value) {
-                return new AwaitValue(value);
-            }
-        };
-    })();
-
     var defineProperty = function(obj, key, value) {
         if (key in obj) {
             Object.defineProperty(obj, key, {
@@ -291,8 +172,8 @@
     };
 
     /*------------------------------------------------------------------------------------------------\
-  Clone a variable (http://stackoverflow.com/a/728694).
-\------------------------------------------------------------------------------------------------*/
+      Clone a variable (http://stackoverflow.com/a/728694).
+    \------------------------------------------------------------------------------------------------*/
 
     function clone(obj) {
         var copy;
@@ -1134,7 +1015,7 @@
         var config = this.config;
         this.imputed_data = this.imputed_data.map(function(d) {
             var hasAnalysisSetting =
-                (config.analysisFlag.value_col != null) & (config.analysisFlag.values.length > 0);
+                config.analysisFlag.value_col != null && config.analysisFlag.values.length > 0;
             d.analysisFlag = hasAnalysisSetting
                 ? config.analysisFlag.values.indexOf(d[config.analysisFlag.value_col]) > -1
                 : true;
@@ -1143,6 +1024,9 @@
     }
 
     function cleanData() {
+        var config = this.config;
+
+        //drop rows with invalid data
         this.imputedData = dropRows.call(this);
 
         this.imputed_data.forEach(function(d) {
@@ -1174,6 +1058,8 @@
     }
 
     function updateSummaryTable() {
+        var chart = this;
+        var config = chart.config;
         var quadrants = this.config.quadrants;
         var rows = quadrants.table.rows;
         var cells = quadrants.table.cells;
@@ -1286,6 +1172,8 @@
     function init() {
         var chart = this;
         var config = chart.config;
+        var quadrants = this.config.quadrants;
+
         var x_input = chart.controls.wrap
             .selectAll('div.control-group')
             .filter(function(f) {
@@ -1320,6 +1208,7 @@
 
     function layoutQuadrantLabels() {
         var chart = this;
+        var config = chart.config;
         var quadrants = this.config.quadrants;
 
         //////////////////////////////////////////////////////////
@@ -1354,6 +1243,12 @@
 
     function layoutCutLines() {
         var chart = this;
+        var config = chart.config;
+        var quadrants = this.config.quadrants;
+
+        //////////////////////////////////////////////////////////
+        //layout the cut lines
+        /////////////////////////////////////////////////////////
         chart.cut_lines = {};
         chart.cut_lines.wrap = this.svg.append('g').attr('class', 'cut-lines');
         var wrap = chart.cut_lines.wrap;
@@ -2387,6 +2282,7 @@
     }
 
     function clearParticipantDetails() {
+        var config = this.config;
         var points = this.svg.selectAll('g.point').select('circle');
 
         points.classed('disabled', false);
@@ -2650,6 +2546,7 @@
 
     function addPointMouseover() {
         var chart = this;
+        var config = this.config;
         var points = this.marks[0].circles;
         //add event listener to all participant level points
         points
@@ -3149,7 +3046,7 @@
             })
             .reverse();
         var normal_data = d3.merge([upper, lower]).filter(function(f) {
-            return f.value;
+            return f.value || f.value == 0;
         });
         var drawnormal = d3.svg
             .line()
@@ -3297,6 +3194,7 @@
 
     function makeParticipantHeader(d) {
         var chart = this;
+        var wrap = this.participantDetails.header;
         var raw = d.values.raw[0];
 
         var title = this.participantDetails.header
@@ -3473,8 +3371,11 @@
             .text(d3.format('0.1f')(cut));
     }
 
-    function onResize$1() {
+    function onResize() {
         var spaghetti = this;
+        var config = this.config;
+
+        //hide circles not above the cut point
         var y_col = this.config.y.column;
         this.marks[1].circles
             .attr('stroke-opacity', function(d) {
@@ -3589,7 +3490,7 @@
         chart.spaghetti.on('layout', onLayout$1);
         chart.spaghetti.on('preprocess', onPreprocess$1);
         chart.spaghetti.on('draw', onDraw$1);
-        chart.spaghetti.on('resize', onResize$1);
+        chart.spaghetti.on('resize', onResize);
         chart.spaghetti.init(matches);
 
         //add a footnote
@@ -3827,7 +3728,7 @@
             .attr('class', 'boxplot')
             .datum({ values: results, probs: probs });
 
-        //set bar width variable
+        //draw rectangle from q1 to q3
         var box_x = horizontal ? x(0.5 - boxPlotWidth / 2) : x(probs[1]);
         var box_width = horizontal
             ? x(0.5 + boxPlotWidth / 2) - x(0.5 - boxPlotWidth / 2)
@@ -4105,7 +4006,7 @@
             });
     }
 
-    function onResize() {
+    function onResize$1() {
         //add point interactivity, custom title and formatting
         addPointMouseover.call(this);
         addPointClick.call(this);
@@ -4153,7 +4054,7 @@
         chart.on('preprocess', onPreprocess);
         chart.on('datatransform', onDataTransform);
         chart.on('draw', onDraw);
-        chart.on('resize', onResize);
+        chart.on('resize', onResize$1);
 
         return chart;
     }
