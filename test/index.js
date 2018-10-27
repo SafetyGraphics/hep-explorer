@@ -48,8 +48,7 @@ document.onreadystatechange = function () {
             analysisFlag:{
               value_col:"EPOCH",
               values:["Analysis"]
-            },
-            r_ratio_filter:false,
+            }
         };
         const chart = safetyedish('#container', settings);
         d3.csv('adlbc.csv', function(data) {
