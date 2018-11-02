@@ -969,10 +969,17 @@
 
         this.imputed_data = this.imputed_data.map(function(d) {
             //coerce numeric values to number
-            var numerics = ['value_col', 'visitn_col', 'normal_col_low', 'normal_col_high'];
+            var numerics = [
+                'value_col',
+                'visitn_col',
+                'studyday_col',
+                'normal_col_low',
+                'normal_col_high'
+            ];
             numerics.forEach(function(col) {
                 d[config[col]] = +d[config[col]];
             });
+
             //standardize key variables
             d.key_measure = false;
             if (included_measures.indexOf(d[config.measure_col]) > -1) {
@@ -1336,11 +1343,8 @@
             sortable: false,
             pagination: false,
             exportable: false,
-            applyCSS: true,
-            visitn_col: this.visitn_col,
-            value_col: this.value_col
+            applyCSS: true
         };
-
         this.measureTable = webcharts.createTable(
             this.element + ' .participantDetails .measureTable',
             settings
@@ -2783,7 +2787,9 @@
                     var obj = {
                         id: +m[config.id_col],
                         lab: +m[config.measure_col],
+                        visit: m[config.visit_col],
                         visitn: +m[config.visitn_col],
+                        studyday: +m[config.studyday_col],
                         value: +m[config.value_col],
                         lln: +m[config.normal_col_low],
                         uln: +m[config.normal_col_high],
@@ -2842,17 +2848,18 @@
                         height = 25,
                         offset = 4,
                         overTime = row_d.spark_data.sort(function(a, b) {
-                            return +a.visitn - +b.visitn;
+                            return +a.studyday - +b.studyday;
                         }),
                         color = row_d.color;
+
                     var x = d3.scale
-                        .ordinal()
+                        .linear()
                         .domain(
-                            overTime.map(function(m) {
-                                return m.visitn;
+                            d3.extent(overTime, function(m) {
+                                return m.studyday;
                             })
                         )
-                        .rangePoints([offset, width - offset]);
+                        .range([offset, width - offset]);
 
                     //y-domain includes 99th population percentile + any participant outliers
                     var y_min = d3.min(d3.merge([row_d.values, row_d.population_extent])) * 0.99;
@@ -2873,11 +2880,11 @@
 
                     //draw the normal range polygon ULN and LLN
                     var upper = overTime.map(function(m) {
-                        return { visitn: m.visitn, value: m.uln };
+                        return { studyday: m.studyday, value: m.uln };
                     });
                     var lower = overTime
                         .map(function(m) {
-                            return { visitn: m.visitn, value: m.lln };
+                            return { studyday: m.studyday, value: m.lln };
                         })
                         .reverse();
                     var normal_data = d3.merge([upper, lower]).filter(function(m) {
@@ -2887,7 +2894,7 @@
                     var drawnormal = d3.svg
                         .line()
                         .x(function(d) {
-                            return x(d.visitn);
+                            return x(d.studyday);
                         })
                         .y(function(d) {
                             return y(d.value);
@@ -2925,7 +2932,7 @@
                         .line()
                         .interpolate('cardinal')
                         .x(function(d) {
-                            return x(d.visitn);
+                            return x(d.studyday);
                         })
                         .y(function(d) {
                             return y(d.value);
@@ -2951,7 +2958,7 @@
                         .append('circle')
                         .attr('class', 'circle outlier')
                         .attr('cx', function(d) {
-                            return x(d.visitn);
+                            return x(d.studyday);
                         })
                         .attr('cy', function(d) {
                             return y(d.value);
@@ -2971,15 +2978,14 @@
         max_width: 800,
         aspect: 4,
         x: {
-            column: 'visitn',
-            type: 'ordinal',
-            label: 'Visit'
+            column: 'studyday',
+            type: 'linear',
+            label: 'Study Day'
         },
         y: {
             column: 'value',
             type: 'linear',
             label: '',
-            //    domain: [0, null],
             format: '.1f'
         },
         marks: [
@@ -2990,12 +2996,13 @@
             {
                 type: 'circle',
                 radius: 4,
-                per: ['lab', 'visitn'],
+                per: ['lab', 'studyday'],
                 values: { outlier: [true] },
                 attributes: {
                     'fill-opacity': 1
                 },
-                tooltip: 'Visit: [visitn]\nValue: [value]\nULN: [uln]\nLLN: [lln]'
+                tooltip:
+                    'StudyDay: [studyday]\nVisit Number: [visitn]\nVisit: [visit]\nValue: [value]\nULN: [uln]\nLLN: [lln]'
             }
         ],
         margin: { top: 20 },
@@ -3038,11 +3045,11 @@
     function drawNormalRange() {
         var lineChart = this;
         var upper = this.raw_data.map(function(m) {
-            return { visitn: m.visitn, value: m.uln };
+            return { studyday: m.studyday, value: m.uln };
         });
         var lower = this.raw_data
             .map(function(m) {
-                return { visitn: m.visitn, value: m.lln };
+                return { studyday: m.studyday, value: m.lln };
             })
             .reverse();
         var normal_data = d3.merge([upper, lower]).filter(function(f) {
@@ -3051,7 +3058,7 @@
         var drawnormal = d3.svg
             .line()
             .x(function(d) {
-                return lineChart.x(d.visitn) + lineChart.x.rangeBand() / 2;
+                return lineChart.x(d.studyday);
             })
             .y(function(d) {
                 return lineChart.y(d.value);
@@ -3258,7 +3265,7 @@
         x: {
             column: null,
             type: 'ordinal',
-            label: 'Visit'
+            label: 'Study Day'
         },
         y: defineProperty(
             {
@@ -3438,10 +3445,10 @@
         }
 
         //sync settings
-        defaultSettings$1.x.column = config.visitn_col;
+        defaultSettings$1.x.column = config.studyday_col;
         defaultSettings$1.color_by = config.measure_col;
         defaultSettings$1.marks[0].per = [config.id_col, config.measure_col];
-        defaultSettings$1.marks[1].per = [config.id_col, config.visitn_col, config.measure_col];
+        defaultSettings$1.marks[1].per = [config.id_col, config.studyday_col, config.measure_col];
         defaultSettings$1.firstDraw = true; //only initailize the measure table on first draw
 
         //flag variables above the cut-off

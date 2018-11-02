@@ -22,10 +22,17 @@ export default function deriveVariables() {
 
     this.imputed_data = this.imputed_data.map(function(d) {
         //coerce numeric values to number
-        var numerics = ['value_col', 'visitn_col', 'normal_col_low', 'normal_col_high'];
+        var numerics = [
+            'value_col',
+            'visitn_col',
+            'studyday_col',
+            'normal_col_low',
+            'normal_col_high'
+        ];
         numerics.forEach(function(col) {
             d[config[col]] = +d[config[col]];
         });
+
         //standardize key variables
         d.key_measure = false;
         if (included_measures.indexOf(d[config.measure_col]) > -1) {

@@ -3,7 +3,7 @@ export const defaultSettings = {
     x: {
         column: null,
         type: 'ordinal',
-        label: 'Visit'
+        label: 'Study Day'
     },
     y: {
         column: 'relative_uln',

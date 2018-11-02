@@ -36,11 +36,8 @@ export function initParticipantDetails() {
         sortable: false,
         pagination: false,
         exportable: false,
-        applyCSS: true,
-        visitn_col: this.visitn_col,
-        value_col: this.value_col
+        applyCSS: true
     };
-
     this.measureTable = createTable(this.element + ' .participantDetails .measureTable', settings);
     this.measureTable.init([]);
 

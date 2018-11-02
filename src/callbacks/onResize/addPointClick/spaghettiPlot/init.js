@@ -16,10 +16,10 @@ export function init(d) {
     }
 
     //sync settings
-    spaghettiSettings.x.column = config.visitn_col;
+    spaghettiSettings.x.column = config.studyday_col;
     spaghettiSettings.color_by = config.measure_col;
     spaghettiSettings.marks[0].per = [config.id_col, config.measure_col];
-    spaghettiSettings.marks[1].per = [config.id_col, config.visitn_col, config.measure_col];
+    spaghettiSettings.marks[1].per = [config.id_col, config.studyday_col, config.measure_col];
     spaghettiSettings.firstDraw = true; //only initailize the measure table on first draw
 
     //flag variables above the cut-off
