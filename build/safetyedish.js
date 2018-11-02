@@ -2585,26 +2585,35 @@
         var matches = allMatches.filter(function(f) {
             return f[config.measure_col] == x_measure || f[config.measure_col] == y_measure;
         });
+
         //get coordinates by visit
         var visits = d3
             .set(
                 matches.map(function(m) {
-                    return m[config.visitn_col];
+                    return m[config.studyday_col];
                 })
             )
             .values();
         var visit_data = visits
             .map(function(m) {
                 var visitObj = {};
-                visitObj.visitn = +m;
-                visitObj.visit = matches.filter(function(f) {
-                    return f[config.visitn_col] == m;
-                })[0][config.visit_col];
+                visitObj.studyday = +m;
+                visitObj.visit = config.visit_col
+                    ? matches.filter(function(f) {
+                          return f[config.studyday_col] == m;
+                      })[0][config.visit_col]
+                    : null;
+                visitObj.visitn = config.visitn_col
+                    ? matches.filter(function(f) {
+                          return f[config.studyday_col] == m;
+                      })[0][config.visitn_col]
+                    : null;
                 visitObj[config.color_by] = matches[0][config.color_by];
+
                 //get x coordinate
                 var x_match = matches
                     .filter(function(f) {
-                        return f[config.visitn_col] == m;
+                        return f[config.studyday_col] == m;
                     })
                     .filter(function(f) {
                         return f[config.measure_col] == x_measure;
@@ -2621,7 +2630,7 @@
                 //get y coordinate
                 var y_match = matches
                     .filter(function(f) {
-                        return f[config.visitn_col] == m;
+                        return f[config.studyday_col] == m;
                     })
                     .filter(function(f) {
                         return f[config.measure_col] == y_measure;
@@ -2637,11 +2646,12 @@
                 return visitObj;
             })
             .sort(function(a, b) {
-                return a.visitn - b.visitn;
+                return a.studyday - b.studyday;
             })
             .filter(function(f) {
                 return (f.x > 0) & (f.y > 0);
             });
+
         //draw the path
         var myLine = d3.svg
             .line()
@@ -2666,8 +2676,8 @@
             .attr('stroke-width', '2px')
             .attr('fill', 'none');
 
+        //Little trick for animating line drawing
         var totalLength = path.node().getTotalLength();
-
         path.attr('stroke-dasharray', totalLength + ' ' + totalLength)
             .attr('stroke-dashoffset', totalLength)
             .transition()
@@ -2683,7 +2693,6 @@
             .append('g')
             .attr('class', 'visit-point');
 
-        var maxPoint = d;
         visitPoints
             .append('circle')
             .attr('class', 'participant-visits')
@@ -2691,45 +2700,35 @@
             .attr('stroke', function(d) {
                 return chart.colorScale(d[config.color_by]);
             })
-            .attr('stroke-width', function(d) {
-                return (d.x == maxPoint.x) & (d.y == maxPoint.y) ? 3 : 1;
-            })
+            .attr('stroke-width', 1)
             .attr('cx', function(d) {
                 return chart.x(d.x);
             })
             .attr('cy', function(d) {
                 return chart.y(d.y);
             })
-            .attr('fill', 'white')
-            .transition()
-            .delay(2000)
-            .duration(200)
-            .attr('r', 6);
-
-        //draw visit numbers
-        visitPoints
-            .append('text')
-            .text(function(d) {
-                return d.visitn;
-            })
-            .attr('class', 'participant-visits')
-            .attr('stroke', 'none')
             .attr('fill', function(d) {
                 return chart.colorScale(d[config.color_by]);
             })
-            .attr('x', function(d) {
-                return chart.x(d.x);
-            })
-            .attr('y', function(d) {
-                return chart.y(d.y);
-            })
-            .attr('text-anchor', 'middle')
-            .attr('alignment-baseline', 'middle')
-            .attr('font-size', 0)
+            .attr('fill-opacity', 0.5)
             .transition()
             .delay(2000)
             .duration(200)
-            .attr('font-size', 8);
+            .attr('r', 4);
+
+        //custom titles for points on mouseover
+        visitPoints.append('title').text(function(d) {
+            var xvar = config.x.column;
+            var yvar = config.y.column;
+            console.log(d);
+            var studyday_label = 'Study day: ' + d.studyday + '\n',
+                visitn_label = d.visitn ? 'Visit Number: ' + d.visitn + '\n' : '',
+                visit_label = d.visit ? 'Visit: ' + d.visit + '\n' : '',
+                x_label = config.x.label + ': ' + d3.format('0.3f')(d.x) + '\n',
+                y_label = config.y.label + ': ' + d3.format('0.3f')(d.y);
+
+            return studyday_label + visit_label + visitn_label + x_label + y_label;
+        });
     }
 
     function makeNestedData(d) {
@@ -3519,7 +3518,9 @@
         //add event listener to all participant level points
         points.on('click', function(d) {
             clearParticipantDetails.call(chart, d); //clear the previous participant
-            chart.config.quadrants.table.wrap.style('display', 'none'); //hide the quadrant summart
+            chart.config.quadrants.table.wrap.style('display', 'none'); //hide the quadrant summary
+
+            //format the eDish chart
             points
                 .attr('stroke', '#ccc') //set all points to gray
                 .attr('fill', 'white')
@@ -3531,13 +3532,15 @@
                 }) //highlight selected point
                 .attr('stroke-width', 3);
 
+            //Add elements to the eDish chart
             drawVisitPath.call(chart, d); //draw the path showing participant's pattern over time
             drawRugs.call(chart, d, 'x');
             drawRugs.call(chart, d, 'y');
 
+            //draw the "detail view" for the clicked participant
             chart.participantDetails.wrap.selectAll('*').style('display', null);
             makeParticipantHeader.call(chart, d);
-            init$3.call(chart, d);
+            init$3.call(chart, d); //NOTE: the measure table is initialized from within the spaghettiPlot
         });
     }
 
