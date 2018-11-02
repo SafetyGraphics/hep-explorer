@@ -39,8 +39,8 @@ export function makeNestedData(d) {
                 var obj = {
                     id: +m[config.id_col],
                     lab: +m[config.measure_col],
-                    visit: m[config.visit_col],
-                    visitn: +m[config.visitn_col],
+                    visit: config.visit_col ? m[config.visit_col] : null,
+                    visitn: config.visitn_col ? +m[config.visitn_col] : null,
                     studyday: +m[config.studyday_col],
                     value: +m[config.value_col],
                     lln: +m[config.normal_col_low],

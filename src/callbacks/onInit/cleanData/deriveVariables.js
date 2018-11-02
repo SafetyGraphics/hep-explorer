@@ -5,14 +5,15 @@ export default function deriveVariables() {
     //filter the lab data to only the required measures
     var included_measures = Object.keys(config.measure_values).map(e => config.measure_values[e]);
 
-    var sub = this.imputed_data
-        .filter(f => included_measures.indexOf(f[config.measure_col]) > -1)
-        .filter(f => true); //add a filter on selected visits here
+    var sub = this.imputed_data.filter(f => included_measures.indexOf(f[config.measure_col]) > -1);
 
     var missingBaseline = 0;
 
     //create an object mapping baseline values for id/measure pairs
-    const baseline_records = sub.filter(f => +f[config.visitn_col] == +config.baseline_visitn);
+    const baseline_records = sub.filter(
+        f => config.baseline.values.indexOf(f[config.baseline.value_col].trim()) > -1
+    );
+
     const baseline_values = d3
         .nest()
         .key(d => d[config.id_col])
@@ -22,13 +23,7 @@ export default function deriveVariables() {
 
     this.imputed_data = this.imputed_data.map(function(d) {
         //coerce numeric values to number
-        var numerics = [
-            'value_col',
-            'visitn_col',
-            'studyday_col',
-            'normal_col_low',
-            'normal_col_high'
-        ];
+        var numerics = ['value_col', 'studyday_col', 'normal_col_low', 'normal_col_high'];
         numerics.forEach(function(col) {
             d[config[col]] = +d[config[col]];
         });

@@ -25,8 +25,7 @@ export const defaultSettings = {
             attributes: {
                 'fill-opacity': 1
             },
-            tooltip:
-                'StudyDay: [studyday]\nVisit Number: [visitn]\nVisit: [visit]\nValue: [value]\nULN: [uln]\nLLN: [lln]'
+            tooltip: 'StudyDay: [studyday]\nValue: [value]\nULN: [uln]\nLLN: [lln]'
         }
     ],
     margin: { top: 20 },

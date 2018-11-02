@@ -1,32 +1,22 @@
 export default function dropRows() {
+    var chart = this;
     var config = this.config;
     this.dropped_rows = [];
 
     /////////////////////////
     // Remove invalid rows
     /////////////////////////
-
-    this.imputed_data = this.initial_data
-        .filter(d => {
+    var numerics = ['value_col', 'studyday_col', 'normal_col_low', 'normal_col_high'];
+    chart.imputed_data = chart.initial_data.filter(f => true);
+    numerics.forEach(function(setting) {
+        chart.imputed_data = chart.imputed_data.filter(d => {
             //Remove non-numeric value_col
-            var numericValueCol = /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(
-                d[this.config.value_col]
-            );
-            if (!numericValueCol) {
-                d.dropReason = `Value Column ("${config.value_col}") is not numeric.`;
-                this.dropped_rows.push(d);
+            var numericCol = /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(d[config[setting]]);
+            if (!numericCol) {
+                d.dropReason = `${setting} Column ("${config[setting]}") is not numeric.`;
+                chart.dropped_rows.push(d);
             }
-            return numericValueCol;
-        })
-        .filter(d => {
-            //Remove non-numeric visit_col
-            var numericVisitCol = /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(
-                d[this.config.visitn_col]
-            );
-            if (!numericVisitCol) {
-                d.dropReason = `Visit Column ("${config.visitn_col}") is not numeric.`;
-                this.dropped_rows.push(d);
-            }
-            return numericVisitCol;
+            return numericCol;
         });
+    });
 }

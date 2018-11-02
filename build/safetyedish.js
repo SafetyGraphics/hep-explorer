@@ -213,22 +213,24 @@
     function settings() {
         return {
             //Default template settings
+            id_col: 'USUBJID',
+            studyday_col: 'DY',
             value_col: 'STRESN',
             measure_col: 'TEST',
-            visit_col: 'VISIT',
-            visitn_col: 'VISITNUM',
-            studyday_col: 'DY',
             normal_col_low: 'STNRLO',
             normal_col_high: 'STNRHI',
-            id_col: 'USUBJID',
+            visit_col: null,
+            visitn_col: null,
             group_cols: null,
             filters: null,
             details: null,
-            r_ratio_filter: true,
-            r_ratio_cut: 0,
             analysisFlag: {
                 value_col: null,
                 values: []
+            },
+            baseline: {
+                value_col: 'DY',
+                values: [0]
             },
             measure_values: {
                 ALT: 'Aminotransferase, alanine (ALT)',
@@ -273,10 +275,11 @@
                 { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
                 { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' }
             ],
-            baseline_visitn: '1',
             measureBounds: [0.01, 0.99],
             populationProfileURL: null,
             participantProfileURL: null,
+            r_ratio_filter: true,
+            r_ratio_cut: 0,
             visit_window: 30,
             showTitle: true,
             warningText:
@@ -898,38 +901,28 @@
     }
 
     function dropRows() {
-        var _this = this;
-
+        var chart = this;
         var config = this.config;
         this.dropped_rows = [];
 
         /////////////////////////
         // Remove invalid rows
         /////////////////////////
-
-        this.imputed_data = this.initial_data
-            .filter(function(d) {
+        var numerics = ['value_col', 'studyday_col', 'normal_col_low', 'normal_col_high'];
+        chart.imputed_data = chart.initial_data.filter(function(f) {
+            return true;
+        });
+        numerics.forEach(function(setting) {
+            chart.imputed_data = chart.imputed_data.filter(function(d) {
                 //Remove non-numeric value_col
-                var numericValueCol = /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(
-                    d[_this.config.value_col]
-                );
-                if (!numericValueCol) {
-                    d.dropReason = 'Value Column ("' + config.value_col + '") is not numeric.';
-                    _this.dropped_rows.push(d);
+                var numericCol = /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(d[config[setting]]);
+                if (!numericCol) {
+                    d.dropReason = setting + ' Column ("' + config[setting] + '") is not numeric.';
+                    chart.dropped_rows.push(d);
                 }
-                return numericValueCol;
-            })
-            .filter(function(d) {
-                //Remove non-numeric visit_col
-                var numericVisitCol = /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(
-                    d[_this.config.visitn_col]
-                );
-                if (!numericVisitCol) {
-                    d.dropReason = 'Visit Column ("' + config.visitn_col + '") is not numeric.';
-                    _this.dropped_rows.push(d);
-                }
-                return numericVisitCol;
+                return numericCol;
             });
+        });
     }
 
     function deriveVariables() {
@@ -940,20 +933,17 @@
             return config.measure_values[e];
         });
 
-        var sub = this.imputed_data
-            .filter(function(f) {
-                return included_measures.indexOf(f[config.measure_col]) > -1;
-            })
-            .filter(function(f) {
-                return true;
-            }); //add a filter on selected visits here
+        var sub = this.imputed_data.filter(function(f) {
+            return included_measures.indexOf(f[config.measure_col]) > -1;
+        });
 
         var missingBaseline = 0;
 
         //create an object mapping baseline values for id/measure pairs
         var baseline_records = sub.filter(function(f) {
-            return +f[config.visitn_col] == +config.baseline_visitn;
+            return config.baseline.values.indexOf(f[config.baseline.value_col].trim()) > -1;
         });
+
         var baseline_values = d3
             .nest()
             .key(function(d) {
@@ -969,13 +959,7 @@
 
         this.imputed_data = this.imputed_data.map(function(d) {
             //coerce numeric values to number
-            var numerics = [
-                'value_col',
-                'visitn_col',
-                'studyday_col',
-                'normal_col_low',
-                'normal_col_high'
-            ];
+            var numerics = ['value_col', 'studyday_col', 'normal_col_low', 'normal_col_high'];
             numerics.forEach(function(col) {
                 d[config[col]] = +d[config[col]];
             });
@@ -1403,7 +1387,12 @@
             .append('span')
             .attr('class', 'displayControlAnnotation span-description')
             .style('color', 'blue')
-            .text('Note: Baseline defined as Visit ' + chart.config.baseline_visitn)
+            .text(
+                'Note: Baseline defined as ' +
+                    chart.config.baseline.value_col +
+                    ' = ' +
+                    chart.config.baseline.values.join(',')
+            )
             .style('display', config.display == 'relative_baseline' ? null : 'none');
 
         displayControl.on('change', function(d) {
@@ -1532,14 +1521,12 @@
             .style('border-radius', '0.6em')
             .style('cursor', 'pointer')
             .on('click', function(d) {
-                console.log(d);
                 d3.select(this.parentNode)
                     .html(function(d) {
                         return '<strong>' + jsUcfirst(d.type) + '</strong>: ' + d.message;
                     })
                     .each(function(d) {
                         if (d.callback) {
-                            console.log('callback');
                             d.callback.call(this.parentNode);
                         }
                     });
@@ -1898,8 +1885,6 @@
         var measureCols = [
             'measure_col',
             'value_col',
-            'visit_col',
-            'visitn_col',
             'studyday_col',
             'normal_col_low',
             'normal_col_high'
@@ -2720,7 +2705,6 @@
         visitPoints.append('title').text(function(d) {
             var xvar = config.x.column;
             var yvar = config.y.column;
-            console.log(d);
             var studyday_label = 'Study day: ' + d.studyday + '\n',
                 visitn_label = d.visitn ? 'Visit Number: ' + d.visitn + '\n' : '',
                 visit_label = d.visit ? 'Visit: ' + d.visit + '\n' : '',
@@ -2786,8 +2770,8 @@
                     var obj = {
                         id: +m[config.id_col],
                         lab: +m[config.measure_col],
-                        visit: m[config.visit_col],
-                        visitn: +m[config.visitn_col],
+                        visit: config.visit_col ? m[config.visit_col] : null,
+                        visitn: config.visitn_col ? +m[config.visitn_col] : null,
                         studyday: +m[config.studyday_col],
                         value: +m[config.value_col],
                         lln: +m[config.normal_col_low],
@@ -3000,8 +2984,7 @@
                 attributes: {
                     'fill-opacity': 1
                 },
-                tooltip:
-                    'StudyDay: [studyday]\nVisit Number: [visitn]\nVisit: [visit]\nValue: [value]\nULN: [uln]\nLLN: [lln]'
+                tooltip: 'StudyDay: [studyday]\nValue: [value]\nULN: [uln]\nLLN: [lln]'
             }
         ],
         margin: { top: 20 },
@@ -3556,20 +3539,14 @@
                     config.x.label +
                     ': ' +
                     d3.format('0.2f')(raw[xvar]) +
-                    ' @ V' +
-                    raw[xvar + '_' + config.visitn_col] +
-                    ' (Day ' +
-                    raw[xvar + '_' + config.studyday_col] +
-                    ')',
+                    ' @  Day ' +
+                    raw[xvar + '_' + config.studyday_col],
                 yLabel =
                     config.y.label +
                     ': ' +
                     d3.format('0.2f')(raw[yvar]) +
-                    ' @ V' +
-                    raw[yvar + '_' + config.visitn_col] +
-                    ' (Day ' +
-                    raw[yvar + '_' + config.studyday_col] +
-                    ')',
+                    ' @ Day ' +
+                    raw[yvar + '_' + config.studyday_col],
                 dayDiff = raw['day_diff'] + ' days apart',
                 idLabel = 'Participant ID: ' + raw[config.id_col];
             return idLabel + '\n' + xLabel + '\n' + yLabel + '\n' + dayDiff;
