@@ -2768,8 +2768,8 @@
                     : 'black';
                 measureObj.spark_data = d.map(function(m) {
                     var obj = {
-                        id: +m[config.id_col],
-                        lab: +m[config.measure_col],
+                        id: m[config.id_col],
+                        lab: m[config.measure_col],
                         visit: config.visit_col ? m[config.visit_col] : null,
                         visitn: config.visitn_col ? +m[config.visitn_col] : null,
                         studyday: +m[config.studyday_col],
@@ -2983,8 +2983,7 @@
                 values: { outlier: [true] },
                 attributes: {
                     'fill-opacity': 1
-                },
-                tooltip: 'StudyDay: [studyday]\nValue: [value]\nULN: [uln]\nLLN: [lln]'
+                }
             }
         ],
         margin: { top: 20 },
@@ -3057,7 +3056,28 @@
         normalpath.moveToBack();
     }
 
-    function init$2(d) {
+    function addPointTitles() {
+        console.log(this);
+        var config = this.edish.config;
+        var points = this.marks[1].circles;
+        points.select('title').remove();
+        points.append('title').text(function(d) {
+            console.log(d);
+            var raw = d.values.raw[0];
+            var xvar = config.x.column;
+            var yvar = config.y.column;
+            var studyday_label = 'Study day: ' + raw.studyday + '\n',
+                visitn_label = raw.visitn ? 'Visit Number: ' + raw.visitn + '\n' : '',
+                visit_label = raw.visit ? 'Visit: ' + raw.visit + '\n' : '',
+                lab_label = raw.lab + ': ' + d3.format('0.3f')(raw.value);
+            return studyday_label + visit_label + visitn_label + lab_label;
+        });
+    }
+
+    function init$2(d, edish) {
+        console.log('data');
+        console.log(d.spark_data);
+
         //layout the new cells on the DOM (slightly easier than using D3)
         var summaryRow_node = this.parentNode;
         var chartRow_node = document.createElement('tr');
@@ -3080,17 +3100,19 @@
         lineChart.on('draw', function() {
             setDomain$1.call(this);
         });
+        lineChart.edish = edish;
         lineChart.on('resize', function() {
             drawPopulationExtent.call(this);
             drawNormalRange.call(this);
+            addPointTitles.call(this);
         });
         lineChart.init(d.spark_data);
-
         lineChart.row = chartRow_node;
         return lineChart;
     }
 
     function addSparkClick() {
+        var edish = this.edish;
         if (this.data.raw.length > 0) {
             this.tbody
                 .selectAll('tr')
@@ -3100,7 +3122,7 @@
                         d3.select(this).classed('minimized', false);
                         d3.select(this.parentNode).style('border-bottom', 'none');
 
-                        this.lineChart = init$2.call(this, d);
+                        this.lineChart = init$2.call(this, d, edish);
                         d3.select(this)
                             .select('svg')
                             .style('display', 'none');
@@ -3527,7 +3549,7 @@
         });
     }
 
-    function addPointTitles() {
+    function addPointTitles$1() {
         var config = this.config;
         var points = this.marks[0].circles;
         points.select('title').remove();
@@ -3997,7 +4019,7 @@
         //add point interactivity, custom title and formatting
         addPointMouseover.call(this);
         addPointClick.call(this);
-        addPointTitles.call(this);
+        addPointTitles$1.call(this);
         addAxisLabelTitles.call(this);
         formatPoints.call(this);
         setPointSize.call(this);

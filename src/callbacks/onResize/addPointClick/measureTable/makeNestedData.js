@@ -37,8 +37,8 @@ export function makeNestedData(d) {
                 : 'black';
             measureObj.spark_data = d.map(function(m) {
                 var obj = {
-                    id: +m[config.id_col],
-                    lab: +m[config.measure_col],
+                    id: m[config.id_col],
+                    lab: m[config.measure_col],
                     visit: config.visit_col ? m[config.visit_col] : null,
                     visitn: config.visitn_col ? +m[config.visitn_col] : null,
                     studyday: +m[config.studyday_col],

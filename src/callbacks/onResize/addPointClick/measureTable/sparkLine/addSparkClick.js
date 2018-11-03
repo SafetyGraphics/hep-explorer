@@ -1,6 +1,7 @@
 import { init as initLineChart } from '../lineChart/init';
 
 export function addSparkClick() {
+    var edish = this.edish;
     if (this.data.raw.length > 0) {
         this.tbody
             .selectAll('tr')
@@ -10,7 +11,7 @@ export function addSparkClick() {
                     d3.select(this).classed('minimized', false);
                     d3.select(this.parentNode).style('border-bottom', 'none');
 
-                    this.lineChart = initLineChart.call(this, d);
+                    this.lineChart = initLineChart.call(this, d, edish);
                     d3.select(this)
                         .select('svg')
                         .style('display', 'none');

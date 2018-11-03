@@ -5,8 +5,12 @@ import { createChart } from 'webcharts';
 import { setDomain } from './onDraw/setDomain';
 import { drawPopulationExtent } from './onResize/drawPopulationExtent';
 import { drawNormalRange } from './onResize/drawNormalRange';
+import { addPointTitles } from './onResize/addPointTitles';
 
-export function init(d) {
+export function init(d, edish) {
+    console.log('data');
+    console.log(d.spark_data);
+
     //layout the new cells on the DOM (slightly easier than using D3)
     var summaryRow_node = this.parentNode;
     var chartRow_node = document.createElement('tr');
@@ -29,12 +33,13 @@ export function init(d) {
     lineChart.on('draw', function() {
         setDomain.call(this);
     });
+    lineChart.edish = edish;
     lineChart.on('resize', function() {
         drawPopulationExtent.call(this);
         drawNormalRange.call(this);
+        addPointTitles.call(this);
     });
     lineChart.init(d.spark_data);
-
     lineChart.row = chartRow_node;
     return lineChart;
 }

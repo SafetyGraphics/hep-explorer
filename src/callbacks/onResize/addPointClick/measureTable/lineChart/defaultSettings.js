@@ -24,8 +24,7 @@ export const defaultSettings = {
             values: { outlier: [true] },
             attributes: {
                 'fill-opacity': 1
-            },
-            tooltip: 'StudyDay: [studyday]\nValue: [value]\nULN: [uln]\nLLN: [lln]'
+            }
         }
     ],
     margin: { top: 20 },
