@@ -2979,11 +2979,11 @@
             {
                 type: 'circle',
                 radius: 4,
-                per: ['lab', 'studyday'],
-                values: { outlier: [true] },
-                attributes: {
-                    'fill-opacity': 1
-                }
+                per: ['lab', 'studyday'] //,
+                //  values: { outlier: [true] },
+                //  attributes: {
+                //      'fill-opacity': 1
+                //  }
             }
         ],
         margin: { top: 20 },
@@ -3057,7 +3057,6 @@
     }
 
     function addPointTitles() {
-        console.log(this);
         var config = this.edish.config;
         var points = this.marks[1].circles;
         points.select('title').remove();
@@ -3071,6 +3070,14 @@
                 visit_label = raw.visit ? 'Visit: ' + raw.visit + '\n' : '',
                 lab_label = raw.lab + ': ' + d3.format('0.3f')(raw.value);
             return studyday_label + visit_label + visitn_label + lab_label;
+        });
+    }
+
+    function updatePointFill() {
+        var points = this.marks[1].circles;
+        points.attr('fill-opacity', function(d) {
+            var outlier = d.values.raw[0].outlier;
+            return outlier ? 1 : 0;
         });
     }
 
@@ -3105,6 +3112,7 @@
             drawPopulationExtent.call(this);
             drawNormalRange.call(this);
             addPointTitles.call(this);
+            updatePointFill.call(this);
         });
         lineChart.init(d.spark_data);
         lineChart.row = chartRow_node;

@@ -20,11 +20,11 @@ export const defaultSettings = {
         {
             type: 'circle',
             radius: 4,
-            per: ['lab', 'studyday'],
-            values: { outlier: [true] },
-            attributes: {
-                'fill-opacity': 1
-            }
+            per: ['lab', 'studyday'] //,
+            //  values: { outlier: [true] },
+            //  attributes: {
+            //      'fill-opacity': 1
+            //  }
         }
     ],
     margin: { top: 20 },

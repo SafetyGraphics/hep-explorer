@@ -6,6 +6,7 @@ import { setDomain } from './onDraw/setDomain';
 import { drawPopulationExtent } from './onResize/drawPopulationExtent';
 import { drawNormalRange } from './onResize/drawNormalRange';
 import { addPointTitles } from './onResize/addPointTitles';
+import { updatePointFill } from './onResize/updatePointFill';
 
 export function init(d, edish) {
     console.log('data');
@@ -38,6 +39,7 @@ export function init(d, edish) {
         drawPopulationExtent.call(this);
         drawNormalRange.call(this);
         addPointTitles.call(this);
+        updatePointFill.call(this);
     });
     lineChart.init(d.spark_data);
     lineChart.row = chartRow_node;

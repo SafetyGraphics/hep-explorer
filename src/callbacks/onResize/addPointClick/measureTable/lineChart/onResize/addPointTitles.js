@@ -1,5 +1,4 @@
 export function addPointTitles() {
-    console.log(this);
     var config = this.edish.config;
     var points = this.marks[1].circles;
     points.select('title').remove();
