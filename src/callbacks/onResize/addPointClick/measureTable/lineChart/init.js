@@ -9,9 +9,6 @@ import { addPointTitles } from './onResize/addPointTitles';
 import { updatePointFill } from './onResize/updatePointFill';
 
 export function init(d, edish) {
-    console.log('data');
-    console.log(d.spark_data);
-
     //layout the new cells on the DOM (slightly easier than using D3)
     var summaryRow_node = this.parentNode;
     var chartRow_node = document.createElement('tr');

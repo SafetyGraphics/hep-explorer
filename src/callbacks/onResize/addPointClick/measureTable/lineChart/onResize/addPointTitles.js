@@ -3,7 +3,6 @@ export function addPointTitles() {
     var points = this.marks[1].circles;
     points.select('title').remove();
     points.append('title').text(function(d) {
-        console.log(d);
         var raw = d.values.raw[0];
         var xvar = config.x.column;
         var yvar = config.y.column;

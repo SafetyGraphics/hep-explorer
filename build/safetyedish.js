@@ -3061,7 +3061,6 @@
         var points = this.marks[1].circles;
         points.select('title').remove();
         points.append('title').text(function(d) {
-            console.log(d);
             var raw = d.values.raw[0];
             var xvar = config.x.column;
             var yvar = config.y.column;
@@ -3082,9 +3081,6 @@
     }
 
     function init$2(d, edish) {
-        console.log('data');
-        console.log(d.spark_data);
-
         //layout the new cells on the DOM (slightly easier than using D3)
         var summaryRow_node = this.parentNode;
         var chartRow_node = document.createElement('tr');
@@ -3390,20 +3386,50 @@
             .text(d3.format('0.1f')(cut));
     }
 
+    function addPointTitles$1() {
+        var spaghetti = this;
+        var config = this.edish.config;
+        var points = this.marks[1].circles;
+        points.select('title').remove();
+        points.append('title').text(function(d) {
+            console.log(d);
+            var raw = d.values.raw[0];
+            var ylabel = spaghetti.config.displayLabel;
+            var yvar = spaghetti.config.y.column;
+            var studyday_label = 'Study day: ' + raw[config.studyday_col] + '\n',
+                visitn_label = config.visitn_col
+                    ? 'Visit Number: ' + raw[config.visitn_col] + '\n'
+                    : '',
+                visit_label = config.visit_col ? 'Visit: ' + raw[config.visit_col] + '\n' : '',
+                raw_label =
+                    'Raw ' +
+                    raw[config.measure_col] +
+                    ': ' +
+                    d3.format('0.3f')(raw[config.value_col]) +
+                    '\n',
+                adj_label =
+                    'Adjusted ' + raw[config.measure_col] + ': ' + d3.format('0.3f')(raw[yvar]);
+            return studyday_label + visit_label + visitn_label + raw_label + adj_label;
+        });
+    }
+
     function onResize() {
         var spaghetti = this;
         var config = this.config;
 
-        //hide circles not above the cut point
+        addPointTitles$1.call(this);
+
+        //fill circles above the cut point
         var y_col = this.config.y.column;
         this.marks[1].circles
-            .attr('stroke-opacity', function(d) {
+            .attr('fill-opacity', function(d) {
                 return d.values.raw[0][y_col + '_flagged'] ? 1 : 0;
             })
             .attr('fill-opacity', function(d) {
                 return d.values.raw[0][y_col + '_flagged'] ? 1 : 0;
             });
 
+        //Show  cut lines on mouseover
         this.marks[1].circles
             .on('mouseover', function(d) {
                 drawCutLine.call(spaghetti, d);
@@ -3557,7 +3583,7 @@
         });
     }
 
-    function addPointTitles$1() {
+    function addPointTitles$2() {
         var config = this.config;
         var points = this.marks[0].circles;
         points.select('title').remove();
@@ -4027,7 +4053,7 @@
         //add point interactivity, custom title and formatting
         addPointMouseover.call(this);
         addPointClick.call(this);
-        addPointTitles$1.call(this);
+        addPointTitles$2.call(this);
         addAxisLabelTitles.call(this);
         formatPoints.call(this);
         setPointSize.call(this);
