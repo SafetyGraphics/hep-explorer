@@ -1,3 +1,5 @@
+import safetyedish from '../../wrapper';
+
 export function initResetButton() {
     var chart = this;
 

@@ -1,19 +1,23 @@
 import drawCutLine from './onResize/drawCutLine';
+import addPointTitles from './onResize/addPointTitles';
 
 export default function onResize() {
     var spaghetti = this;
     var config = this.config;
 
-    //hide circles not above the cut point
+    addPointTitles.call(this);
+
+    //fill circles above the cut point
     const y_col = this.config.y.column;
     this.marks[1].circles
-        .attr('stroke-opacity', function(d) {
+        .attr('fill-opacity', function(d) {
             return d.values.raw[0][y_col + '_flagged'] ? 1 : 0;
         })
         .attr('fill-opacity', function(d) {
             return d.values.raw[0][y_col + '_flagged'] ? 1 : 0;
         });
 
+    //Show  cut lines on mouseover
     this.marks[1].circles
         .on('mouseover', function(d) {
             drawCutLine.call(spaghetti, d);

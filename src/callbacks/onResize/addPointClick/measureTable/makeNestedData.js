@@ -37,9 +37,11 @@ export function makeNestedData(d) {
                 : 'black';
             measureObj.spark_data = d.map(function(m) {
                 var obj = {
-                    id: +m[config.id_col],
-                    lab: +m[config.measure_col],
-                    visitn: +m[config.visitn_col],
+                    id: m[config.id_col],
+                    lab: m[config.measure_col],
+                    visit: config.visit_col ? m[config.visit_col] : null,
+                    visitn: config.visitn_col ? +m[config.visitn_col] : null,
+                    studyday: +m[config.studyday_col],
                     value: +m[config.value_col],
                     lln: +m[config.normal_col_low],
                     uln: +m[config.normal_col_high],
@@ -50,6 +52,7 @@ export function makeNestedData(d) {
                 obj.outlier = obj.outlier_low || obj.outlier_high;
                 return obj;
             });
+            console.log(measureObj);
             return measureObj;
         })
         .entries(allMatches);

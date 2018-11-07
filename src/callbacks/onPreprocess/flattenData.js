@@ -13,8 +13,6 @@ export function flattenData() {
     var measureCols = [
         'measure_col',
         'value_col',
-        'visit_col',
-        'visitn_col',
         'studyday_col',
         'normal_col_low',
         'normal_col_high'

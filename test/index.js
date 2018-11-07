@@ -15,6 +15,7 @@ document.onreadystatechange = function () {
             max_width: 600,
             value_col: 'AVAL',
             measure_col: 'PARAM',
+            visit_col:"VISIT",
             visitn_col: 'VISITNUM',
             studyday_col: 'ADY',
             normal_col_low: 'A1LO',
@@ -48,6 +49,10 @@ document.onreadystatechange = function () {
             analysisFlag:{
               value_col:"EPOCH",
               values:["Analysis"]
+            },
+            baseline:{
+              value_col:"AVISIT",
+              values:["Baseline"]
             }
         };
         const chart = safetyedish('#container', settings);

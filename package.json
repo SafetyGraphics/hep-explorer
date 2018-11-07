@@ -5,8 +5,8 @@
   "author": "Rho, Inc.",
   "license": "MIT",
   "homepage": "https://github.com/rhoinc/safety-eDISH#readme",
+  "module": "./src/wrapper.js",
   "main": "./build/safetyedish.js",
-  "module": "./src/index.js",
   "keywords": [
     "labs",
     "vitals",
@@ -25,7 +25,9 @@
     "bundle": "rollup -c",
     "format": "npm run format-src && npm run format-build",
     "format-src": "prettier --print-width=100 --tab-width=4 --single-quote --write \"./src/**/*.js\"",
-    "format-build": "prettier --print-width=100 --tab-width=4 --single-quote --write build/safetyedish.js"
+    "format-build": "prettier --print-width=100 --tab-width=4 --single-quote --write build/safetyedish.js",
+    "test": "start chrome ./test/index.html && start firefox ./test/index.html && start iexplore file://%CD%/test/index.html",
+    "watch": "rollup -c -w"
   },
   "devDependencies": {
     "babel-plugin-external-helpers": "^6.22.0",

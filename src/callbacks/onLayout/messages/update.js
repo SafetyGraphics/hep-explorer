@@ -37,12 +37,10 @@ export function update(messages) {
         .style('border-radius', '0.6em')
         .style('cursor', 'pointer')
         .on('click', function(d) {
-            console.log(d);
             d3.select(this.parentNode)
                 .html(d => '<strong>' + jsUcfirst(d.type) + '</strong>: ' + d.message)
                 .each(function(d) {
                     if (d.callback) {
-                        console.log('callback');
                         d.callback.call(this.parentNode);
                     }
                 });

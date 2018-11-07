@@ -2,15 +2,14 @@ export const defaultSettings = {
     max_width: 800,
     aspect: 4,
     x: {
-        column: 'visitn',
-        type: 'ordinal',
-        label: 'Visit'
+        column: 'studyday',
+        type: 'linear',
+        label: 'Study Day'
     },
     y: {
         column: 'value',
         type: 'linear',
         label: '',
-        //    domain: [0, null],
         format: '.1f'
     },
     marks: [
@@ -21,12 +20,11 @@ export const defaultSettings = {
         {
             type: 'circle',
             radius: 4,
-            per: ['lab', 'visitn'],
-            values: { outlier: [true] },
-            attributes: {
-                'fill-opacity': 1
-            },
-            tooltip: 'Visit: [visitn]\nValue: [value]\nULN: [uln]\nLLN: [lln]'
+            per: ['lab', 'studyday'] //,
+            //  values: { outlier: [true] },
+            //  attributes: {
+            //      'fill-opacity': 1
+            //  }
         }
     ],
     margin: { top: 20 },

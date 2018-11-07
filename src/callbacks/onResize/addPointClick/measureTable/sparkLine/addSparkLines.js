@@ -21,12 +21,13 @@ export function addSparkLines(d) {
                     width = 100,
                     height = 25,
                     offset = 4,
-                    overTime = row_d.spark_data.sort((a, b) => +a.visitn - +b.visitn),
+                    overTime = row_d.spark_data.sort((a, b) => +a.studyday - +b.studyday),
                     color = row_d.color;
+
                 var x = d3.scale
-                    .ordinal()
-                    .domain(overTime.map(m => m.visitn))
-                    .rangePoints([offset, width - offset]);
+                    .linear()
+                    .domain(d3.extent(overTime, m => m.studyday))
+                    .range([offset, width - offset]);
 
                 //y-domain includes 99th population percentile + any participant outliers
                 var y_min = d3.min(d3.merge([row_d.values, row_d.population_extent])) * 0.99;
@@ -47,18 +48,18 @@ export function addSparkLines(d) {
 
                 //draw the normal range polygon ULN and LLN
                 var upper = overTime.map(function(m) {
-                    return { visitn: m.visitn, value: m.uln };
+                    return { studyday: m.studyday, value: m.uln };
                 });
                 var lower = overTime
                     .map(function(m) {
-                        return { visitn: m.visitn, value: m.lln };
+                        return { studyday: m.studyday, value: m.lln };
                     })
                     .reverse();
                 var normal_data = d3.merge([upper, lower]).filter(m => m.value);
 
                 var drawnormal = d3.svg
                     .line()
-                    .x(d => x(d.visitn))
+                    .x(d => x(d.studyday))
                     .y(d => y(d.value));
 
                 var normalpath = svg
@@ -88,7 +89,7 @@ export function addSparkLines(d) {
                 var draw_sparkline = d3.svg
                     .line()
                     .interpolate('cardinal')
-                    .x(d => x(d.visitn))
+                    .x(d => x(d.studyday))
                     .y(d => y(d.value));
                 var sparkline = svg
                     .append('path')
@@ -108,7 +109,7 @@ export function addSparkLines(d) {
                     .enter()
                     .append('circle')
                     .attr('class', 'circle outlier')
-                    .attr('cx', d => x(d.visitn))
+                    .attr('cx', d => x(d.studyday))
                     .attr('cy', d => y(d.value))
                     .attr('r', '2px')
                     .attr('stroke', color)

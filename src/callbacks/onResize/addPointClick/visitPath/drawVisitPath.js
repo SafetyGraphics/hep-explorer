@@ -8,17 +8,24 @@ export function drawVisitPath(d) {
     var matches = allMatches.filter(
         f => f[config.measure_col] == x_measure || f[config.measure_col] == y_measure
     );
+
     //get coordinates by visit
-    var visits = d3.set(matches.map(m => m[config.visitn_col])).values();
+    var visits = d3.set(matches.map(m => m[config.studyday_col])).values();
     var visit_data = visits
         .map(function(m) {
             var visitObj = {};
-            visitObj.visitn = +m;
-            visitObj.visit = matches.filter(f => f[config.visitn_col] == m)[0][config.visit_col];
+            visitObj.studyday = +m;
+            visitObj.visit = config.visit_col
+                ? matches.filter(f => f[config.studyday_col] == m)[0][config.visit_col]
+                : null;
+            visitObj.visitn = config.visitn_col
+                ? matches.filter(f => f[config.studyday_col] == m)[0][config.visitn_col]
+                : null;
             visitObj[config.color_by] = matches[0][config.color_by];
+
             //get x coordinate
             var x_match = matches
-                .filter(f => f[config.visitn_col] == m)
+                .filter(f => f[config.studyday_col] == m)
                 .filter(f => f[config.measure_col] == x_measure);
 
             if (x_match.length) {
@@ -31,7 +38,7 @@ export function drawVisitPath(d) {
 
             //get y coordinate
             var y_match = matches
-                .filter(f => f[config.visitn_col] == m)
+                .filter(f => f[config.studyday_col] == m)
                 .filter(f => f[config.measure_col] == y_measure);
             if (y_match.length) {
                 visitObj.y = y_match[0][config.display];
@@ -44,9 +51,10 @@ export function drawVisitPath(d) {
             return visitObj;
         })
         .sort(function(a, b) {
-            return a.visitn - b.visitn;
+            return a.studyday - b.studyday;
         })
         .filter(f => (f.x > 0) & (f.y > 0));
+
     //draw the path
     var myLine = d3.svg
         .line()
@@ -65,8 +73,8 @@ export function drawVisitPath(d) {
         .attr('stroke-width', '2px')
         .attr('fill', 'none');
 
+    //Little trick for animating line drawing
     var totalLength = path.node().getTotalLength();
-
     path.attr('stroke-dasharray', totalLength + ' ' + totalLength)
         .attr('stroke-dashoffset', totalLength)
         .transition()
@@ -82,35 +90,31 @@ export function drawVisitPath(d) {
         .append('g')
         .attr('class', 'visit-point');
 
-    var maxPoint = d;
     visitPoints
         .append('circle')
         .attr('class', 'participant-visits')
         .attr('r', 0)
         .attr('stroke', d => chart.colorScale(d[config.color_by]))
-        .attr('stroke-width', d => ((d.x == maxPoint.x) & (d.y == maxPoint.y) ? 3 : 1))
+        .attr('stroke-width', 1)
         .attr('cx', d => chart.x(d.x))
         .attr('cy', d => chart.y(d.y))
-        .attr('fill', 'white')
-        .transition()
-        .delay(2000)
-        .duration(200)
-        .attr('r', 6);
-
-    //draw visit numbers
-    visitPoints
-        .append('text')
-        .text(d => d.visitn)
-        .attr('class', 'participant-visits')
-        .attr('stroke', 'none')
         .attr('fill', d => chart.colorScale(d[config.color_by]))
-        .attr('x', d => chart.x(d.x))
-        .attr('y', d => chart.y(d.y))
-        .attr('text-anchor', 'middle')
-        .attr('alignment-baseline', 'middle')
-        .attr('font-size', 0)
+        .attr('fill-opacity', 0.5)
         .transition()
         .delay(2000)
         .duration(200)
-        .attr('font-size', 8);
+        .attr('r', 4);
+
+    //custom titles for points on mouseover
+    visitPoints.append('title').text(function(d) {
+        var xvar = config.x.column;
+        var yvar = config.y.column;
+        const studyday_label = 'Study day: ' + d.studyday + '\n',
+            visitn_label = d.visitn ? 'Visit Number: ' + d.visitn + '\n' : '',
+            visit_label = d.visit ? 'Visit: ' + d.visit + '\n' : '',
+            x_label = config.x.label + ': ' + d3.format('0.3f')(d.x) + '\n',
+            y_label = config.y.label + ': ' + d3.format('0.3f')(d.y);
+
+        return studyday_label + visit_label + visitn_label + x_label + y_label;
+    });
 }

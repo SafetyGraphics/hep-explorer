@@ -18,7 +18,12 @@ export function initDisplayControl() {
         .append('span')
         .attr('class', 'displayControlAnnotation span-description')
         .style('color', 'blue')
-        .text('Note: Baseline defined as Visit ' + chart.config.baseline_visitn)
+        .text(
+            'Note: Baseline defined as ' +
+                chart.config.baseline.value_col +
+                ' = ' +
+                chart.config.baseline.values.join(',')
+        )
         .style('display', config.display == 'relative_baseline' ? null : 'none');
 
     displayControl.on('change', function(d) {

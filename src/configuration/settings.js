@@ -1,22 +1,24 @@
 export default function settings() {
     return {
         //Default template settings
+        id_col: 'USUBJID',
+        studyday_col: 'DY',
         value_col: 'STRESN',
         measure_col: 'TEST',
-        visit_col: 'VISIT',
-        visitn_col: 'VISITNUM',
-        studyday_col: 'DY',
         normal_col_low: 'STNRLO',
         normal_col_high: 'STNRHI',
-        id_col: 'USUBJID',
+        visit_col: null,
+        visitn_col: null,
         group_cols: null,
         filters: null,
         details: null,
-        r_ratio_filter: true,
-        r_ratio_cut: 0,
         analysisFlag: {
             value_col: null,
             values: []
+        },
+        baseline: {
+            value_col: 'DY',
+            values: [0]
         },
         measure_values: {
             ALT: 'Aminotransferase, alanine (ALT)',
@@ -61,10 +63,11 @@ export default function settings() {
             { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
             { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' }
         ],
-        baseline_visitn: '1',
         measureBounds: [0.01, 0.99],
         populationProfileURL: null,
         participantProfileURL: null,
+        r_ratio_filter: true,
+        r_ratio_cut: 0,
         visit_window: 30,
         showTitle: true,
         warningText:

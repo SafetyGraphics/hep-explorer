@@ -2,8 +2,8 @@ export const defaultSettings = {
     max_width: 600,
     x: {
         column: null,
-        type: 'ordinal',
-        label: 'Visit'
+        type: 'linear',
+        label: 'Study Day'
     },
     y: {
         column: 'relative_uln',

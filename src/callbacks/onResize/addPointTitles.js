@@ -11,20 +11,14 @@ export function addPointTitles() {
                 config.x.label +
                 ': ' +
                 d3.format('0.2f')(raw[xvar]) +
-                ' @ V' +
-                raw[xvar + '_' + config.visitn_col] +
-                ' (Day ' +
-                raw[xvar + '_' + config.studyday_col] +
-                ')',
+                ' @  Day ' +
+                raw[xvar + '_' + config.studyday_col],
             yLabel =
                 config.y.label +
                 ': ' +
                 d3.format('0.2f')(raw[yvar]) +
-                ' @ V' +
-                raw[yvar + '_' + config.visitn_col] +
-                ' (Day ' +
-                raw[yvar + '_' + config.studyday_col] +
-                ')',
+                ' @ Day ' +
+                raw[yvar + '_' + config.studyday_col],
             dayDiff = raw['day_diff'] + ' days apart',
             idLabel = 'Participant ID: ' + raw[config.id_col];
         return idLabel + '\n' + xLabel + '\n' + yLabel + '\n' + dayDiff;
