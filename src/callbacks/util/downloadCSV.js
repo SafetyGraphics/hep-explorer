@@ -1,5 +1,3 @@
-import { time } from 'd3';
-
 export function downloadCSV(data, cols) {
     const CSVarray = [];
 
@@ -25,7 +23,7 @@ export function downloadCSV(data, cols) {
         type: 'text/csv;charset=utf-8;'
     });
 
-    const fileName = `eDishDroppedRows_${time.format('%Y-%m-%dT%H-%M-%S')(new Date())}.csv`;
+    const fileName = `eDishDroppedRows_${d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date())}.csv`;
     const link = d3.select(this);
 
     if (navigator.msSaveBlob)

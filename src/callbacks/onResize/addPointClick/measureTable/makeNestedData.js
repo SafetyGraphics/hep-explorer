@@ -52,6 +52,7 @@ export function makeNestedData(d) {
                 obj.outlier = obj.outlier_low || obj.outlier_high;
                 return obj;
             });
+            console.log(measureObj);
             return measureObj;
         })
         .entries(allMatches);

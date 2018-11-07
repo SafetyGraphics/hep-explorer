@@ -2,7 +2,7 @@ export const defaultSettings = {
     max_width: 600,
     x: {
         column: null,
-        type: 'ordinal',
+        type: 'linear',
         label: 'Study Day'
     },
     y: {

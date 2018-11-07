@@ -1,10 +1,10 @@
 (function(global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined'
-        ? (module.exports = factory(require('webcharts'), require('d3')))
+        ? (module.exports = factory(require('webcharts')))
         : typeof define === 'function' && define.amd
-            ? define(['webcharts', 'd3'], factory)
-            : (global.safetyedish = factory(global.webCharts, global.d3));
-})(this, function(webcharts, d3$1) {
+            ? define(['webcharts'], factory)
+            : (global.safetyedish = factory(global.webCharts));
+})(this, function(webcharts) {
     'use strict';
 
     if (typeof Object.assign != 'function') {
@@ -1638,7 +1638,7 @@
         });
 
         var fileName =
-            'eDishDroppedRows_' + d3$1.time.format('%Y-%m-%dT%H-%M-%S')(new Date()) + '.csv';
+            'eDishDroppedRows_' + d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date()) + '.csv';
         var link = d3.select(this);
 
         if (navigator.msSaveBlob)
@@ -2783,6 +2783,7 @@
                     obj.outlier = obj.outlier_low || obj.outlier_high;
                     return obj;
                 });
+                console.log(measureObj);
                 return measureObj;
             })
             .entries(allMatches);
@@ -3272,7 +3273,7 @@
         max_width: 600,
         x: {
             column: null,
-            type: 'ordinal',
+            type: 'linear',
             label: 'Study Day'
         },
         y: defineProperty(
@@ -3392,7 +3393,6 @@
         var points = this.marks[1].circles;
         points.select('title').remove();
         points.append('title').text(function(d) {
-            console.log(d);
             var raw = d.values.raw[0];
             var ylabel = spaghetti.config.displayLabel;
             var yvar = spaghetti.config.y.column;
@@ -4075,7 +4075,7 @@
         adjustTicks.call(this);
     }
 
-    function safetyedish$1(element, settings) {
+    function safetyedish(element, settings) {
         var initial_settings = clone(settings);
         var defaultSettings = configuration.settings();
         var controlInputs = configuration.controlInputs();
@@ -4102,5 +4102,5 @@
         return chart;
     }
 
-    return safetyedish$1;
+    return safetyedish;
 });

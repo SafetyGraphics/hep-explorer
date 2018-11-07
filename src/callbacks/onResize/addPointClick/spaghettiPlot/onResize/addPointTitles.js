@@ -4,7 +4,6 @@ export default function addPointTitles() {
     var points = this.marks[1].circles;
     points.select('title').remove();
     points.append('title').text(function(d) {
-        console.log(d);
         var raw = d.values.raw[0];
         var ylabel = spaghetti.config.displayLabel;
         var yvar = spaghetti.config.y.column;
