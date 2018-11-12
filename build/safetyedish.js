@@ -957,11 +957,9 @@
                 typeof f[config.baseline.value_col] == 'string'
                     ? f[config.baseline.value_col].trim()
                     : parseFloat(f[config.baseline.value_col]);
-            console.log(typeof current === 'undefined' ? 'undefined' : _typeof(current));
             return config.baseline.values.indexOf(current) > -1;
         });
 
-        console.log(baseline_records.length);
         var baseline_values = d3
             .nest()
             .key(function(d) {
