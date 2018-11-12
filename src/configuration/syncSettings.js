@@ -82,6 +82,9 @@ export default function syncSettings(settings) {
         settings.details = defaultDetails;
     }
 
+    //if it is null, set settings.baseline.value_col to settings.studyday_col.
+    if (!settings.baseline.value_col) settings.baseline.value_col = settings.studyday_col;
+
     //parse x_ and y_options to array if needed
     if (typeof settings.x_options == 'string') settings.x_options = [settings.x_options];
     if (typeof settings.y_options == 'string') settings.y_options = [settings.y_options];

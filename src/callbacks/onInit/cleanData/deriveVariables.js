@@ -9,10 +9,23 @@ export default function deriveVariables() {
 
     var missingBaseline = 0;
 
+    //coerce numeric values to number
+    this.imputed_data = this.imputed_data.map(function(d) {
+        var numerics = ['value_col', 'studyday_col', 'normal_col_low', 'normal_col_high'];
+        numerics.forEach(function(col) {
+            d[config[col]] = parseFloat(d[config[col]]);
+        });
+        return d;
+    });
+
     //create an object mapping baseline values for id/measure pairs
-    const baseline_records = sub.filter(
-        f => config.baseline.values.indexOf(f[config.baseline.value_col].trim()) > -1
-    );
+    const baseline_records = sub.filter(function(f) {
+        var current =
+            typeof f[config.baseline.value_col] == 'string'
+                ? f[config.baseline.value_col].trim()
+                : parseFloat(f[config.baseline.value_col]);
+        return config.baseline.values.indexOf(current) > -1;
+    });
 
     const baseline_values = d3
         .nest()
@@ -22,12 +35,6 @@ export default function deriveVariables() {
         .map(baseline_records);
 
     this.imputed_data = this.imputed_data.map(function(d) {
-        //coerce numeric values to number
-        var numerics = ['value_col', 'studyday_col', 'normal_col_low', 'normal_col_high'];
-        numerics.forEach(function(col) {
-            d[config[col]] = +d[config[col]];
-        });
-
         //standardize key variables
         d.key_measure = false;
         if (included_measures.indexOf(d[config.measure_col]) > -1) {

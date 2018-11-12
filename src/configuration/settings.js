@@ -17,7 +17,7 @@ export default function settings() {
             values: []
         },
         baseline: {
-            value_col: 'DY',
+            value_col: null, //synced with studyday_col in syncsettings()
             values: [0]
         },
         measure_values: {
