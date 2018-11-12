@@ -48,14 +48,14 @@ document.onreadystatechange = function () {
             },
           //  analysisFlag:{
           //  },
-          //  baseline:{
-          //    value_col:"AVISIT",
-          //    values:["Baseline"]
-          //  }
             baseline:{
-              value_col:"ADY",
-              values:[-7,-8,-13]
+              value_col:"AVISIT",
+              values:["Baseline"]
             }
+          //  baseline:{
+          //    value_col:"ADY",
+          //    values:[-7,-8,-13]
+          //  }
         };
         const chart = safetyedish('#container', settings);
         d3.csv('adlbc.csv', function(data) {
