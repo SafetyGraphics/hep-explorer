@@ -82,6 +82,9 @@ export default function syncSettings(settings) {
         settings.details = defaultDetails;
     }
 
+    // If settings.analysisFlag is null
+    if (!settings.analysisFlag) settings.analysisFlag = { value_col: null, values: [] };
+
     //if it is null, set settings.baseline.value_col to settings.studyday_col.
     if (!settings.baseline.value_col) settings.baseline.value_col = settings.studyday_col;
 
