@@ -46,14 +46,18 @@ document.onreadystatechange = function () {
               'TB':'Bilirubin (umol/L)',
               'ALP':'Alkaline Phosphatase (U/L)'
             },
-            analysisFlag:{
-              value_col:"EPOCH",
-              values:["Analysis"]
-            },
             baseline:{
               value_col:"AVISIT",
               values:["Baseline"]
-            }
+            },
+          //  baseline:{
+          //    value_col:"ADY",
+          //    values:[-7,-8,-13]
+          //  },
+          //analysisFlag:{
+          //  value_col:"EPOCH",
+          //  values: ["Analysis"]
+          //}
         };
         const chart = safetyedish('#container', settings);
         d3.csv('adlbc.csv', function(data) {

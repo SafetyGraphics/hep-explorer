@@ -229,7 +229,7 @@
                 values: []
             },
             baseline: {
-                value_col: 'DY',
+                value_col: null, //synced with studyday_col in syncsettings()
                 values: [0]
             },
             measure_values: {
@@ -464,6 +464,16 @@
             });
             settings.details = defaultDetails;
         }
+
+        // If settings.analysisFlag is null
+        if (!settings.analysisFlag)
+            settings.analysisFlag = {
+                value_col: null,
+                values: []
+
+                //if it is null, set settings.baseline.value_col to settings.studyday_col.
+            };
+        if (!settings.baseline.value_col) settings.baseline.value_col = settings.studyday_col;
 
         //parse x_ and y_options to array if needed
         if (typeof settings.x_options == 'string') settings.x_options = [settings.x_options];
@@ -939,9 +949,22 @@
 
         var missingBaseline = 0;
 
+        //coerce numeric values to number
+        this.imputed_data = this.imputed_data.map(function(d) {
+            var numerics = ['value_col', 'studyday_col', 'normal_col_low', 'normal_col_high'];
+            numerics.forEach(function(col) {
+                d[config[col]] = parseFloat(d[config[col]]);
+            });
+            return d;
+        });
+
         //create an object mapping baseline values for id/measure pairs
         var baseline_records = sub.filter(function(f) {
-            return config.baseline.values.indexOf(f[config.baseline.value_col].trim()) > -1;
+            var current =
+                typeof f[config.baseline.value_col] == 'string'
+                    ? f[config.baseline.value_col].trim()
+                    : parseFloat(f[config.baseline.value_col]);
+            return config.baseline.values.indexOf(current) > -1;
         });
 
         var baseline_values = d3
@@ -958,12 +981,6 @@
             .map(baseline_records);
 
         this.imputed_data = this.imputed_data.map(function(d) {
-            //coerce numeric values to number
-            var numerics = ['value_col', 'studyday_col', 'normal_col_low', 'normal_col_high'];
-            numerics.forEach(function(col) {
-                d[config[col]] = +d[config[col]];
-            });
-
             //standardize key variables
             d.key_measure = false;
             if (included_measures.indexOf(d[config.measure_col]) > -1) {
