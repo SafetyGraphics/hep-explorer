@@ -12,6 +12,7 @@ import { initCustomWarning } from './onLayout/initCustomWarning';
 import { initDroppedRowsWarning } from './onLayout/initDroppedRowsWarning';
 import { initControlLabels } from './onLayout/initControlLabels';
 import { addFootnote } from './onLayout/addFootnote';
+import { addDownloadButton } from './onLayout/addDownloadButton';
 
 export default function onLayout() {
     layoutPanels.call(this);
@@ -20,7 +21,9 @@ export default function onLayout() {
     initMessages.call(this);
     initCustomWarning.call(this);
     initDroppedRowsWarning.call(this);
+
     initTitle.call(this);
+    addDownloadButton.call(this);
 
     addFootnote.call(this);
     addRRatioSpan.call(this);

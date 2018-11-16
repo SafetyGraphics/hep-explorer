@@ -34,7 +34,7 @@ export function showMissingDataWarning() {
                 .datum(chart.dropped_participants)
                 .on('click', function(d) {
                     var cols = ['id', 'drop_reason'];
-                    downloadCSV.call(this, d, cols);
+                    downloadCSV.call(this, d, cols, 'eDishDroppedParticipants');
                 });
         });
     }

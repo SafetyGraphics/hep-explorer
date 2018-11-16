@@ -1,4 +1,4 @@
-export function downloadCSV(data, cols) {
+export function downloadCSV(data, cols, file) {
     const CSVarray = [];
 
     //add headers to CSV array
@@ -22,8 +22,8 @@ export function downloadCSV(data, cols) {
     const blob = new Blob([CSVarray.join('\n')], {
         type: 'text/csv;charset=utf-8;'
     });
-
-    const fileName = `eDishDroppedRows_${d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date())}.csv`;
+    const fileCore = file ? file : 'eDish';
+    const fileName = `${fileCore}_${d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date())}.csv`;
     const link = d3.select(this);
 
     if (navigator.msSaveBlob)

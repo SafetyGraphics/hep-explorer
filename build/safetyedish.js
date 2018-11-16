@@ -282,6 +282,7 @@
             r_ratio_cut: 0,
             visit_window: 30,
             showTitle: true,
+            downloadLink: true,
             warningText:
                 "This graphic has been thoroughly tested, but is not validated. Any clinical recommendations based on this tool should be confirmed using your organization's standard operating procedures.",
             //all values set in onLayout/quadrants/*.js
@@ -1623,7 +1624,7 @@
         }
     }
 
-    function downloadCSV(data, cols) {
+    function downloadCSV(data, cols, file) {
         var CSVarray = [];
 
         //add headers to CSV array
@@ -1649,9 +1650,8 @@
         var blob = new Blob([CSVarray.join('\n')], {
             type: 'text/csv;charset=utf-8;'
         });
-
-        var fileName =
-            'eDishDroppedRows_' + d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date()) + '.csv';
+        var fileCore = file ? file : 'eDish';
+        var fileName = fileCore + '_' + d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date()) + '.csv';
         var link = d3.select(this);
 
         if (navigator.msSaveBlob)
@@ -1691,7 +1691,7 @@
                                 return systemVars.indexOf(f) == -1;
                             })
                         ]);
-                        downloadCSV.call(this, d, cols);
+                        downloadCSV.call(this, d, cols, 'eDishDroppedRows');
                     });
             });
         }
@@ -1720,6 +1720,7 @@
             .style('border-bottom', '1px solid black')
             .style('margin-right', '1em')
             .style('margin-bottom', '1em');
+
         this.controls.setting_header
             .append('span')
             .text('Settings')
@@ -1790,6 +1791,44 @@
             .style('padding-top', '0.1em');
     }
 
+    function addDownloadButton() {
+        var chart = this;
+        var config = this.config;
+        if (config.downloadLink) {
+            this.titleDiv
+                .select('span')
+                .append('a')
+                .attr('class', 'downloadRaw')
+                .html('&#x2193; Raw Data')
+                .attr('title', 'Download Raw Data')
+                .style('font-size', '.5em')
+                .style('margin-left', '1em')
+                .style('border', '1px solid black')
+                .style('border-radius', '2px')
+                .style('padding', '2px 4px')
+                .style('text-align', 'center')
+                .style('display', 'inline-block')
+                .style('cursor', 'pointer')
+                .style('font-weight', 'bold')
+                .datum(chart.initial_data)
+                .on('click', function(d) {
+                    var systemVars = [
+                        'dropReason',
+                        'NONE',
+                        'ALT',
+                        'TB',
+                        'impute_flag',
+                        'key_measure',
+                        'analysisFlag'
+                    ];
+                    var cols = Object.keys(d[0]).filter(function(f) {
+                        return systemVars.indexOf(f) == -1;
+                    });
+                    downloadCSV.call(this, d, cols, 'eDishRawData');
+                });
+        }
+    }
+
     function onLayout() {
         layoutPanels.call(this);
 
@@ -1797,7 +1836,9 @@
         init$1.call(this);
         initCustomWarning.call(this);
         initDroppedRowsWarning.call(this);
+
         initTitle.call(this);
+        addDownloadButton.call(this);
 
         addFootnote.call(this);
         addRRatioSpan.call(this);
@@ -2106,7 +2147,7 @@
                     .datum(chart.dropped_participants)
                     .on('click', function(d) {
                         var cols = ['id', 'drop_reason'];
-                        downloadCSV.call(this, d, cols);
+                        downloadCSV.call(this, d, cols, 'eDishDroppedParticipants');
                     });
             });
         }
