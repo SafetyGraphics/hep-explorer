@@ -466,13 +466,9 @@
         }
 
         // If settings.analysisFlag is null
-        if (!settings.analysisFlag)
-            settings.analysisFlag = {
-                value_col: null,
-                values: []
+        if (!settings.analysisFlag) settings.analysisFlag = { value_col: null, values: [] };
 
-                //if it is null, set settings.baseline.value_col to settings.studyday_col.
-            };
+        //if it is null, set settings.baseline.value_col to settings.studyday_col.
         if (!settings.baseline.value_col) settings.baseline.value_col = settings.studyday_col;
 
         //parse x_ and y_options to array if needed
@@ -493,6 +489,12 @@
 
     function controlInputs() {
         return [
+            {
+                type: 'number',
+                label: 'Minimum R Ratio',
+                description: 'Display points with R ratios greater or equal to X',
+                option: 'r_ratio_cut'
+            },
             {
                 type: 'dropdown',
                 label: 'Group',
@@ -564,12 +566,6 @@
                 label: 'Highlight Points Based on Timing',
                 description: 'Fill points with max values less than X days apart',
                 option: 'visit_window'
-            },
-            {
-                type: 'number',
-                label: 'Minimum R Ratio',
-                description: 'Display points with R ratios greater or equal to X',
-                option: 'r_ratio_cut'
             }
         ];
     }
@@ -719,7 +715,7 @@
                 };
                 return filter;
             });
-            return controlInputs.concat(otherFilters);
+            return d3.merge([otherFilters, controlInputs]);
         } else return controlInputs;
     }
 
@@ -1705,8 +1701,19 @@
         var config = this.config;
 
         //Add settings label
-        var first_control = this.controls.wrap.select('div.control-group');
-        this.controls.setting_header = first_control
+        var first_setting = this.controls.wrap
+            .selectAll('div.control-group')
+            .filter(function(f) {
+                return f.type != 'subsetter';
+            })
+            .filter(function(f) {
+                return f.option != 'r_ratio_cut';
+            })
+            .filter(function(f, i) {
+                return i == 0;
+            });
+
+        this.controls.setting_header = first_setting
             .insert('div', '*')
             .attr('class', 'subtitle')
             .style('border-top', '1px solid black')

@@ -3,14 +3,20 @@ export function initControlLabels() {
     const config = this.config;
 
     //Add settings label
-    const first_control = this.controls.wrap.select('div.control-group');
-    this.controls.setting_header = first_control
+    const first_setting = this.controls.wrap
+        .selectAll('div.control-group')
+        .filter(f => f.type != 'subsetter')
+        .filter(f => f.option != 'r_ratio_cut')
+        .filter((f, i) => i == 0);
+
+    this.controls.setting_header = first_setting
         .insert('div', '*')
         .attr('class', 'subtitle')
         .style('border-top', '1px solid black')
         .style('border-bottom', '1px solid black')
         .style('margin-right', '1em')
         .style('margin-bottom', '1em');
+
     this.controls.setting_header
         .append('span')
         .text('Settings')

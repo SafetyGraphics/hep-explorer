@@ -121,6 +121,6 @@ export default function syncControlInputs(controlInputs, settings) {
             };
             return filter;
         });
-        return controlInputs.concat(otherFilters);
+        return d3.merge([otherFilters, controlInputs]);
     } else return controlInputs;
 }
