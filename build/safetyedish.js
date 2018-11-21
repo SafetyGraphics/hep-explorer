@@ -2848,7 +2848,6 @@
                     obj.outlier = obj.outlier_low || obj.outlier_high;
                     return obj;
                 });
-                console.log(measureObj);
                 return measureObj;
             })
             .entries(allMatches);
@@ -3260,6 +3259,60 @@
         footnotes.exit().remove();
     }
 
+    function addExtraMeasureToggle() {
+        var measureTable = this;
+        var chart = this.edish;
+        var config = chart.config;
+
+        measureTable.wrap.selectAll('div.wc-controls').remove();
+
+        //check to see if there are extra measures in the MeasureTable
+        var specifiedMeasures = Object.keys(config.measure_values).map(function(e) {
+            return config.measure_values[e];
+        });
+        var tableMeasures = measureTable.data.raw.map(function(f) {
+            return f.key;
+        });
+
+        //if extra measure exist...
+        if (tableMeasures.length > specifiedMeasures.length) {
+            var extraRows = measureTable.table
+                .select('tbody')
+                .selectAll('tr')
+                .filter(function(f) {
+                    return specifiedMeasures.indexOf(f.key) == -1;
+                });
+
+            //hide extra rows by default
+            extraRows.style('display', 'none');
+
+            //add a toggle
+            var toggleDiv = measureTable.wrap
+                .insert('div', '*')
+                .attr('class', 'wc-controls')
+                .append('div')
+                .attr('class', 'control-group');
+            var extraCount = tableMeasures.length - specifiedMeasures.length;
+            toggleDiv
+                .append('span')
+                .attr('class', 'wc-control-label')
+                .style('display', 'inline-block')
+                .style('padding-right', '.3em')
+                .text(
+                    'Show ' +
+                        extraCount +
+                        ' additional measure' +
+                        (extraCount == 1 ? '' : 's') +
+                        ':'
+                );
+            var toggle = toggleDiv.append('input').property('type', 'checkbox');
+            toggle.on('change', function() {
+                var showRows = this.checked;
+                extraRows.style('display', showRows ? null : 'none');
+            });
+        }
+    }
+
     function drawMeasureTable(d) {
         var nested = makeNestedData.call(this, d);
 
@@ -3268,6 +3321,7 @@
         this.measureTable.on('draw', function() {
             addSparkLines.call(this);
             addSparkClick.call(this);
+            addExtraMeasureToggle.call(this);
             addFootnote$1.call(this);
         });
         this.measureTable.draw(nested);
