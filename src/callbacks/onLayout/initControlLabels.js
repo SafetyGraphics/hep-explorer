@@ -57,7 +57,7 @@ export function initControlLabels() {
                     population +
                     '</span> of <span class="denominator">' +
                     population +
-                    '</span> partiticpants shown.'
+                    '</span> participants shown.'
             )
             .style('font-size', '0.8em');
 
