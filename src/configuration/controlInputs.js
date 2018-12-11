@@ -1,6 +1,12 @@
 export default function controlInputs() {
     return [
         {
+            type: 'number',
+            label: 'Minimum R Ratio',
+            description: 'Display points with R ratios greater or equal to X',
+            option: 'r_ratio_cut'
+        },
+        {
             type: 'dropdown',
             label: 'Group',
             description: 'Grouping variable',
@@ -71,12 +77,6 @@ export default function controlInputs() {
             label: 'Highlight Points Based on Timing',
             description: 'Fill points with max values less than X days apart',
             option: 'visit_window'
-        },
-        {
-            type: 'number',
-            label: 'Minimum R Ratio',
-            description: 'Display points with R ratios greater or equal to X',
-            option: 'r_ratio_cut'
         }
     ];
 }

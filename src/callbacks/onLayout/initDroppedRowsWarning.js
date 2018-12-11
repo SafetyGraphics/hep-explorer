@@ -24,7 +24,7 @@ export function initDroppedRowsWarning() {
                         ['dropReason'],
                         Object.keys(d[0]).filter(f => systemVars.indexOf(f) == -1)
                     ]);
-                    downloadCSV.call(this, d, cols);
+                    downloadCSV.call(this, d, cols, 'eDishDroppedRows');
                 });
         });
     }
