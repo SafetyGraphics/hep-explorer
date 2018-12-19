@@ -31,6 +31,11 @@ export default function syncSettings(settings) {
         settings.color_by = 'NONE';
     }
 
+    //make sure filters is an Array
+    if (!(settings.filters instanceof Array)) {
+        settings.filters = [];
+    }
+
     //Define default details.
     let defaultDetails = [{ value_col: settings.id_col, label: 'Subject Identifier' }];
     if (settings.filters) {
@@ -86,6 +91,8 @@ export default function syncSettings(settings) {
     if (!settings.analysisFlag) settings.analysisFlag = { value_col: null, values: [] };
 
     //if it is null, set settings.baseline.value_col to settings.studyday_col.
+    if (!settings.baseline) settings.baseline = { value_col: null, values: [] };
+    if (settings.baseline.values.length == 0) settings.baseline.values = [0];
     if (!settings.baseline.value_col) settings.baseline.value_col = settings.studyday_col;
 
     //parse x_ and y_options to array if needed
