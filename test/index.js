@@ -22,8 +22,6 @@ document.onreadystatechange = function () {
             normal_col_high: 'A1HI',
             id_col: 'USUBJID',
             group_cols: ['TRTA','RACE','AGEGR1'],
-            filters:null,
-            baseline:null,
             filters: [
                 {
                     value_col: 'TRTA',
