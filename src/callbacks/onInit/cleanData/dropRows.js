@@ -6,7 +6,7 @@ export default function dropRows() {
     /////////////////////////
     // Remove invalid rows
     /////////////////////////
-    var numerics = ['value_col', 'studyday_col', 'normal_col_low', 'normal_col_high'];
+    var numerics = ['value_col', 'studyday_col', 'normal_col_high'];
     chart.imputed_data = chart.initial_data.filter(f => true);
     numerics.forEach(function(setting) {
         chart.imputed_data = chart.imputed_data.filter(d => {

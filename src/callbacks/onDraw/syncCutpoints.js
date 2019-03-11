@@ -22,11 +22,10 @@ export default function syncCutpoints() {
             //change the control to point at the correct cut point
             var dimInput = chart.controls.wrap
                 .selectAll('div.control-group')
-                .filter(
-                    f =>
-                        f.description
-                            ? f.description.toLowerCase() == dimension + '-axis reference line'
-                            : false
+                .filter(f =>
+                    f.description
+                        ? f.description.toLowerCase() == dimension + '-axis reference line'
+                        : false
                 )
                 .select('input');
 

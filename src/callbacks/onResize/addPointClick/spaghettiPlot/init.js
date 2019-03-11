@@ -70,6 +70,6 @@ export function init(d) {
         .style('font-size', '0.7em')
         .style('padding-top', '0.1em')
         .text(
-            'Points are shown for values above the current reference value. Mouseover a line to see the reference line for that lab.'
+            'Points are filled for values above the current reference value. Mouseover a line to see the reference line for that lab.'
         );
 }
