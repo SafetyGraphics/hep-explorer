@@ -6,10 +6,10 @@ export function addAxisLabelTitles() {
         config.display == 'relative_uln'
             ? 'Values are plotted as multiples of the upper limit of normal for the measure.'
             : config.display == 'relative_baseline'
-                ? "Values are plotted as multiples of the partipant's baseline value for the measure."
-                : config.display == 'absolute'
-                    ? ' Values are plotted using the raw units for the measure.'
-                    : null;
+            ? "Values are plotted as multiples of the partipant's baseline value for the measure."
+            : config.display == 'absolute'
+            ? ' Values are plotted using the raw units for the measure.'
+            : null;
 
     var axisLabels = chart.svg
         .selectAll('.axis')

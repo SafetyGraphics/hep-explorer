@@ -104,21 +104,25 @@ export function flattenData() {
         })
         .entries(this.imputed_data.filter(f => f.key_measure));
 
-    chart.dropped_participants = flat_data.filter(f => f.values.drop_participant).map(function(d) {
-        return {
-            id: d.key,
-            drop_reason: d.values.drop_reason,
-            allrecords: chart.initial_data.filter(f => f[config.id_col] == d.key)
-        };
-    });
-    var flat_data = flat_data.filter(f => !f.values.drop_participant).map(function(m) {
-        m.values[config.id_col] = m.key;
+    chart.dropped_participants = flat_data
+        .filter(f => f.values.drop_participant)
+        .map(function(d) {
+            return {
+                id: d.key,
+                drop_reason: d.values.drop_reason,
+                allrecords: chart.initial_data.filter(f => f[config.id_col] == d.key)
+            };
+        });
+    var flat_data = flat_data
+        .filter(f => !f.values.drop_participant)
+        .map(function(m) {
+            m.values[config.id_col] = m.key;
 
-        //link the raw data to the flattened object
-        var allMatches = chart.imputed_data.filter(f => f[config.id_col] == m.key);
-        m.values.raw = allMatches;
+            //link the raw data to the flattened object
+            var allMatches = chart.imputed_data.filter(f => f[config.id_col] == m.key);
+            m.values.raw = allMatches;
 
-        return m.values;
-    });
+            return m.values;
+        });
     return flat_data;
 }

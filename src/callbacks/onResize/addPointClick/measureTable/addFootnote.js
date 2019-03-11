@@ -9,10 +9,10 @@ export function addFootnote() {
                     ([0, 4, 5, 6, 7, 8, 9].indexOf(lastDigit) > -1
                         ? 'th'
                         : lastDigit === 3
-                            ? 'rd'
-                            : lastDigit === 2
-                                ? 'nd'
-                                : 'st');
+                        ? 'rd'
+                        : lastDigit === 2
+                        ? 'nd'
+                        : 'st');
                 return text;
             })
             .join(' and ')} percentiles of the entire population's results for that measure. ` +

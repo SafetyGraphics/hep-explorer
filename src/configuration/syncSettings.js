@@ -52,15 +52,17 @@ export default function syncSettings(settings) {
     }
 
     if (settings.group_cols) {
-        settings.group_cols.filter(f => f.value_col != 'NONE').forEach(function(group) {
-            var obj = {
-                value_col: group.value_col ? group.value_col : filter,
-                label: group.label ? group.label : group.value_col ? group.value_col : filter
-            };
-            if (defaultDetails.find(f => f.value_col == obj.value_col) == undefined) {
-                defaultDetails.push(obj);
-            }
-        });
+        settings.group_cols
+            .filter(f => f.value_col != 'NONE')
+            .forEach(function(group) {
+                var obj = {
+                    value_col: group.value_col ? group.value_col : filter,
+                    label: group.label ? group.label : group.value_col ? group.value_col : filter
+                };
+                if (defaultDetails.find(f => f.value_col == obj.value_col) == undefined) {
+                    defaultDetails.push(obj);
+                }
+            });
     }
 
     //If [settings.details] is not specified:
@@ -80,8 +82,8 @@ export default function syncSettings(settings) {
                     label: detail.label
                         ? detail.label
                         : detail.value_col
-                            ? detail.value_col
-                            : detail
+                        ? detail.value_col
+                        : detail
                 });
         });
         settings.details = defaultDetails;

@@ -2,8 +2,8 @@
     typeof exports === 'object' && typeof module !== 'undefined'
         ? (module.exports = factory(require('webcharts')))
         : typeof define === 'function' && define.amd
-            ? define(['webcharts'], factory)
-            : (global.safetyedish = factory(global.webCharts));
+        ? define(['webcharts'], factory)
+        : (global.safetyedish = factory(global.webCharts));
 })(this, function(webcharts) {
     'use strict';
 
@@ -407,8 +407,8 @@
                     label: filter.label
                         ? filter.label
                         : filter.value_col
-                            ? filter.value_col
-                            : filter
+                        ? filter.value_col
+                        : filter
                 };
 
                 if (
@@ -432,8 +432,8 @@
                         label: group.label
                             ? group.label
                             : group.value_col
-                                ? group.value_col
-                                : filter
+                            ? group.value_col
+                            : filter
                     };
                     if (
                         defaultDetails.find(function(f) {
@@ -464,8 +464,8 @@
                         label: detail.label
                             ? detail.label
                             : detail.value_col
-                                ? detail.value_col
-                                : detail
+                            ? detail.value_col
+                            : detail
                     });
             });
             settings.details = defaultDetails;
@@ -718,8 +718,8 @@
                     label: filter.label
                         ? filter.label
                         : filter.value_col
-                            ? filter.value_col
-                            : filter
+                        ? filter.value_col
+                        : filter
                 };
                 return filter;
             });
@@ -1864,10 +1864,10 @@
             config.display == 'relative_uln'
                 ? ' [xULN]'
                 : config.display == 'relative_baseline'
-                    ? ' [xBaseline]'
-                    : config.display == 'absolute'
-                        ? ' [raw values]'
-                        : null;
+                ? ' [xBaseline]'
+                : config.display == 'absolute'
+                ? ' [raw values]'
+                : null;
 
         //Update axis labels.
         config.x.label = config.measure_values[config.x.column] + unit;
@@ -3240,10 +3240,10 @@
                             ([0, 4, 5, 6, 7, 8, 9].indexOf(lastDigit) > -1
                                 ? 'th'
                                 : lastDigit === 3
-                                    ? 'rd'
-                                    : lastDigit === 2
-                                        ? 'nd'
-                                        : 'st');
+                                ? 'rd'
+                                : lastDigit === 2
+                                ? 'nd'
+                                : 'st');
                         return text;
                     })
                     .join(' and ') +
@@ -3673,7 +3673,7 @@
             .style('font-size', '0.7em')
             .style('padding-top', '0.1em')
             .text(
-                'Points are shown for values above the current reference value. Mouseover a line to see the reference line for that lab.'
+                'Points are filled for values above the current reference value. Mouseover a line to see the reference line for that lab.'
             );
     }
 
@@ -3745,10 +3745,10 @@
             config.display == 'relative_uln'
                 ? 'Values are plotted as multiples of the upper limit of normal for the measure.'
                 : config.display == 'relative_baseline'
-                    ? "Values are plotted as multiples of the partipant's baseline value for the measure."
-                    : config.display == 'absolute'
-                        ? ' Values are plotted using the raw units for the measure.'
-                        : null;
+                ? "Values are plotted as multiples of the partipant's baseline value for the measure."
+                : config.display == 'absolute'
+                ? ' Values are plotted using the raw units for the measure.'
+                : null;
 
         var axisLabels = chart.svg
             .selectAll('.axis')

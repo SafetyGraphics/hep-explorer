@@ -15,11 +15,10 @@ export default function setCutpointMinimums() {
             config.cuts[measure][config.display] = min;
             chart.controls.wrap
                 .selectAll('div.control-group')
-                .filter(
-                    f =>
-                        f.description
-                            ? f.description.toLowerCase() == dimension + '-axis reference line'
-                            : false
+                .filter(f =>
+                    f.description
+                        ? f.description.toLowerCase() == dimension + '-axis reference line'
+                        : false
                 )
                 .select('input')
                 .node().value = min;

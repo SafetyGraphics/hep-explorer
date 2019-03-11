@@ -10,9 +10,11 @@ export default function syncControlInputs(controlInputs, settings) {
     groupControl.start = settings.color_by; //sync start value
 
     //sync values
-    settings.group_cols.filter(group => group.value_col !== 'NONE').forEach(group => {
-        groupControl.values.push(group.value_col);
-    });
+    settings.group_cols
+        .filter(group => group.value_col !== 'NONE')
+        .forEach(group => {
+            groupControl.values.push(group.value_col);
+        });
 
     //drop the group control if NONE is the only option
     if (settings.group_cols.length == 1)
