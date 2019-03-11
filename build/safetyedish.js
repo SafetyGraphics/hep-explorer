@@ -217,8 +217,8 @@
             studyday_col: 'DY',
             value_col: 'STRESN',
             measure_col: 'TEST',
-            normal_col_low: 'STNRLO',
             normal_col_high: 'STNRHI',
+            normal_col_low: null,
             visit_col: null,
             visitn_col: null,
             group_cols: null,
@@ -922,7 +922,7 @@
         /////////////////////////
         // Remove invalid rows
         /////////////////////////
-        var numerics = ['value_col', 'studyday_col', 'normal_col_low', 'normal_col_high'];
+        var numerics = ['value_col', 'studyday_col', 'normal_col_high'];
         chart.imputed_data = chart.initial_data.filter(function(f) {
             return true;
         });
@@ -2848,10 +2848,12 @@
                         visitn: config.visitn_col ? +m[config.visitn_col] : null,
                         studyday: +m[config.studyday_col],
                         value: +m[config.value_col],
-                        lln: +m[config.normal_col_low],
+                        lln: config.normal_col_low ? +m[config.normal_col_low] : null,
                         uln: +m[config.normal_col_high],
                         population_extent: measureObj.population_extent,
-                        outlier_low: +m[config.value_col] < +m[config.normal_col_low],
+                        outlier_low: config.normal_col_low
+                            ? +m[config.value_col] < +m[config.normal_col_low]
+                            : null,
                         outlier_high: +m[config.value_col] > +m[config.normal_col_high]
                     };
                     obj.outlier = obj.outlier_low || obj.outlier_high;

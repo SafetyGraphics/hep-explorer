@@ -43,10 +43,12 @@ export function makeNestedData(d) {
                     visitn: config.visitn_col ? +m[config.visitn_col] : null,
                     studyday: +m[config.studyday_col],
                     value: +m[config.value_col],
-                    lln: +m[config.normal_col_low],
+                    lln: config.normal_col_low ? +m[config.normal_col_low] : null,
                     uln: +m[config.normal_col_high],
                     population_extent: measureObj.population_extent,
-                    outlier_low: +m[config.value_col] < +m[config.normal_col_low],
+                    outlier_low: config.normal_col_low
+                        ? +m[config.value_col] < +m[config.normal_col_low]
+                        : null,
                     outlier_high: +m[config.value_col] > +m[config.normal_col_high]
                 };
                 obj.outlier = obj.outlier_low || obj.outlier_high;
