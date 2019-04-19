@@ -109,7 +109,7 @@ export default function syncSettings(settings) {
         settings.x_options = typeof settings.x_options == 'string' ? [settings.x_options] : [];
     }
 
-    if (!(settings.x_options instanceof Array)) {
+    if (!(settings.y_options instanceof Array)) {
         settings.y_options = typeof settings.y_options == 'string' ? [settings.y_options] : [];
     }
 
