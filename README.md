@@ -1,6 +1,6 @@
 # Interactive Safety eDISH graphic
 Evaluation of Drug-Induced Serious Hepatotoxicity (eDISH) plots are a key tool used to assess liver toxicity in clinical trials.
-A live demo using sample data is [available here](https://safetygraphics.github.io/safety-eDISH/test-pages/example1) and shown below.
+A live demo using sample data is [available here](https://safetygraphics.github.io/safety-eDISH/test-page/example1/) and shown below.
 
 ![edishgif](https://user-images.githubusercontent.com/3680095/45834450-02b3a000-bcbc-11e8-8172-324c2fe43521.gif)
 
