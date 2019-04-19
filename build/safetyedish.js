@@ -395,7 +395,7 @@
 
         //make sure filters is an Array
         if (!(settings.filters instanceof Array)) {
-            settings.filters = [];
+            settings.filters = typeof settings.filters == 'string' ? [settings.filters] : '';
         }
 
         //Define default details.
