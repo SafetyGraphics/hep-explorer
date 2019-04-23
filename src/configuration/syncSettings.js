@@ -113,6 +113,11 @@ export default function syncSettings(settings) {
         settings.y_options = typeof settings.y_options == 'string' ? [settings.y_options] : [];
     }
 
+    //parse details to array if needed
+    if (!(settings.details instanceof Array)) {
+        settings.details = typeof settings.details == 'string' ? [settings.details] : [];
+    }
+
     // track initial Cutpoint (lets us detect when cutpoint should change)
     settings.cuts.x = settings.x.column;
     settings.cuts.y = settings.y.column;
