@@ -445,6 +445,11 @@
                 });
         }
 
+        //parse details to array if needed
+        if (!(settings.details instanceof Array)) {
+            settings.details = typeof settings.details == 'string' ? [settings.details] : [];
+        }
+
         //If [settings.details] is not specified:
         if (!settings.details) settings.details = defaultDetails;
         else {
@@ -495,11 +500,6 @@
 
         if (!(settings.y_options instanceof Array)) {
             settings.y_options = typeof settings.y_options == 'string' ? [settings.y_options] : [];
-        }
-
-        //parse details to array if needed
-        if (!(settings.details instanceof Array)) {
-            settings.details = typeof settings.details == 'string' ? [settings.details] : [];
         }
 
         // track initial Cutpoint (lets us detect when cutpoint should change)
