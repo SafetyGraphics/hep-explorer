@@ -21,12 +21,16 @@ document.onreadystatechange = function () {
             normal_col_low: 'LBORRESLO',
             normal_col_high: 'LBORRESHI',
             id_col: 'SUBJID',
-            group_cols: ['SEX'],
+            group_cols: ['TRTA','SEX'],
             filters: [
-                {
+              {
+                  value_col: 'TRTA',
+                  label: 'Treatment'
+              },
+              {
                     value_col: 'SEX',
                     label: 'Sex'
-                }
+              }
             ],
             measure_values:{
               'ALT':'ALT (SGPT)',
