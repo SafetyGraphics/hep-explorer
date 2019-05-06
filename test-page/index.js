@@ -1,11 +1,11 @@
-//const lb = fetch('https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/sdtm/cdisc-pilot-01/lb.csv')
-//    .then(function(response) { return response.text(); });
-//const ex = fetch('https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/sdtm/cdisc-pilot-01/ex.csv')
-//    .then(function(response) { return response.text(); });
-const lb = fetch('../../data-library/data/clinical-trials/sdtm/cdisc-pilot-01/lb.csv')
+const lb = fetch('https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/sdtm/cdisc-pilot-01/lb.csv')
     .then(function(response) { return response.text(); });
-const ex = fetch('../../data-library/data/clinical-trials/sdtm/cdisc-pilot-01/ex.csv')
+const ex = fetch('https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/sdtm/cdisc-pilot-01/ex.csv')
     .then(function(response) { return response.text(); });
+//const lb = fetch('../../data-library/data/clinical-trials/sdtm/cdisc-pilot-01/lb.csv')
+//    .then(function(response) { return response.text(); });
+//const ex = fetch('../../data-library/data/clinical-trials/sdtm/cdisc-pilot-01/ex.csv')
+//    .then(function(response) { return response.text(); });
 Promise.all([lb,ex])
     .then(function(values) {
         return {
@@ -42,5 +42,5 @@ Promise.all([lb,ex])
                 //},
             } // settings
         );
-        instance.init(data.lb);
+        instance.init(data.lb, data.ex);
     });
