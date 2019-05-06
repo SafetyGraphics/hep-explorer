@@ -42,5 +42,5 @@ Promise.all([lb,ex])
                 //},
             } // settings
         );
-        instance.init(data.lb, data.ex);
+        instance.init(data.lb);
     });

@@ -1,5 +1,6 @@
 import drawCutLine from './onResize/drawCutLine';
 import addPointTitles from './onResize/addPointTitles';
+import addExposure from './onResize/addExposure';
 
 export default function onResize() {
     var spaghetti = this;
@@ -35,4 +36,7 @@ export default function onResize() {
             spaghetti.cutLine.remove();
             spaghetti.cutLabel.remove();
         });
+
+    //annotate treatment exposure
+    addExposure.call(this);
 }

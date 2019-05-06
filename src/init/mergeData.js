@@ -1,4 +1,4 @@
-export default function mergeData(lb,ex) {
+export default function mergeData(lb, ex) {
     lb.forEach(d => {
         d.se_domain = 'lb';
     });

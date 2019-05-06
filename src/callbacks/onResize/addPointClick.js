@@ -12,6 +12,7 @@ export function addPointClick() {
 
     //add event listener to all participant level points
     points.on('click', function(d) {
+        chart.clicked_id = d.key;
         clearParticipantDetails.call(chart, d); //clear the previous participant
         chart.config.quadrants.table.wrap.style('display', 'none'); //hide the quadrant summary
 

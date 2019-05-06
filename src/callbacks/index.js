@@ -11,5 +11,5 @@ export default {
     onPreprocess,
     onDataTransform,
     onDraw,
-    onResize,
+    onResize
 };
