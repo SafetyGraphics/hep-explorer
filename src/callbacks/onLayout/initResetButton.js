@@ -1,4 +1,4 @@
-import safetyedish from '../../wrapper';
+import safetyedish from '../../index';
 
 export function initResetButton() {
     var chart = this;

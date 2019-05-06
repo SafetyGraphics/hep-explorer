@@ -131,7 +131,7 @@ export default function settings() {
                 type: 'circle',
                 summarizeY: 'mean',
                 summarizeX: 'mean',
-                attributes: { 'fill-opacity': 0 }
+                attributes: { 'fill-opacity': 0 },
             }
         ],
         gridlines: 'xy',

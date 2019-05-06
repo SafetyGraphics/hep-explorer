@@ -5,7 +5,7 @@
   "author": "Rho, Inc.",
   "license": "MIT",
   "homepage": "https://github.com/rhoinc/safety-eDISH#readme",
-  "module": "./src/wrapper.js",
+  "module": "./src/index.js",
   "main": "./build/safetyedish.js",
   "keywords": [
     "labs",
