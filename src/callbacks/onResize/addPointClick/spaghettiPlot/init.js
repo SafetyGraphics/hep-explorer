@@ -53,6 +53,7 @@ export function init(d) {
     });
 
     //draw that chart
+    if (!this.exposure.include) delete spaghettiSettings.margin.bottom; // use default bottom margin when not plotting exposure
     chart.spaghetti = createChart(spaghettiElement, spaghettiSettings, spaghettiControls);
 
     chart.spaghetti.edish = chart; //link the full eDish object

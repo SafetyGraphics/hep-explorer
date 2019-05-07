@@ -1,17 +1,28 @@
 export default function settings() {
     return {
-        //Default template settings
+        //LB domain settings
         id_col: 'USUBJID',
         studyday_col: 'DY',
         value_col: 'STRESN',
         measure_col: 'TEST',
-        normal_col_high: 'STNRHI',
         normal_col_low: null,
+        normal_col_high: 'STNRHI',
         visit_col: null,
         visitn_col: null,
+
+        //DM domain settings
         group_cols: null,
         filters: null,
         details: null,
+
+        //EX domain settings
+        exstdy_col: 'EXSTDY',
+        exendy_col: 'EXENDY',
+        extrt_col: 'EXTRT',
+        exdose_col: 'EXDOSE',
+        exdosu_col: 'EXDOSU',
+
+        //analysis settings
         analysisFlag: {
             value_col: null,
             values: []
@@ -108,6 +119,7 @@ export default function settings() {
                 percent: null
             }
         ],
+
         //Standard webcharts settings
         x: {
             column: null, //set in onPreprocess/updateAxisSettings
