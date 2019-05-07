@@ -228,11 +228,11 @@
             details: null,
 
             //EX domain settings
-            exstdy_col: 'EXSTDY',
-            exendy_col: 'EXENDY',
-            extrt_col: 'EXTRT',
-            exdose_col: 'EXDOSE',
-            exdosu_col: 'EXDOSU',
+            exposure_stdy_col: 'EXSTDY',
+            exposure_endy_col: 'EXENDY',
+            exposure_trt_col: 'EXTRT',
+            exposure_dose_col: 'EXDOSE',
+            exposure_dosu_col: 'EXDOSU',
 
             //analysis settings
             analysisFlag: {
@@ -3630,17 +3630,20 @@
                 var group = d3.select(this);
 
                 //draw a line if exposure start and end dates are unequal
-                if (d[context.edish.config.exstdy_col] !== d[context.edish.config.exendy_col]) {
+                if (
+                    d[context.edish.config.exposure_stdy_col] !==
+                    d[context.edish.config.exposure_endy_col]
+                ) {
                     group
                         .append('line')
                         .classed('se-exposure-line', true)
                         .attr({
                             x1: function x1(d) {
-                                return context.x(+d[context.edish.config.exstdy_col]);
+                                return context.x(+d[context.edish.config.exposure_stdy_col]);
                             },
                             y1: context.plot_height + dy,
                             x2: function x2(d) {
-                                return context.x(+d[context.edish.config.exendy_col]);
+                                return context.x(+d[context.edish.config.exposure_endy_col]);
                             },
                             y2: context.plot_height + dy,
                             stroke: 'black',
@@ -3656,13 +3659,15 @@
                                 .classed('se-exposure-highlight', true)
                                 .attr({
                                     x: function x(d) {
-                                        return context.x(+d[context.edish.config.exstdy_col]);
+                                        return context.x(
+                                            +d[context.edish.config.exposure_stdy_col]
+                                        );
                                     },
                                     y: 0,
                                     width: function width(d) {
                                         return (
-                                            context.x(+d[context.edish.config.exendy_col]) -
-                                            context.x(+d[context.edish.config.exstdy_col])
+                                            context.x(+d[context.edish.config.exposure_endy_col]) -
+                                            context.x(+d[context.edish.config.exposure_stdy_col])
                                         );
                                     },
                                     height: context.plot_height,
@@ -3679,20 +3684,20 @@
                         .append('title')
                         .text(
                             'Study Day: ' +
-                                d[context.edish.config.exstdy_col] +
+                                d[context.edish.config.exposure_stdy_col] +
                                 '-' +
-                                d[context.edish.config.exendy_col] +
+                                d[context.edish.config.exposure_endy_col] +
                                 ' (' +
-                                (+d[context.edish.config.exendy_col] -
-                                    +d[context.edish.config.exstdy_col] +
-                                    (+d[context.edish.config.exendy_col] >=
-                                        +d[context.edish.config.exstdy_col])) +
+                                (+d[context.edish.config.exposure_endy_col] -
+                                    +d[context.edish.config.exposure_stdy_col] +
+                                    (+d[context.edish.config.exposure_endy_col] >=
+                                        +d[context.edish.config.exposure_stdy_col])) +
                                 ' days)\nTreatment: ' +
-                                d[context.edish.config.extrt_col] +
+                                d[context.edish.config.exposure_trt_col] +
                                 '\nDose: ' +
-                                d[context.edish.config.exdose_col] +
+                                d[context.edish.config.exposure_dose_col] +
                                 ' ' +
-                                d[context.edish.config.exdosu_col]
+                                d[context.edish.config.exposure_dosu_col]
                         );
                 }
                 //draw a circle if exposure start and end dates are equal
@@ -3702,7 +3707,7 @@
                         .classed('se-exposure-circle', true)
                         .attr({
                             cx: function cx(d) {
-                                return context.x(+d[context.edish.config.exstdy_col]);
+                                return context.x(+d[context.edish.config.exposure_stdy_col]);
                             },
                             cy: context.plot_height + dy,
                             r: strokeWidth / 2,
@@ -3719,9 +3724,9 @@
                                 .append('line')
                                 .classed('se-exposure-highlight', true)
                                 .attr({
-                                    x1: context.x(+d[context.edish.config.exstdy_col]),
+                                    x1: context.x(+d[context.edish.config.exposure_stdy_col]),
                                     y1: 0,
-                                    x2: context.x(+d[context.edish.config.exstdy_col]),
+                                    x2: context.x(+d[context.edish.config.exposure_stdy_col]),
                                     y2: context.plot_height,
                                     stroke: 'black',
                                     'stroke-width': 1,
@@ -3738,13 +3743,13 @@
                         .append('title')
                         .text(
                             'Study Day: ' +
-                                d[context.edish.config.exstdy_col] +
+                                d[context.edish.config.exposure_stdy_col] +
                                 '\nTreatment: ' +
-                                d[context.edish.config.extrt_col] +
+                                d[context.edish.config.exposure_trt_col] +
                                 '\nDose: ' +
-                                d[context.edish.config.exdose_col] +
+                                d[context.edish.config.exposure_dose_col] +
                                 ' ' +
-                                d[context.edish.config.exdosu_col]
+                                d[context.edish.config.exposure_dosu_col]
                         );
                 }
             });
@@ -3820,10 +3825,10 @@
             });
             var extent = [
                 d3.min(this.exposure_data, function(d) {
-                    return +d[_this.edish.config.exstdy_col];
+                    return +d[_this.edish.config.exposure_stdy_col];
                 }),
                 d3.max(this.exposure_data, function(d) {
-                    return +d[_this.edish.config.exendy_col];
+                    return +d[_this.edish.config.exposure_endy_col];
                 })
             ];
             if (extent[0] < this.x_dom[0]) this.x_dom[0] = extent[0];

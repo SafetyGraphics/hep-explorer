@@ -53,14 +53,17 @@ export default function addExposure() {
             const group = d3.select(this);
 
             //draw a line if exposure start and end dates are unequal
-            if (d[context.edish.config.exstdy_col] !== d[context.edish.config.exendy_col]) {
+            if (
+                d[context.edish.config.exposure_stdy_col] !==
+                d[context.edish.config.exposure_endy_col]
+            ) {
                 group
                     .append('line')
                     .classed('se-exposure-line', true)
                     .attr({
-                        x1: d => context.x(+d[context.edish.config.exstdy_col]),
+                        x1: d => context.x(+d[context.edish.config.exposure_stdy_col]),
                         y1: context.plot_height + dy,
-                        x2: d => context.x(+d[context.edish.config.exendy_col]),
+                        x2: d => context.x(+d[context.edish.config.exposure_endy_col]),
                         y2: context.plot_height + dy,
                         stroke: 'black',
                         'stroke-width': strokeWidth,
@@ -74,11 +77,11 @@ export default function addExposure() {
                             .append('rect')
                             .classed('se-exposure-highlight', true)
                             .attr({
-                                x: d => context.x(+d[context.edish.config.exstdy_col]),
+                                x: d => context.x(+d[context.edish.config.exposure_stdy_col]),
                                 y: 0,
                                 width: d =>
-                                    context.x(+d[context.edish.config.exendy_col]) -
-                                    context.x(+d[context.edish.config.exstdy_col]),
+                                    context.x(+d[context.edish.config.exposure_endy_col]) -
+                                    context.x(+d[context.edish.config.exposure_stdy_col]),
                                 height: context.plot_height,
                                 fill: 'black',
                                 'fill-opacity': 0.25
@@ -92,15 +95,15 @@ export default function addExposure() {
                     })
                     .append('title')
                     .text(
-                        `Study Day: ${d[context.edish.config.exstdy_col]}-${
-                            d[context.edish.config.exendy_col]
-                        } (${+d[context.edish.config.exendy_col] -
-                            +d[context.edish.config.exstdy_col] +
-                            (+d[context.edish.config.exendy_col] >=
-                                +d[context.edish.config.exstdy_col])} days)\nTreatment: ${
-                            d[context.edish.config.extrt_col]
-                        }\nDose: ${d[context.edish.config.exdose_col]} ${
-                            d[context.edish.config.exdosu_col]
+                        `Study Day: ${d[context.edish.config.exposure_stdy_col]}-${
+                            d[context.edish.config.exposure_endy_col]
+                        } (${+d[context.edish.config.exposure_endy_col] -
+                            +d[context.edish.config.exposure_stdy_col] +
+                            (+d[context.edish.config.exposure_endy_col] >=
+                                +d[context.edish.config.exposure_stdy_col])} days)\nTreatment: ${
+                            d[context.edish.config.exposure_trt_col]
+                        }\nDose: ${d[context.edish.config.exposure_dose_col]} ${
+                            d[context.edish.config.exposure_dosu_col]
                         }`
                     );
             }
@@ -110,7 +113,7 @@ export default function addExposure() {
                     .append('circle')
                     .classed('se-exposure-circle', true)
                     .attr({
-                        cx: d => context.x(+d[context.edish.config.exstdy_col]),
+                        cx: d => context.x(+d[context.edish.config.exposure_stdy_col]),
                         cy: context.plot_height + dy,
                         r: strokeWidth / 2,
                         fill: 'black',
@@ -126,9 +129,9 @@ export default function addExposure() {
                             .append('line')
                             .classed('se-exposure-highlight', true)
                             .attr({
-                                x1: context.x(+d[context.edish.config.exstdy_col]),
+                                x1: context.x(+d[context.edish.config.exposure_stdy_col]),
                                 y1: 0,
-                                x2: context.x(+d[context.edish.config.exstdy_col]),
+                                x2: context.x(+d[context.edish.config.exposure_stdy_col]),
                                 y2: context.plot_height,
                                 stroke: 'black',
                                 'stroke-width': 1,
@@ -144,10 +147,10 @@ export default function addExposure() {
                     })
                     .append('title')
                     .text(
-                        `Study Day: ${d[context.edish.config.exstdy_col]}\nTreatment: ${
-                            d[context.edish.config.extrt_col]
-                        }\nDose: ${d[context.edish.config.exdose_col]} ${
-                            d[context.edish.config.exdosu_col]
+                        `Study Day: ${d[context.edish.config.exposure_stdy_col]}\nTreatment: ${
+                            d[context.edish.config.exposure_trt_col]
+                        }\nDose: ${d[context.edish.config.exposure_dose_col]} ${
+                            d[context.edish.config.exposure_dosu_col]
                         }`
                     );
             }

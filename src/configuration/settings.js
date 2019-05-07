@@ -16,11 +16,11 @@ export default function settings() {
         details: null,
 
         //EX domain settings
-        exstdy_col: 'EXSTDY',
-        exendy_col: 'EXENDY',
-        extrt_col: 'EXTRT',
-        exdose_col: 'EXDOSE',
-        exdosu_col: 'EXDOSU',
+        exposure_stdy_col: 'EXSTDY',
+        exposure_endy_col: 'EXENDY',
+        exposure_trt_col: 'EXTRT',
+        exposure_dose_col: 'EXDOSE',
+        exposure_dosu_col: 'EXDOSU',
 
         //analysis settings
         analysisFlag: {

@@ -10,8 +10,8 @@ export default function onDraw() {
             d => d[this.edish.config.id_col] === this.edish.clicked_id
         );
         const extent = [
-            d3.min(this.exposure_data, d => +d[this.edish.config.exstdy_col]),
-            d3.max(this.exposure_data, d => +d[this.edish.config.exendy_col])
+            d3.min(this.exposure_data, d => +d[this.edish.config.exposure_stdy_col]),
+            d3.max(this.exposure_data, d => +d[this.edish.config.exposure_endy_col])
         ];
         if (extent[0] < this.x_dom[0]) this.x_dom[0] = extent[0];
         if (extent[1] > this.x_dom[1]) this.x_dom[1] = extent[1];
