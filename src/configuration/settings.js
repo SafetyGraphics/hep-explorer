@@ -1,17 +1,28 @@
 export default function settings() {
     return {
-        //Default template settings
+        //LB domain settings
         id_col: 'USUBJID',
         studyday_col: 'DY',
         value_col: 'STRESN',
         measure_col: 'TEST',
-        normal_col_high: 'STNRHI',
         normal_col_low: null,
+        normal_col_high: 'STNRHI',
         visit_col: null,
         visitn_col: null,
+
+        //DM domain settings
         group_cols: null,
         filters: null,
         details: null,
+
+        //EX domain settings
+        exposure_stdy_col: 'EXSTDY',
+        exposure_endy_col: 'EXENDY',
+        exposure_trt_col: 'EXTRT',
+        exposure_dose_col: 'EXDOSE',
+        exposure_dosu_col: 'EXDOSU',
+
+        //analysis settings
         analysisFlag: {
             value_col: null,
             values: []
@@ -69,7 +80,7 @@ export default function settings() {
         r_ratio_filter: true,
         r_ratio_cut: 0,
         visit_window: 30,
-        showTitle: true,
+        title: 'Hepatic Safety Explorer',
         downloadLink: true,
         warningText:
             "This graphic has been thoroughly tested, but is not validated. Any clinical recommendations based on this tool should be confirmed using your organization's standard operating procedures.",
@@ -108,6 +119,7 @@ export default function settings() {
                 percent: null
             }
         ],
+
         //Standard webcharts settings
         x: {
             column: null, //set in onPreprocess/updateAxisSettings
