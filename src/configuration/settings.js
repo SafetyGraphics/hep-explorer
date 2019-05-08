@@ -80,7 +80,7 @@ export default function settings() {
         r_ratio_filter: true,
         r_ratio_cut: 0,
         visit_window: 30,
-        showTitle: true,
+        title: 'Hepatic Safety Explorer',
         downloadLink: true,
         warningText:
             "This graphic has been thoroughly tested, but is not validated. Any clinical recommendations based on this tool should be confirmed using your organization's standard operating procedures.",

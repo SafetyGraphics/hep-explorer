@@ -292,7 +292,7 @@
             r_ratio_filter: true,
             r_ratio_cut: 0,
             visit_window: 30,
-            showTitle: true,
+            title: 'Hepatic Safety Explorer',
             downloadLink: true,
             warningText:
                 "This graphic has been thoroughly tested, but is not validated. Any clinical recommendations based on this tool should be confirmed using your organization's standard operating procedures.",
@@ -1482,20 +1482,18 @@
     }
 
     function initTitle() {
-        if (this.config.showTitle) {
-            this.titleDiv = this.controls.wrap
-                .insert('div', '*')
-                .attr('class', 'title')
-                .style('margin-right', '1em')
-                .style('margin-bottom', '1em');
+        this.titleDiv = this.controls.wrap
+            .insert('div', '*')
+            .attr('class', 'title')
+            .style('margin-right', '1em')
+            .style('margin-bottom', '1em');
 
-            this.titleDiv
-                .append('span')
-                .text('Safety eDish')
-                .style('font-size', '1.5em')
-                .style('font-weight', 'strong')
-                .style('display', 'block');
-        }
+        this.titleDiv
+            .append('span')
+            .text(this.config.title)
+            .style('font-size', '1.5em')
+            .style('font-weight', 'strong')
+            .style('display', 'block');
     }
 
     function add(messageText, type, label, messages, callback) {
