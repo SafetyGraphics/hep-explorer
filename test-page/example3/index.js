@@ -30,6 +30,11 @@ Promise.all([dm,lb,ex])
                     ALP: 'Alkaline Phosphatase'
                 },
                 group_cols: 'ARM',
+                baseline:{
+                  value_col:"VISIT",
+                  values:["SCREENING 1"]
+                }
+
             } // settings
         );
         data.dm.forEach(function(d) {

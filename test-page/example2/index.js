@@ -46,7 +46,8 @@ document.onreadystatechange = function () {
             analysisFlag:{
               value_col:"EPOCH",
               values:["Analysis"]
-            }
+            },
+
         };
         const chart = safetyedish('#container', settings);
         d3.csv('allQuads.csv', function(data) {
