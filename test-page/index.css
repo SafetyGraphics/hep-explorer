@@ -18,6 +18,17 @@
     font-size: 24px;
     font-weight: lighter;
 }
+
+#info {
+  text-align: center;
+  color: #004085;
+  background-color: #cce5ff;
+  border:1px solid #b8daff;
+  padding: 0.5em;
+  margin: 0 2% 12px 2%;
+  border-radius:0.2em
+}
+
 #container {
     width: 96%;
     margin: 12px 2%;
