@@ -1,16 +1,10 @@
 import './util/polyfills';
 import './util/moveTo.js';
 import clone from './util/clone.js';
-
 import configuration from './configuration/index';
-
 import { createChart, createControls } from 'webcharts';
-import onInit from './callbacks/onInit';
-import onLayout from './callbacks/onLayout';
-import onPreprocess from './callbacks/onPreprocess';
-import onDataTransform from './callbacks/onDataTransform';
-import onDraw from './callbacks/onDraw';
-import onResize from './callbacks/onResize';
+import callbacks from './callbacks/index';
+import init from './init';
 
 export default function safetyedish(element, settings) {
     const initial_settings = clone(settings);
@@ -26,12 +20,15 @@ export default function safetyedish(element, settings) {
     chart.initial_settings = initial_settings;
 
     //Define callbacks.
-    chart.on('init', onInit);
-    chart.on('layout', onLayout);
-    chart.on('preprocess', onPreprocess);
-    chart.on('datatransform', onDataTransform);
-    chart.on('draw', onDraw);
-    chart.on('resize', onResize);
+    for (const callback in callbacks)
+        chart.on(callback.substring(2).toLowerCase(), callbacks[callback]);
 
-    return chart;
+    const se = {
+        element,
+        settings,
+        chart,
+        init
+    };
+
+    return se;
 }
