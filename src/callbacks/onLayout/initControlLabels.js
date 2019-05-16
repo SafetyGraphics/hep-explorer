@@ -6,7 +6,7 @@ export function initControlLabels() {
     const first_setting = this.controls.wrap
         .selectAll('div.control-group')
         .filter(f => f.type != 'subsetter')
-        .filter(f => f.option != 'r_ratio_cut')
+        .filter(f => f.option != 'r_ratio[0]')
         .filter((f, i) => i == 0);
 
     this.controls.setting_header = first_setting

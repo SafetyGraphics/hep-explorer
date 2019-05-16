@@ -2,9 +2,15 @@ export default function controlInputs() {
     return [
         {
             type: 'number',
-            label: 'Minimum R Ratio',
-            description: 'Display points with R ratios greater or equal to X',
-            option: 'r_ratio_cut'
+            label: 'R Ratio Range',
+            description: 'Filter points based on R ratio [(ALT/ULN) / (ALP/ULN)]',
+            option: 'r_ratio[0]'
+        },
+        {
+            type: 'number',
+            label: null, //combined with r_ratio[0] control in formatRRatioControl()
+            description: null,
+            option: 'r_ratio[1]'
         },
         {
             type: 'dropdown',

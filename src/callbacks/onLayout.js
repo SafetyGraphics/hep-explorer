@@ -1,4 +1,4 @@
-import addRRatioSpan from './onLayout/addRRatioSpan';
+import { formatRRatioControl } from './onLayout/formatRRatioControl';
 import { initQuadrants } from './onLayout/initQuadrants';
 import { initRugs } from './onLayout/initRugs';
 import { initVisitPath } from './onLayout/initVisitPath';
@@ -26,7 +26,7 @@ export default function onLayout() {
     addDownloadButton.call(this);
 
     addFootnote.call(this);
-    addRRatioSpan.call(this);
+    formatRRatioControl.call(this);
     initQuadrants.call(this);
     initRugs.call(this);
     initVisitPath.call(this);
