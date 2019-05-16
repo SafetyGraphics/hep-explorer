@@ -7,10 +7,11 @@ export function initControlLabels() {
         .selectAll('div.control-group')
         .filter(f => f.type != 'subsetter')
         .filter(f => f.option != 'r_ratio[0]')
-        .filter((f, i) => i == 0);
+        .filter((f, i) => i == 0)
+        .attr('class', 'first-setting');
 
-    this.controls.setting_header = first_setting
-        .insert('div', '*')
+    this.controls.setting_header = this.controls.wrap
+        .insert('div', '.first-setting')
         .attr('class', 'subtitle')
         .style('border-top', '1px solid black')
         .style('border-bottom', '1px solid black')
@@ -30,14 +31,12 @@ export function initControlLabels() {
             .selectAll('div')
             .filter(
                 controlInput =>
-                    controlInput.label === 'Minimum R Ratio' || controlInput.type === 'subsetter'
+                    controlInput.label === 'R Ratio Range' || controlInput.type === 'subsetter'
             )
             .classed('subsetter', true);
 
-        var first_filter = this.controls.wrap.select('div.subsetter');
-
-        this.controls.filter_header = first_filter
-            .insert('div', '*')
+        this.controls.filter_header = this.controls.wrap
+            .insert('div', 'div.subsetter')
             .attr('class', 'subtitle')
             .style('border-top', '1px solid black')
             .style('border-bottom', '1px solid black')

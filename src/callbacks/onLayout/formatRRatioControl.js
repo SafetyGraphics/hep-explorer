@@ -26,8 +26,9 @@ export function formatRRatioControl() {
         //add a reset button
         min_r_ratio
             .append('button')
-            .style('padding', '0.2em 0.4em 0.2em 0.4em')
+            .style('padding', '0.2em 0.5em 0.2em 0.4em')
             .style('margin-left', '0.5em')
+            .style('border-radius', '0.4em')
             .text('Reset')
             .on('click', function() {
                 config.r_ratio[0] = 0;
