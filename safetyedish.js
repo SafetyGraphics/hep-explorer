@@ -4050,8 +4050,11 @@
                     ' @ Day ' +
                     raw[yvar + '_' + config.studyday_col],
                 dayDiff = raw['day_diff'] + ' days apart',
-                idLabel = 'Participant ID: ' + raw[config.id_col];
-            return idLabel + '\n' + xLabel + '\n' + yLabel + '\n' + dayDiff;
+                idLabel = 'Participant ID: ' + raw[config.id_col],
+                rRatioLabel = config.r_ratio_filter
+                    ? '\n' + 'Overall R Ratio: ' + d3.format('0.2f')(raw.rRatio)
+                    : '';
+            return idLabel + rRatioLabel + '\n' + xLabel + '\n' + yLabel + '\n' + dayDiff;
         });
     }
 
