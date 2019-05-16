@@ -7,7 +7,7 @@ const onwarn = warning => {
     // Silence circular dependency warning for moment
     if (warning.code === 'CIRCULAR_DEPENDENCY')
         return;
-  
+
     console.warn(`(!) ${warning.message}`);
 }
 
@@ -15,7 +15,7 @@ module.exports = {
     input: pkg.module,
     onwarn,
     output: {
-        name: pkg.main.replace(/^((\.\/)?(build\/)?)|(\.js)$/g, ''),
+        name: pkg.main.replace(".js", ''),
         file: pkg.main,
         format: 'umd',
         globals: {
@@ -41,4 +41,3 @@ module.exports = {
         })
     ]
 };
-
