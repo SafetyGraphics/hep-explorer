@@ -7,7 +7,7 @@ document.onreadystatechange = function () {
             //...load local build.
             var script = document.createElement('script');
             script.type = 'text/javascript';
-            script.src = '../../build/safetyedish.js';
+            script.src = '../../safetyedish.js';
             head.appendChild(script);
         }
 
