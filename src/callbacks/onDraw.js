@@ -4,6 +4,7 @@ import { clearParticipantDetails } from './onResize/clearParticipantDetails';
 import { updateFilterLabel } from './onDraw/updateFilterLabel';
 import setCutpointMinimums from './onDraw/setCutpointMinimums';
 import syncCutpoints from './onDraw/syncCutpoints';
+import hideEmptyChart from './onDraw/hideEmptyChart';
 
 export default function onDraw() {
     //clear participant Details
@@ -24,4 +25,5 @@ export default function onDraw() {
 
     //update the count in the filter label
     updateFilterLabel.call(this);
+    hideEmptyChart.call(this);
 }

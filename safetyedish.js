@@ -1444,6 +1444,7 @@
                 var initial_container = chart.element;
                 var initial_settings = chart.initial_settings;
                 var initial_data = chart.initial_data;
+                chart.emptyChartWarning.remove();
 
                 chart.destroy();
                 chart = null;
@@ -1899,6 +1900,21 @@
         }
     }
 
+    function initEmptyChartWarning() {
+        console.log(this);
+        this.emptyChartWarning = d3
+            .select(this.element)
+            .append('span')
+            .text('No data selected. Try updating your settings or resetting the chart. ')
+            .style('display', 'none')
+            .style('color', '#a94442')
+            .style('background-color', '#f2dede')
+            .style('border', '1px solid #ebccd1')
+            .style('padding', '0.5em')
+            .style('margin', '0 2% 12px 2%')
+            .style('border-radius', '0.2em');
+    }
+
     function onLayout() {
         layoutPanels.call(this);
 
@@ -1919,6 +1935,7 @@
         initResetButton.call(this);
         initDisplayControl.call(this);
         initControlLabels.call(this);
+        initEmptyChartWarning.call(this);
     }
 
     function updateAxisSettings() {
@@ -2549,6 +2566,12 @@
         }
     }
 
+    function hideEmptyChart() {
+        var emptyChart = this.filtered_data.length == 0;
+        this.wrap.style('display', emptyChart ? 'none' : 'inline-block');
+        this.emptyChartWarning.style('display', emptyChart ? 'inline-block' : 'none');
+    }
+
     function onDraw() {
         //clear participant Details
         clearParticipantDetails.call(this);
@@ -2568,6 +2591,7 @@
 
         //update the count in the filter label
         updateFilterLabel.call(this);
+        hideEmptyChart.call(this);
     }
 
     function drawQuadrants() {

@@ -13,6 +13,7 @@ import { initDroppedRowsWarning } from './onLayout/initDroppedRowsWarning';
 import { initControlLabels } from './onLayout/initControlLabels';
 import { addFootnote } from './onLayout/addFootnote';
 import { addDownloadButton } from './onLayout/addDownloadButton';
+import { initEmptyChartWarning } from './onLayout/initEmptyChartWarning';
 
 export default function onLayout() {
     layoutPanels.call(this);
@@ -34,4 +35,5 @@ export default function onLayout() {
     initResetButton.call(this);
     initDisplayControl.call(this);
     initControlLabels.call(this);
+    initEmptyChartWarning.call(this);
 }
