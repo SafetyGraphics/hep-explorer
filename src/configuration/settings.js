@@ -78,7 +78,7 @@ export default function settings() {
         populationProfileURL: null,
         participantProfileURL: null,
         r_ratio_filter: true,
-        r_ratio_cut: 0,
+        r_ratio: [0, null],
         visit_window: 30,
         title: 'Hepatic Safety Explorer',
         downloadLink: true,
