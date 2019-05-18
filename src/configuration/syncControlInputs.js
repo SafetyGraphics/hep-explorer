@@ -83,7 +83,7 @@ export default function syncControlInputs(controlInputs, settings) {
     //drop the R Ratio control if r_ratio_filter is false
     if (!settings.r_ratio_filter) {
         controlInputs = controlInputs.filter(
-            controlInput => ['r_ratio[0]', 'r_ratio[1]'].indexOf(controlInput.option) == 0
+            controlInput => ['r_ratio[0]', 'r_ratio[1]'].indexOf(controlInput.option) == -1
         );
     }
 
