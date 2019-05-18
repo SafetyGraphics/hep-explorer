@@ -13,7 +13,7 @@ Promise.all([dm,lb,ex])
         };
     })
     .then(function(data) {
-        const instance = safetyedish(
+        const instance = hepexplorer(
             '#container', // element
             {
                 studyday_col: 'LBDY',

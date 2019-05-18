@@ -7,7 +7,7 @@ document.onreadystatechange = function () {
             //...load local build.
             var script = document.createElement('script');
             script.type = 'text/javascript';
-            script.src = '../../safetyedish.js';
+            script.src = '../../hepexplorer.js';
             head.appendChild(script);
         }
 
@@ -48,7 +48,7 @@ document.onreadystatechange = function () {
               values:["Analysis"]
             }
         };
-        const chart = safetyedish('#container', settings);
+        const chart = hepexplorer('#container', settings);
         d3.csv('allQuads.csv', function(data) {
           console.log(data)
             data.forEach(function(d){
