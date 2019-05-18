@@ -1,12 +1,12 @@
 {
-  "name": "safety-edish",
-  "description": "Interactive graphic for the Evaluation of Drug-Induced Serious Hepatotoxicity (eDISH)",
+  "name": "hep-explorer",
+  "description": "Interactive Graphic for Exploring Hepatic Data in Clinical Trials",
   "version": "1.0.0",
   "author": "Rho, Inc.",
   "license": "MIT",
-  "homepage": "https://github.com/rhoinc/safety-eDISH#readme",
+  "homepage": "https://github.com/SafetyGraphics/hep-explorer#readme",
   "module": "./src/index.js",
-  "main": "safetyedish.js",
+  "main": "hepexplorer.js",
   "keywords": [
     "labs",
     "vitals",
@@ -25,7 +25,7 @@
     "bundle": "rollup -c",
     "format": "npm run format-src && npm run format-build",
     "format-src": "prettier --print-width=100 --tab-width=4 --single-quote --write \"./src/**/*.js\"",
-    "format-build": "prettier --print-width=100 --tab-width=4 --single-quote --write safetyedish.js",
+    "format-build": "prettier --print-width=100 --tab-width=4 --single-quote --write hepexplorer.js",
     "test": "start chrome ./test/index.html && start firefox ./test/index.html && start iexplore file://%CD%/test/index.html",
     "watch": "rollup -c -w"
   },
@@ -39,9 +39,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/RhoInc/safety-eDISH.git"
+    "url": "https://github.com/SafetyGraphics/hep-explorer.git"
   },
   "bugs": {
-    "url": "https://github.com/RhoInc/safety-eDISH/issues"
+    "url": "https://github.com/SafetyGraphics/hep-explorer/issues"
   }
 }
