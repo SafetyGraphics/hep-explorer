@@ -1,12 +1,11 @@
 # Interactive Safety eDISH graphic
-Evaluation of Drug-Induced Serious Hepatotoxicity (eDISH) plots are a key tool used to assess liver toxicity in clinical trials.
-A live demo using sample data is [available here](https://safetygraphics.github.io/safety-eDISH/test-page/example1/) and shown below.
+This interactive chart allows users to evaluate participant liver function in clinical trials. A live demo using sample data is [available here](https://safetygraphics.github.io/hep-explorer/test-page/example1/) and shown below.
 
 ![edishgif](https://user-images.githubusercontent.com/3680095/45834450-02b3a000-bcbc-11e8-8172-324c2fe43521.gif)
 
 ## Background
-Standard properties and workflows for static eDish plots are well documented  by [Watkins et al.](https://link.springer.com/article/10.2165%2F11586600-000000000-00000),  [Merz et al.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4212156/) and others.
-This library contains a web-based implementation of the traditional eDISH plot that allows a user to interactively explore participant data in ways that are not possible in static plots.
+Standard properties and workflows for evaluation of hepatic data using static eDish plots are well documented  by [Watkins et al.](https://link.springer.com/article/10.2165%2F11586600-000000000-00000),  [Merz et al.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4212156/) and others.
+This library contains a web-based implementation of these workflows that allows a user to interactively explore participant data in ways that are not possible in static plots. 
 
 ## Interactive Functionality
 Just like the standard eDish plot, the default view for this chart shows one point per participant with maximal alanine transaminase (ALT) and total bilirubin (TB) over the course of the study plotted on the x- and y-axes, respectively (see "Population View" below).
