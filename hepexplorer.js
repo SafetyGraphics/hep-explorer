@@ -1449,7 +1449,7 @@
                 chart.destroy();
                 chart = null;
 
-                var newChart = safetyedish(initial_container, initial_settings);
+                var newChart = hepexplorer(initial_container, initial_settings);
                 newChart.init(initial_data);
             });
     }
