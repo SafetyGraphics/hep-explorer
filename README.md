@@ -1,4 +1,4 @@
-# Interactive Safety eDISH graphic
+# Interactive Hepatic Safety Explorer graphic
 This interactive chart allows users to evaluate participant liver function in clinical trials. A live demo using sample data is [available here](https://safetygraphics.github.io/hep-explorer/test-page/example1/) and shown below.
 
 ![edishgif](https://user-images.githubusercontent.com/3680095/45834450-02b3a000-bcbc-11e8-8172-324c2fe43521.gif)
