@@ -1,4 +1,4 @@
-import safetyedish from '../../index';
+import hepexplorer from '../../index';
 
 export function initResetButton() {
     var chart = this;
