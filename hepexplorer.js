@@ -1130,7 +1130,7 @@
                     config.r_ratio[0] = 0;
                     min_r_ratio.select('input#r_ratio_min').property('value', config.r_ratio[0]);
                     config.r_ratio[1] = config.max_r_ratio;
-                    max_r_ratio.select('input#r_ratio_max').property('value', config.r_ratio[1]);
+                    min_r_ratio.select('input#r_ratio_max').property('value', config.r_ratio[1]);
                     chart.draw();
                 });
         }
