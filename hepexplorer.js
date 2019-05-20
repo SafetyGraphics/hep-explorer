@@ -3,7 +3,7 @@
         ? (module.exports = factory(require('webcharts')))
         : typeof define === 'function' && define.amd
         ? define(['webcharts'], factory)
-        : (global.safetyedish = factory(global.webCharts));
+        : (global.hepexplorer = factory(global.webCharts));
 })(this, function(webcharts) {
     'use strict';
 
@@ -710,7 +710,7 @@
         //drop the R Ratio control if r_ratio_filter is false
         if (!settings.r_ratio_filter) {
             controlInputs = controlInputs.filter(function(controlInput) {
-                return ['r_ratio[0]', 'r_ratio[1]'].indexOf(controlInput.option) == 0;
+                return ['r_ratio[0]', 'r_ratio[1]'].indexOf(controlInput.option) == -1;
             });
         }
 

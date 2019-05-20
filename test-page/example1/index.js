@@ -7,7 +7,7 @@ document.onreadystatechange = function () {
             //...load local build.
             var script = document.createElement('script');
             script.type = 'text/javascript';
-            script.src = '../../safetyedish.js';
+            script.src = '../../hepexplorer.js';
             head.appendChild(script);
         }
 
@@ -51,7 +51,7 @@ document.onreadystatechange = function () {
               values:["Baseline"]
             }
         };
-        const chart = safetyedish('#container', settings);
+        const chart = hepexplorer('#container', settings);
         d3.csv('adlbc.csv', function(data) {
             data.forEach(function(d){
               d.EPOCH = +d.VISITNUM > 1 ? "Analysis" : "Baseline"
