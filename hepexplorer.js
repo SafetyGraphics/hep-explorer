@@ -294,6 +294,7 @@
             visit_window: 30,
             title: 'Hepatic Safety Explorer',
             downloadLink: true,
+            filters_multiselect: true,
             warningText:
                 "This graphic has been thoroughly tested, but is not validated. Any clinical recommendations based on this tool should be confirmed using your organization's standard operating procedures.",
             //all values set in onLayout/quadrants/*.js
@@ -756,7 +757,8 @@
                         ? filter.label
                         : filter.value_col
                         ? filter.value_col
-                        : filter
+                        : filter,
+                    multiple: settings.filters_multiselect
                 };
                 return filter;
             });

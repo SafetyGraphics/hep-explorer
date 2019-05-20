@@ -119,7 +119,8 @@ export default function syncControlInputs(controlInputs, settings) {
             filter = {
                 type: 'subsetter',
                 value_col: filter.value_col ? filter.value_col : filter,
-                label: filter.label ? filter.label : filter.value_col ? filter.value_col : filter
+                label: filter.label ? filter.label : filter.value_col ? filter.value_col : filter,
+                multiple: settings.filters_multiselect
             };
             return filter;
         });
