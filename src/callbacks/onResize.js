@@ -12,6 +12,7 @@ import { setPointSize } from './onResize/setPointSize';
 import { setPointOpacity } from './onResize/setPointOpacity';
 import { adjustTicks } from './onResize/adjustTicks';
 import { updateParticipantMarks } from './onResize/updateParticipantMarks';
+import updateTimingFootnote from './onResize/updateTimingFootnote';
 
 export default function onResize() {
     //add point interactivity, custom title and formatting
@@ -37,4 +38,7 @@ export default function onResize() {
 
     //axis formatting
     adjustTicks.call(this);
+
+    //add timing footnote
+    updateTimingFootnote.call(this);
 }

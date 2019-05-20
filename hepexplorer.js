@@ -294,6 +294,7 @@
             visit_window: 30,
             title: 'Hepatic Safety Explorer',
             downloadLink: true,
+            filters_multiselect: true,
             warningText:
                 "This graphic has been thoroughly tested, but is not validated. Any clinical recommendations based on this tool should be confirmed using your organization's standard operating procedures.",
             //all values set in onLayout/quadrants/*.js
@@ -756,7 +757,8 @@
                         ? filter.label
                         : filter.value_col
                         ? filter.value_col
-                        : filter
+                        : filter,
+                    multiple: settings.filters_multiselect
                 };
                 return filter;
             });
@@ -1854,12 +1856,13 @@
     }
 
     function addFootnote() {
-        this.wrap
+        this.footnote = this.wrap
             .append('div')
             .attr('class', 'footnote')
             .text('Use controls to update chart or click a point to see participant details.')
             .style('font-size', '0.7em')
             .style('padding-top', '0.1em');
+        this.footnote.timing = this.footnote.append('p');
     }
 
     function addDownloadButton() {
@@ -4522,6 +4525,26 @@
             });
     }
 
+    function updateTimingFootnote() {
+        var config = this.config;
+        var windowText =
+            config.visit_window == 0
+                ? 'on the same day'
+                : config.visit_window == 1
+                ? 'within 1 day'
+                : 'within ' + config.visit_window + ' days';
+        var timingFootnote =
+            ' Points where maximum ' +
+            config.measure_values[config.x.column] +
+            ' and ' +
+            config.measure_values[config.y.column] +
+            ' values were collected ' +
+            windowText +
+            ' are filled, others are empty.';
+
+        this.footnote.timing.text(timingFootnote);
+    }
+
     function onResize$1() {
         //add point interactivity, custom title and formatting
         addPointMouseover.call(this);
@@ -4546,6 +4569,9 @@
 
         //axis formatting
         adjustTicks.call(this);
+
+        //add timing footnote
+        updateTimingFootnote.call(this);
     }
 
     var callbacks = {
