@@ -83,7 +83,7 @@ export default function syncControlInputs(controlInputs, settings) {
     //drop the R Ratio control if r_ratio_filter is false
     if (!settings.r_ratio_filter) {
         controlInputs = controlInputs.filter(
-            controlInput => controlInput.label != 'Minimum R Ratio'
+            controlInput => ['r_ratio[0]', 'r_ratio[1]'].indexOf(controlInput.option) == -1
         );
     }
 
@@ -119,7 +119,8 @@ export default function syncControlInputs(controlInputs, settings) {
             filter = {
                 type: 'subsetter',
                 value_col: filter.value_col ? filter.value_col : filter,
-                label: filter.label ? filter.label : filter.value_col ? filter.value_col : filter
+                label: filter.label ? filter.label : filter.value_col ? filter.value_col : filter,
+                multiple: settings.filters_multiselect
             };
             return filter;
         });

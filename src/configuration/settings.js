@@ -78,10 +78,11 @@ export default function settings() {
         populationProfileURL: null,
         participantProfileURL: null,
         r_ratio_filter: true,
-        r_ratio_cut: 0,
+        r_ratio: [0, null],
         visit_window: 30,
         title: 'Hepatic Safety Explorer',
         downloadLink: true,
+        filters_multiselect: true,
         warningText:
             "This graphic has been thoroughly tested, but is not validated. Any clinical recommendations based on this tool should be confirmed using your organization's standard operating procedures.",
         //all values set in onLayout/quadrants/*.js

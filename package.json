@@ -1,12 +1,12 @@
 {
-  "name": "safety-edish",
-  "description": "Interactive graphic for the Evaluation of Drug-Induced Serious Hepatotoxicity (eDISH)",
-  "version": "0.17.0",
+  "name": "hep-explorer",
+  "description": "Interactive Graphic for Exploring Hepatic Data in Clinical Trials",
+  "version": "1.0.0",
   "author": "Rho, Inc.",
   "license": "MIT",
-  "homepage": "https://github.com/rhoinc/safety-eDISH#readme",
+  "homepage": "https://github.com/SafetyGraphics/hep-explorer#readme",
   "module": "./src/index.js",
-  "main": "./build/safetyedish.js",
+  "main": "hepexplorer.js",
   "keywords": [
     "labs",
     "vitals",
@@ -18,14 +18,14 @@
   ],
   "dependencies": {
     "d3": "^3",
-    "webcharts": "^1.11.3"
+    "webcharts": "^1.11.5"
   },
   "scripts": {
     "build": "npm audit fix && npm run bundle && npm run format",
     "bundle": "rollup -c",
     "format": "npm run format-src && npm run format-build",
     "format-src": "prettier --print-width=100 --tab-width=4 --single-quote --write \"./src/**/*.js\"",
-    "format-build": "prettier --print-width=100 --tab-width=4 --single-quote --write build/safetyedish.js",
+    "format-build": "prettier --print-width=100 --tab-width=4 --single-quote --write hepexplorer.js",
     "test": "start chrome ./test/index.html && start firefox ./test/index.html && start iexplore file://%CD%/test/index.html",
     "watch": "rollup -c -w"
   },
@@ -33,15 +33,15 @@
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-preset-env": "^1.7.0",
     "babel-register": "^6.26.0",
-    "prettier": "^1.16.4",
+    "prettier": "^1.17.1",
     "rollup": "^0.66.6",
     "rollup-plugin-babel": "^3.0.7"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/RhoInc/safety-eDISH.git"
+    "url": "https://github.com/SafetyGraphics/hep-explorer.git"
   },
   "bugs": {
-    "url": "https://github.com/RhoInc/safety-eDISH/issues"
+    "url": "https://github.com/SafetyGraphics/hep-explorer/issues"
   }
 }

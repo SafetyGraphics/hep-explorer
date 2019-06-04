@@ -1,4 +1,4 @@
-import addRRatioSpan from './onLayout/addRRatioSpan';
+import { formatRRatioControl } from './onLayout/formatRRatioControl';
 import { initQuadrants } from './onLayout/initQuadrants';
 import { initRugs } from './onLayout/initRugs';
 import { initVisitPath } from './onLayout/initVisitPath';
@@ -13,6 +13,7 @@ import { initDroppedRowsWarning } from './onLayout/initDroppedRowsWarning';
 import { initControlLabels } from './onLayout/initControlLabels';
 import { addFootnote } from './onLayout/addFootnote';
 import { addDownloadButton } from './onLayout/addDownloadButton';
+import { initEmptyChartWarning } from './onLayout/initEmptyChartWarning';
 
 export default function onLayout() {
     layoutPanels.call(this);
@@ -26,7 +27,7 @@ export default function onLayout() {
     addDownloadButton.call(this);
 
     addFootnote.call(this);
-    addRRatioSpan.call(this);
+    formatRRatioControl.call(this);
     initQuadrants.call(this);
     initRugs.call(this);
     initVisitPath.call(this);
@@ -34,4 +35,5 @@ export default function onLayout() {
     initResetButton.call(this);
     initDisplayControl.call(this);
     initControlLabels.call(this);
+    initEmptyChartWarning.call(this);
 }
