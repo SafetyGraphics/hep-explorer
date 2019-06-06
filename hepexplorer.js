@@ -571,7 +571,7 @@
             {
                 type: 'number',
                 label: 'Study Day',
-                description: 'Plot data on given day',
+                description: null, //set in onDraw/updateStudyDaySlider
                 option: 'plot_day'
             },
             {
@@ -2124,40 +2124,129 @@
         }
     }
 
-    //Converts a one record per measure data object to a one record per participant objects
-    function flattenData() {
+    function getMaxValues(d) {
         var chart = this;
         var config = this.config;
+        console.log(this);
 
-        //make a data set with one row per ID
+        var participant_obj = {};
+        participant_obj.days_x = null;
+        participant_obj.days_y = null;
+        Object.keys(config.measure_values).forEach(function(mKey) {
+            //get all raw data for the current measure
+            var matches = d
+                .filter(function(f) {
+                    return config.measure_values[mKey] == f[config.measure_col];
+                }) //get matching measures
+                .filter(function(f) {
+                    return f.analysisFlag;
+                });
+
+            if (matches.length == 0) {
+                if (config.debug) {
+                    console.warn(
+                        'No analysis records found for ' + d[0][config.id_col] + ' for ' + mKey
+                    );
+                }
+
+                participant_obj.drop_participant = true;
+                participant_obj.drop_reason =
+                    'No analysis results found for 1+ key measure, including ' + mKey + '.';
+                return participant_obj;
+            } else {
+                participant_obj.drop_participant = false;
+            }
+
+            //get record with maximum value for the current display type
+            participant_obj[mKey] = d3.max(matches, function(d) {
+                return +d[config.display];
+            });
+
+            var maxRecord = matches.find(function(d) {
+                return participant_obj[mKey] == +d[config.display];
+            });
+            //map all measure specific values
+            config.flat_cols.forEach(function(col) {
+                participant_obj[mKey + '_' + col] = maxRecord[col];
+            });
+
+            //determine whether the value is above the specified threshold
+            if (config.cuts[mKey][config.display]) {
+                config.show_quadrants = true;
+                participant_obj[mKey + '_cut'] = config.cuts[mKey][config.display];
+                participant_obj[mKey + '_flagged'] =
+                    participant_obj[mKey] >= participant_obj[mKey + '_cut'];
+            } else {
+                config.show_quadrants = false;
+                participant_obj[mKey + '_cut'] = null;
+                participant_obj[mKey + '_flagged'] = null;
+            }
+
+            //save study days for each axis;
+            if (mKey == config.x.column) participant_obj.days_x = maxRecord[config.studyday_col];
+            if (mKey == config.y.column) participant_obj.days_y = maxRecord[config.studyday_col];
+        });
+
+        //Add participant level metadata
+        addParticipantLevelMetadata.call(chart, d, participant_obj);
+
+        //Calculate ratios between measures.
+        calculateRRatios.call(chart, d, participant_obj);
+
+        //calculate the day difference between x and y
+        participant_obj.day_diff = Math.abs(participant_obj.days_x - participant_obj.days_y);
+
+        return participant_obj;
+    }
+
+    function getFlatCols() {
+        var config = this.config;
 
         //get list of columns to flatten
-        var colList = [];
-        var measureCols = [
+        var flat_cols = [];
+        var user_cols = [
             'measure_col',
             'value_col',
             'studyday_col',
             'normal_col_low',
             'normal_col_high'
         ];
+        var derived_cols = [
+            'absolute',
+            'relative_uln',
+            'relative_baseline',
+            'baseline_absolute',
+            'analysisFlag'
+        ];
 
-        measureCols.forEach(function(d) {
+        // populate the full list of columns to flatten labels
+        user_cols.forEach(function(d) {
             if (Array.isArray(d)) {
                 d.forEach(function(di) {
-                    colList.push(
+                    flat_cols.push(
                         di.hasOwnProperty('value_col') ? config[di.value_col] : config[di]
                     );
                 });
             } else {
-                colList.push(d.hasOwnProperty('value_col') ? config[d.value_col] : config[d]);
+                flat_cols.push(d.hasOwnProperty('value_col') ? config[d.value_col] : config[d]);
             }
         });
 
-        //merge in the absolute and relative values
-        colList = d3.merge([
-            colList,
-            ['absolute', 'relative_uln', 'relative_baseline', 'baseline_absolute', 'analysisFlag']
-        ]);
+        //merge in the derived columns
+        return d3.merge([flat_cols, derived_cols]);
+    }
+
+    //Converts a one record per measure data object to a one record per participant objects
+    function flattenData() {
+        var chart = this;
+        var config = this.config;
+
+        //////////////////////////////////////////////
+        //make a data set with one object per ID
+        /////////////////////////////////////////////
+
+        //get a list of columns to flatten
+        config.flat_cols = getFlatCols.call(this);
 
         //get maximum values for each measure type
         var flat_data = d3
@@ -2166,81 +2255,7 @@
                 return f[config.id_col];
             })
             .rollup(function(d) {
-                var participant_obj = {};
-                participant_obj.days_x = null;
-                participant_obj.days_y = null;
-                Object.keys(config.measure_values).forEach(function(mKey) {
-                    //get all raw data for the current measure
-                    var matches = d
-                        .filter(function(f) {
-                            return config.measure_values[mKey] == f[config.measure_col];
-                        }) //get matching measures
-                        .filter(function(f) {
-                            return f.analysisFlag;
-                        });
-
-                    if (matches.length == 0) {
-                        if (config.debug) {
-                            console.warn(
-                                'No analysis records found for ' +
-                                    d[0][config.id_col] +
-                                    ' for ' +
-                                    mKey
-                            );
-                        }
-
-                        participant_obj.drop_participant = true;
-                        participant_obj.drop_reason =
-                            'No analysis results found for 1+ key measure, including ' + mKey + '.';
-                        return participant_obj;
-                    } else {
-                        participant_obj.drop_participant = false;
-                    }
-
-                    //get record with maximum value for the current display type
-                    participant_obj[mKey] = d3.max(matches, function(d) {
-                        return +d[config.display];
-                    });
-
-                    var maxRecord = matches.find(function(d) {
-                        return participant_obj[mKey] == +d[config.display];
-                    });
-                    //map all measure specific values
-                    colList.forEach(function(col) {
-                        participant_obj[mKey + '_' + col] = maxRecord[col];
-                    });
-
-                    //determine whether the value is above the specified threshold
-                    if (config.cuts[mKey][config.display]) {
-                        config.show_quadrants = true;
-                        participant_obj[mKey + '_cut'] = config.cuts[mKey][config.display];
-                        participant_obj[mKey + '_flagged'] =
-                            participant_obj[mKey] >= participant_obj[mKey + '_cut'];
-                    } else {
-                        config.show_quadrants = false;
-                        participant_obj[mKey + '_cut'] = null;
-                        participant_obj[mKey + '_flagged'] = null;
-                    }
-
-                    //save study days for each axis;
-                    if (mKey == config.x.column)
-                        participant_obj.days_x = maxRecord[config.studyday_col];
-                    if (mKey == config.y.column)
-                        participant_obj.days_y = maxRecord[config.studyday_col];
-                });
-
-                //Add participant level metadata
-                addParticipantLevelMetadata.call(chart, d, participant_obj);
-
-                //Calculate ratios between measures.
-                calculateRRatios.call(chart, d, participant_obj);
-
-                //calculate the day difference between x and y
-                participant_obj.day_diff = Math.abs(
-                    participant_obj.days_x - participant_obj.days_y
-                );
-
-                return participant_obj;
+                return getMaxValues.call(chart, d);
             })
             .entries(
                 this.imputed_data.filter(function(f) {
