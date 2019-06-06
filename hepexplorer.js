@@ -1919,7 +1919,6 @@
     }
 
     function initEmptyChartWarning() {
-        console.log(this);
         this.emptyChartWarning = d3
             .select(this.element)
             .append('span')
@@ -2127,7 +2126,6 @@
     function getMaxValues(d) {
         var chart = this;
         var config = this.config;
-        console.log(this);
 
         var participant_obj = {};
         participant_obj.days_x = null;
@@ -2161,13 +2159,18 @@
             participant_obj[mKey] = d3.max(matches, function(d) {
                 return +d[config.display];
             });
-
             var maxRecord = matches.find(function(d) {
                 return participant_obj[mKey] == +d[config.display];
             });
+
             //map all measure specific values
             config.flat_cols.forEach(function(col) {
                 participant_obj[mKey + '_' + col] = maxRecord[col];
+            });
+
+            //keep an array of all [value, studyday] pairs for the measure
+            participant_obj[mKey + '_raw'] = matches.map(function(m) {
+                return { value: m[config.display], day: m[config.studyday_col] };
             });
 
             //determine whether the value is above the specified threshold
@@ -2420,6 +2423,7 @@
         setMaxRRatio.call(this);
         setLegendLabel.call(this); //update legend label based on group variable
         dropMissingValues.call(this);
+        console.log(this);
     }
 
     function onDataTransform() {}

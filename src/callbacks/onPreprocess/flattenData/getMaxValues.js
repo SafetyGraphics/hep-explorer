@@ -4,7 +4,7 @@ import calculateRRatio from './calculateRRatio';
 export default function getMaxValues(d) {
     var chart = this;
     var config = this.config;
-    
+
     var participant_obj = {};
     participant_obj.days_x = null;
     participant_obj.days_y = null;
@@ -31,11 +31,16 @@ export default function getMaxValues(d) {
 
         //get record with maximum value for the current display type
         participant_obj[mKey] = d3.max(matches, d => +d[config.display]);
-
         var maxRecord = matches.find(d => participant_obj[mKey] == +d[config.display]);
+
         //map all measure specific values
         config.flat_cols.forEach(function(col) {
             participant_obj[mKey + '_' + col] = maxRecord[col];
+        });
+
+        //keep an array of all [value, studyday] pairs for the measure
+        participant_obj[mKey + '_raw'] = matches.map(function(m) {
+            return { value: m[config.display], day: m[config.studyday_col] };
         });
 
         //determine whether the value is above the specified threshold

@@ -1,5 +1,4 @@
 export function initEmptyChartWarning() {
-    console.log(this);
     this.emptyChartWarning = d3
         .select(this.element)
         .append('span')
