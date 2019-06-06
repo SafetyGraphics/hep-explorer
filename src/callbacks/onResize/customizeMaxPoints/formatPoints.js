@@ -1,7 +1,10 @@
 export function formatPoints() {
     var chart = this;
     var config = this.config;
-    var points = this.svg.selectAll('g.point').select('circle');
+    var points = this.svg
+        .select('g.point-supergroup.mark1')
+        .selectAll('g.point')
+        .select('circle');
 
     points
         .attr('stroke', function(d) {

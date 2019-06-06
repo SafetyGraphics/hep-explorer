@@ -5,6 +5,7 @@ export function addPointMouseover() {
     var chart = this;
     var config = this.config;
     var points = this.marks[0].circles;
+
     //add event listener to all participant level points
     points
         .filter(function(d) {

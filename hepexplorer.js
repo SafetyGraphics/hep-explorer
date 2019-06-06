@@ -2423,7 +2423,6 @@
         setMaxRRatio.call(this);
         setLegendLabel.call(this); //update legend label based on group variable
         dropMissingValues.call(this);
-        console.log(this);
     }
 
     function onDataTransform() {}
@@ -2522,7 +2521,10 @@
     function formatPoints() {
         var chart = this;
         var config = this.config;
-        var points = this.svg.selectAll('g.point').select('circle');
+        var points = this.svg
+            .select('g.point-supergroup.mark1')
+            .selectAll('g.point')
+            .select('circle');
 
         points
             .attr('stroke', function(d) {
@@ -2543,9 +2545,13 @@
 
     function clearParticipantDetails() {
         var config = this.config;
-        var points = this.svg.selectAll('g.point').select('circle');
+        var points = this.svg
+            .select('g.point-supergroup.mark1')
+            .selectAll('g.point')
+            .select('circle');
 
         points.classed('disabled', false);
+
         this.config.quadrants.table.wrap.style('display', null);
         clearVisitPath.call(this); //remove path
         clearParticipantHeader.call(this);
@@ -2553,6 +2559,7 @@
         clearRugs.call(this, 'y');
         hideMeasureTable.call(this); //remove the detail table
         formatPoints.call(this);
+
         this.participantDetails.wrap.selectAll('*').style('display', 'none');
     }
 
@@ -2681,7 +2688,7 @@
     }
 
     function onDraw() {
-        //clear participant Details
+        //clear participant Details (if they exist)
         clearParticipantDetails.call(this);
 
         //get correct cutpoint for the current view
@@ -2703,87 +2710,6 @@
 
         //show/hide the study day controls
         updateStudyDayControl.call(this);
-    }
-
-    function drawQuadrants() {
-        var _this = this;
-
-        var config = this.config;
-        var x_var = this.config.x.column;
-        var y_var = this.config.y.column;
-
-        var x_cut = this.config.cuts[x_var][config.display];
-        var y_cut = this.config.cuts[y_var][config.display];
-
-        //position for cut-point lines
-        this.cut_lines.lines
-            .filter(function(d) {
-                return d.dimension == 'x';
-            })
-            .attr('x1', this.x(x_cut))
-            .attr('x2', this.x(x_cut))
-            .attr('y1', this.plot_height)
-            .attr('y2', 0);
-
-        this.cut_lines.lines
-            .filter(function(d) {
-                return d.dimension == 'y';
-            })
-            .attr('x1', 0)
-            .attr('x2', this.plot_width)
-            .attr('y1', function(d) {
-                return _this.y(y_cut);
-            })
-            .attr('y2', function(d) {
-                return _this.y(y_cut);
-            });
-
-        this.cut_lines.backing
-            .filter(function(d) {
-                return d.dimension == 'x';
-            })
-            .attr('x1', this.x(x_cut))
-            .attr('x2', this.x(x_cut))
-            .attr('y1', this.plot_height)
-            .attr('y2', 0);
-
-        this.cut_lines.backing
-            .filter(function(d) {
-                return d.dimension == 'y';
-            })
-            .attr('x1', 0)
-            .attr('x2', this.plot_width)
-            .attr('y1', function(d) {
-                return _this.y(y_cut);
-            })
-            .attr('y2', function(d) {
-                return _this.y(y_cut);
-            });
-
-        //position labels
-        this.quadrant_labels.g
-            .select('text.upper-right')
-            .attr('x', this.plot_width)
-            .attr('y', 0);
-
-        this.quadrant_labels.g
-            .select('text.upper-left')
-            .attr('x', 0)
-            .attr('y', 0);
-
-        this.quadrant_labels.g
-            .select('text.lower-right')
-            .attr('x', this.plot_width)
-            .attr('y', this.plot_height);
-
-        this.quadrant_labels.g
-            .select('text.lower-left')
-            .attr('x', 0)
-            .attr('y', this.plot_height);
-
-        this.quadrant_labels.text.text(function(d) {
-            return d.label + ' (' + d.percent + ')';
-        });
     }
 
     //draw marginal rug for visit-level measures
@@ -2840,6 +2766,7 @@
         var chart = this;
         var config = this.config;
         var points = this.marks[0].circles;
+
         //add event listener to all participant level points
         points
             .filter(function(d) {
@@ -4193,6 +4120,207 @@
         });
     }
 
+    function setPointSize() {
+        var _this = this;
+
+        var chart = this;
+        var config = this.config;
+        var points = this.marks[0].circles;
+        if (config.point_size != 'Uniform') {
+            //create the scale
+            var sizeScale = d3.scale
+                .linear()
+                .range([2, 10])
+                .domain(
+                    d3.extent(
+                        chart.raw_data.map(function(m) {
+                            return m[config.point_size];
+                        })
+                    )
+                );
+
+            //draw a legend (coming later?)
+
+            //set the point radius
+            points
+                .transition()
+                .attr('r', function(d) {
+                    var raw = d.values.raw[0];
+                    return sizeScale(raw[config.point_size]);
+                })
+                .attr('cx', function(d) {
+                    return _this.x(d.values.x);
+                })
+                .attr('cy', function(d) {
+                    return _this.y(d.values.y);
+                });
+        }
+    }
+
+    function setPointOpacity() {
+        var config = this.config;
+        var points = this.marks[0].circles;
+        points.attr('fill-opacity', function(d) {
+            return d.values.raw[0].day_diff <= config.visit_window ? 1 : 0;
+        }); //fill points in visit_window
+    }
+
+    // Reposition any exisiting participant marks when the chart is resized
+    function updateParticipantMarks() {
+        var chart = this;
+        var config = this.config;
+
+        //reposition participant visit path
+        var myNewLine = d3.svg
+            .line()
+            .x(function(d) {
+                return chart.x(d.x);
+            })
+            .y(function(d) {
+                return chart.y(d.y);
+            });
+
+        chart.visitPath
+            .select('path')
+            .transition()
+            .attr('d', myNewLine);
+
+        //reposition participant visit circles and labels
+        chart.visitPath
+            .selectAll('g.visit-point')
+            .select('circle')
+            .transition()
+            .attr('cx', function(d) {
+                return chart.x(d.x);
+            })
+            .attr('cy', function(d) {
+                return chart.y(d.y);
+            });
+
+        chart.visitPath
+            .selectAll('g.visit-point')
+            .select('text.participant-visits')
+            .transition()
+            .attr('x', function(d) {
+                return chart.x(d.x);
+            })
+            .attr('y', function(d) {
+                return chart.y(d.y);
+            });
+
+        //reposition axis rugs
+        chart.x_rug
+            .selectAll('text')
+            .transition()
+            .attr('x', function(d) {
+                return chart.x(d[config.display]);
+            })
+            .attr('y', function(d) {
+                return chart.y(chart.y.domain()[0]);
+            });
+
+        chart.y_rug
+            .selectAll('text')
+            .transition()
+            .attr('x', function(d) {
+                return chart.x(chart.x.domain()[0]);
+            })
+            .attr('y', function(d) {
+                return chart.y(d[config.display]);
+            });
+    }
+
+    function customizeMaxPoints() {
+        addPointMouseover.call(this);
+        addPointClick.call(this);
+        addPointTitles$2.call(this);
+        formatPoints.call(this);
+        setPointSize.call(this);
+        setPointOpacity.call(this);
+        updateParticipantMarks.call(this);
+    }
+
+    function drawQuadrants() {
+        var _this = this;
+
+        var config = this.config;
+        var x_var = this.config.x.column;
+        var y_var = this.config.y.column;
+
+        var x_cut = this.config.cuts[x_var][config.display];
+        var y_cut = this.config.cuts[y_var][config.display];
+
+        //position for cut-point lines
+        this.cut_lines.lines
+            .filter(function(d) {
+                return d.dimension == 'x';
+            })
+            .attr('x1', this.x(x_cut))
+            .attr('x2', this.x(x_cut))
+            .attr('y1', this.plot_height)
+            .attr('y2', 0);
+
+        this.cut_lines.lines
+            .filter(function(d) {
+                return d.dimension == 'y';
+            })
+            .attr('x1', 0)
+            .attr('x2', this.plot_width)
+            .attr('y1', function(d) {
+                return _this.y(y_cut);
+            })
+            .attr('y2', function(d) {
+                return _this.y(y_cut);
+            });
+
+        this.cut_lines.backing
+            .filter(function(d) {
+                return d.dimension == 'x';
+            })
+            .attr('x1', this.x(x_cut))
+            .attr('x2', this.x(x_cut))
+            .attr('y1', this.plot_height)
+            .attr('y2', 0);
+
+        this.cut_lines.backing
+            .filter(function(d) {
+                return d.dimension == 'y';
+            })
+            .attr('x1', 0)
+            .attr('x2', this.plot_width)
+            .attr('y1', function(d) {
+                return _this.y(y_cut);
+            })
+            .attr('y2', function(d) {
+                return _this.y(y_cut);
+            });
+
+        //position labels
+        this.quadrant_labels.g
+            .select('text.upper-right')
+            .attr('x', this.plot_width)
+            .attr('y', 0);
+
+        this.quadrant_labels.g
+            .select('text.upper-left')
+            .attr('x', 0)
+            .attr('y', 0);
+
+        this.quadrant_labels.g
+            .select('text.lower-right')
+            .attr('x', this.plot_width)
+            .attr('y', this.plot_height);
+
+        this.quadrant_labels.g
+            .select('text.lower-left')
+            .attr('x', 0)
+            .attr('y', this.plot_height);
+
+        this.quadrant_labels.text.text(function(d) {
+            return d.label + ' (' + d.percent + ')';
+        });
+    }
+
     function addAxisLabelTitles() {
         var chart = this;
         var config = this.config;
@@ -4512,51 +4640,6 @@
         );
     }
 
-    function setPointSize() {
-        var _this = this;
-
-        var chart = this;
-        var config = this.config;
-        var points = this.svg.selectAll('g.point').select('circle');
-        if (config.point_size != 'Uniform') {
-            //create the scale
-            var sizeScale = d3.scale
-                .linear()
-                .range([2, 10])
-                .domain(
-                    d3.extent(
-                        chart.raw_data.map(function(m) {
-                            return m[config.point_size];
-                        })
-                    )
-                );
-
-            //draw a legend (coming later?)
-
-            //set the point radius
-            points
-                .transition()
-                .attr('r', function(d) {
-                    var raw = d.values.raw[0];
-                    return sizeScale(raw[config.point_size]);
-                })
-                .attr('cx', function(d) {
-                    return _this.x(d.values.x);
-                })
-                .attr('cy', function(d) {
-                    return _this.y(d.values.y);
-                });
-        }
-    }
-
-    function setPointOpacity() {
-        var config = this.config;
-        var points = this.svg.selectAll('g.point').select('circle');
-        points.attr('fill-opacity', function(d) {
-            return d.values.raw[0].day_diff <= config.visit_window ? 1 : 0;
-        }); //fill points in visit_window
-    }
-
     function adjustTicks() {
         this.svg
             .selectAll('.x.axis .tick text')
@@ -4566,71 +4649,6 @@
                 dy: 10
             })
             .style('text-anchor', 'end');
-    }
-
-    // Reposition any exisiting participant marks when the chart is resized
-    function updateParticipantMarks() {
-        var chart = this;
-        var config = this.config;
-
-        //reposition participant visit path
-        var myNewLine = d3.svg
-            .line()
-            .x(function(d) {
-                return chart.x(d.x);
-            })
-            .y(function(d) {
-                return chart.y(d.y);
-            });
-
-        chart.visitPath
-            .select('path')
-            .transition()
-            .attr('d', myNewLine);
-
-        //reposition participant visit circles and labels
-        chart.visitPath
-            .selectAll('g.visit-point')
-            .select('circle')
-            .transition()
-            .attr('cx', function(d) {
-                return chart.x(d.x);
-            })
-            .attr('cy', function(d) {
-                return chart.y(d.y);
-            });
-
-        chart.visitPath
-            .selectAll('g.visit-point')
-            .select('text.participant-visits')
-            .transition()
-            .attr('x', function(d) {
-                return chart.x(d.x);
-            })
-            .attr('y', function(d) {
-                return chart.y(d.y);
-            });
-
-        //reposition axis rugs
-        chart.x_rug
-            .selectAll('text')
-            .transition()
-            .attr('x', function(d) {
-                return chart.x(d[config.display]);
-            })
-            .attr('y', function(d) {
-                return chart.y(chart.y.domain()[0]);
-            });
-
-        chart.y_rug
-            .selectAll('text')
-            .transition()
-            .attr('x', function(d) {
-                return chart.x(chart.x.domain()[0]);
-            })
-            .attr('y', function(d) {
-                return chart.y(d[config.display]);
-            });
     }
 
     function updateTimingFootnote() {
@@ -4654,15 +4672,8 @@
     }
 
     function onResize$1() {
-        //add point interactivity, custom title and formatting
-        addPointMouseover.call(this);
-        addPointClick.call(this);
-        addPointTitles$2.call(this);
-        addAxisLabelTitles.call(this);
-        formatPoints.call(this);
-        setPointSize.call(this);
-        setPointOpacity.call(this);
-        updateParticipantMarks.call(this);
+        //add maximum point interactivity, custom title and formatting
+        customizeMaxPoints.call(this);
 
         //draw the quadrants and add drag interactivity
         updateSummaryTable.call(this);
@@ -4677,6 +4688,7 @@
 
         //axis formatting
         adjustTicks.call(this);
+        addAxisLabelTitles.call(this);
 
         //add timing footnote
         updateTimingFootnote.call(this);
