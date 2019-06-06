@@ -5,6 +5,7 @@ import { updateFilterLabel } from './onDraw/updateFilterLabel';
 import setCutpointMinimums from './onDraw/setCutpointMinimums';
 import syncCutpoints from './onDraw/syncCutpoints';
 import hideEmptyChart from './onDraw/hideEmptyChart';
+import updateStudyDayControl from './onDraw/updateStudyDayControl';
 
 export default function onDraw() {
     //clear participant Details
@@ -26,4 +27,7 @@ export default function onDraw() {
     //update the count in the filter label
     updateFilterLabel.call(this);
     hideEmptyChart.call(this);
+
+    //show/hide the study day controls
+    updateStudyDayControl.call(this);
 }

@@ -14,6 +14,7 @@ import { initControlLabels } from './onLayout/initControlLabels';
 import { addFootnote } from './onLayout/addFootnote';
 import { addDownloadButton } from './onLayout/addDownloadButton';
 import { initEmptyChartWarning } from './onLayout/initEmptyChartWarning';
+import initStudyDayControl from './onLayout/initStudyDayControl';
 
 export default function onLayout() {
     layoutPanels.call(this);
@@ -36,4 +37,5 @@ export default function onLayout() {
     initDisplayControl.call(this);
     initControlLabels.call(this);
     initEmptyChartWarning.call(this);
+    initStudyDayControl.call(this);
 }

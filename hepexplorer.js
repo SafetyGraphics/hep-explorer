@@ -1,10 +1,10 @@
 (function(global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined'
-        ? (module.exports = factory(require('webcharts')))
+        ? (module.exports = factory(require('webcharts'), require('d3')))
         : typeof define === 'function' && define.amd
-        ? define(['webcharts'], factory)
-        : (global.hepexplorer = factory(global.webCharts));
-})(this, function(webcharts) {
+        ? define(['webcharts', 'd3'], factory)
+        : (global.hepexplorer = factory(global.webCharts, global.d3));
+})(this, function(webcharts, d3$1) {
     'use strict';
 
     if (typeof Object.assign != 'function') {
@@ -282,6 +282,8 @@
             },
             imputation_values: null,
             display: 'relative_uln', //or "relative_baseline"
+            plot_max_values: false,
+            plot_day: null, //set in onLayout/initStudyDayControl
             display_options: [
                 { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
                 { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' }
@@ -558,6 +560,19 @@
                 start: null, // set in syncControlInputs()
                 values: null, // set in syncControlInputs()
                 require: true
+            },
+            {
+                type: 'radio',
+                option: 'plot_max_values',
+                label: 'Plot Style',
+                values: [true, false],
+                relabels: ['Max Values', 'By Study Day']
+            },
+            {
+                type: 'number',
+                label: 'Study Day',
+                description: 'Plot data on given day',
+                option: 'plot_day'
             },
             {
                 type: 'dropdown',
@@ -1918,6 +1933,56 @@
             .style('border-radius', '0.2em');
     }
 
+    function initStudyDayControl() {
+        var chart = this;
+        var config = this.config;
+        var studyDayControlWrap = this.controls.wrap
+            .selectAll('div')
+            .filter(function(controlInput) {
+                return controlInput.label === 'Study Day';
+            });
+
+        var studyDayInput = studyDayControlWrap.select('input');
+
+        //convert control to a slider
+        studyDayInput.attr('type', 'range');
+
+        //set min and max values and add annotations
+        var studyDayRange = d3$1.extent(chart.imputed_data, function(d) {
+            return d[config.studyday_col];
+        });
+        studyDayInput.attr('min', studyDayRange[0]);
+        studyDayInput.attr('max', studyDayRange[1]);
+
+        studyDayControlWrap
+            .insert('span', 'input')
+            .attr('class', 'span-description')
+            .style('display', 'inline-block')
+            .style('padding-right', '0.2em')
+            .text(studyDayRange[0]);
+        studyDayControlWrap
+            .append('span')
+            .attr('class', 'span-description')
+            .style('display', 'inline-block')
+            .style('padding-left', '0.2em')
+            .text(studyDayRange[1]);
+
+        //set default to day 0 or the min value, whichever is greater
+        config.plot_day = studyDayRange[0] > 0 ? studyDayRange[0] : 0;
+        studyDayInput.attr('value', config.plot_day);
+
+        //add a play button
+        studyDayControlWrap
+            .append('button')
+            .html('&#9658;')
+            .style('padding', '0.2em 0.5em 0.2em 0.5em')
+            .style('margin-left', '0.5em')
+            .style('border-radius', '0.4em')
+            .on('click', function(d) {
+                console.log('Gap Minding!');
+            });
+    }
+
     function onLayout() {
         layoutPanels.call(this);
 
@@ -1939,6 +2004,7 @@
         initDisplayControl.call(this);
         initControlLabels.call(this);
         initEmptyChartWarning.call(this);
+        initStudyDayControl.call(this);
     }
 
     function updateAxisSettings() {
@@ -2575,6 +2641,26 @@
         this.emptyChartWarning.style('display', emptyChart ? 'inline-block' : 'none');
     }
 
+    function updateStudyDayControl() {
+        var config = this.config;
+        var studyDayControlWrap = this.controls.wrap
+            .selectAll('div')
+            .filter(function(controlInput) {
+                return controlInput.label === 'Study Day';
+            });
+
+        // hide study day control if viewing max values
+        studyDayControlWrap.style('display', config.plot_max_values ? 'none' : null);
+
+        //update the study day control label with the currently selected values
+        var currentValue = studyDayControlWrap.select('input').property('value');
+        studyDayControlWrap
+            .select('span.span-description')
+            .html('Showing data from: <strong>Day ' + currentValue + '</strong>')
+            .select('strong')
+            .style('color', 'blue');
+    }
+
     function onDraw() {
         //clear participant Details
         clearParticipantDetails.call(this);
@@ -2595,6 +2681,9 @@
         //update the count in the filter label
         updateFilterLabel.call(this);
         hideEmptyChart.call(this);
+
+        //show/hide the study day controls
+        updateStudyDayControl.call(this);
     }
 
     function drawQuadrants() {
