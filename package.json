@@ -1,7 +1,7 @@
 {
   "name": "hep-explorer",
   "description": "Interactive Graphic for Exploring Hepatic Data in Clinical Trials",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "author": "Rho, Inc.",
   "license": "MIT",
   "homepage": "https://github.com/SafetyGraphics/hep-explorer#readme",
