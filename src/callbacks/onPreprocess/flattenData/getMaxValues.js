@@ -29,18 +29,43 @@ export default function getMaxValues(d) {
             participant_obj.drop_participant = false;
         }
 
-        //get record with maximum value for the current display type
-        participant_obj[mKey] = d3.max(matches, d => +d[config.display]);
+        //keep an array of all [value, studyday] pairs for the measure
+        participant_obj[mKey + '_raw'] = matches.map(function(m) {
+            return { value: m[config.display], day: m[config.studyday_col] };
+        });
+
+        //get the current record for each participant
+        if (config.plot_max_values) {
+            //get record with maximum value for the current display type
+            participant_obj[mKey] = d3.max(matches, d => +d[config.display]);
+            console.log('got max val');
+        } else {
+            //get the most recent measure before config.plot_day
+            var getLastMeasureIndex = d3.bisector(d => d.day).left;
+            var lastMeasureIndexPlusOne = getLastMeasureIndex(
+                participant_obj[mKey + '_raw'],
+                config.plot_day
+            );
+            var lastMeasureIndex = lastMeasureIndexPlusOne - 1;
+
+            /*
+            console.log('day:' + config.plot_day);
+            console.log('raw measures:');
+            console.log(participant_obj[mKey + '_raw']);
+            console.log('index:' + lastMeasureIndex);
+            */
+
+            participant_obj[mKey] =
+                lastMeasureIndex >= 0
+                    ? participant_obj[mKey + '_raw'][lastMeasureIndex]['value']
+                    : null;
+        }
+
         var maxRecord = matches.find(d => participant_obj[mKey] == +d[config.display]);
 
         //map all measure specific values
         config.flat_cols.forEach(function(col) {
-            participant_obj[mKey + '_' + col] = maxRecord[col];
-        });
-
-        //keep an array of all [value, studyday] pairs for the measure
-        participant_obj[mKey + '_raw'] = matches.map(function(m) {
-            return { value: m[config.display], day: m[config.studyday_col] };
+            participant_obj[mKey + '_' + col] = maxRecord ? maxRecord[col] : null;
         });
 
         //determine whether the value is above the specified threshold
@@ -56,8 +81,10 @@ export default function getMaxValues(d) {
         }
 
         //save study days for each axis;
-        if (mKey == config.x.column) participant_obj.days_x = maxRecord[config.studyday_col];
-        if (mKey == config.y.column) participant_obj.days_y = maxRecord[config.studyday_col];
+        if (maxRecord) {
+            if (mKey == config.x.column) participant_obj.days_x = maxRecord[config.studyday_col];
+            if (mKey == config.y.column) participant_obj.days_y = maxRecord[config.studyday_col];
+        }
     });
 
     //Add participant level metadata

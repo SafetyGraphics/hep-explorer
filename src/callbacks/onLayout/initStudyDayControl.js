@@ -30,9 +30,17 @@ export default function initStudyDayControl() {
         .style('padding-left', '0.2em')
         .text(studyDayRange[1]);
 
-    //set default to day 0 or the min value, whichever is greater
-    config.plot_day = studyDayRange[0] > 0 ? studyDayRange[0] : 0;
-    studyDayInput.attr('value', config.plot_day);
+    //initialize plot_day to day 0 or the min value, whichever is greater
+    if (config.plot_day === null) {
+        config.plot_day = studyDayRange[0] > 0 ? studyDayRange[0] : 0;
+        studyDayInput.attr('value', config.plot_day);
+    }
+
+    //redraw the chart when the studyDay changes
+    //studyDayInput.on('change', function() {
+    //    console.log('drawing with new study day');
+    //    chart.draw();
+    //});
 
     //add a play button
     studyDayControlWrap

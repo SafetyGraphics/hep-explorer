@@ -12,6 +12,12 @@ export default function onResize() {
     //add maximum point interactivity, custom title and formatting
     customizeMaxPoints.call(this);
 
+    //draw visit-level points (if requested)
+    if (this.config.plot_max_values) {
+        //  hideMaxPoints.call(this)
+        //  drawVisitPoints.call(this)
+    }
+
     //draw the quadrants and add drag interactivity
     updateSummaryTable.call(this);
     drawQuadrants.call(this);
