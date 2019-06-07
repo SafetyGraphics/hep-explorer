@@ -1932,6 +1932,88 @@
             .style('border-radius', '0.2em');
     }
 
+    function startTransition() {
+        var chart = this;
+        var config = this.config;
+        console.log('Transition Starting');
+
+        function reposition(point) {
+            point
+                .attr('cx', function(d) {
+                    return chart.x(d[config.x.column]);
+                })
+                .attr('cy', function(d) {
+                    return chart.x(d[config.y.column]);
+                })
+                .attr('r', function(d) {
+                    return config.point_size == 'Uniform'
+                        ? d.mark.radius || config.flex_point_size
+                        : chart.sizeScale(d[config.point_size]);
+                });
+        }
+
+        function updateDatum(d, currentDay) {
+            // adds temporary x, y and size (if any) measures for the current day to the core datum (instead of under d.value)
+            // these get removed when the transition ends and chart.draw() is called.
+            var measures = [config.x.column, config.y.column];
+            if (config.point_size != 'Uniform') {
+                measures = d3.merge([measures, [config.point_size]]);
+            }
+
+            var raw = d.values.raw[0];
+            measures.forEach(function(m) {
+                var vals = raw[m + '_raw'];
+                var getLastMeasureIndex = d3.bisector(function(d) {
+                    return d.day;
+                }).left;
+                var lastMeasureIndexPlusOne = getLastMeasureIndex(vals, currentDay);
+                var lastMeasureIndex = lastMeasureIndexPlusOne - 1;
+                d[m] = lastMeasureIndex >= 0 ? vals[lastMeasureIndex]['value'] : null;
+            });
+
+            return d;
+        }
+
+        function showDay(currentDay) {
+            console.log('Drawing: day ' + currentDay);
+            //update the controls
+            config.plot_day = currentDay;
+            chart.controls.studyDayInput.node().value = config.plot_day;
+            //TODO: update the label
+
+            //reposition the points
+            var points = chart.marks[0].circles
+                .datum(function(d) {
+                    return updateDatum(d, currentDay);
+                })
+                .call(reposition);
+        }
+
+        function tweenStudyDay() {
+            var min = config.plot_day;
+            var max = chart.controls.studyDayRange[1];
+            console.log(min + '-' + max);
+            var studyday = d3.interpolateNumber(min, max);
+
+            return function(t) {
+                showDay(studyday(t));
+            };
+        }
+
+        chart.myTransition = chart.svg
+            .transition()
+            .duration(30000)
+            .ease('linear')
+            .tween('studyday', tweenStudyDay);
+        //  .each('end', chart.draw());
+    }
+
+    function stopTransition() {
+        console.log('Transition Stopping');
+        chart.myTransition.duration(0);
+        chart.draw();
+    }
+
     function initStudyDayControl() {
         var chart = this;
         var config = this.config;
@@ -1941,52 +2023,77 @@
                 return controlInput.label === 'Study Day';
             });
 
-        var studyDayInput = studyDayControlWrap.select('input');
+        chart.controls.studyDayInput = studyDayControlWrap.select('input');
 
         //convert control to a slider
-        studyDayInput.attr('type', 'range');
+        chart.controls.studyDayInput.attr('type', 'range');
 
         //set min and max values and add annotations
-        var studyDayRange = d3$1.extent(chart.imputed_data, function(d) {
+        chart.controls.studyDayRange = d3$1.extent(chart.imputed_data, function(d) {
             return d[config.studyday_col];
         });
-        studyDayInput.attr('min', studyDayRange[0]);
-        studyDayInput.attr('max', studyDayRange[1]);
+        chart.controls.studyDayInput.attr('min', chart.controls.studyDayRange[0]);
+        chart.controls.studyDayInput.attr('max', chart.controls.studyDayRange[1]);
+        chart.controls.studyDayInput.attr('step', 7);
 
         studyDayControlWrap
             .insert('span', 'input')
             .attr('class', 'span-description')
             .style('display', 'inline-block')
             .style('padding-right', '0.2em')
-            .text(studyDayRange[0]);
+            .text(chart.controls.studyDayRange[0]);
         studyDayControlWrap
             .append('span')
             .attr('class', 'span-description')
             .style('display', 'inline-block')
             .style('padding-left', '0.2em')
-            .text(studyDayRange[1]);
+            .text(chart.controls.studyDayRange[1]);
 
         //initialize plot_day to day 0 or the min value, whichever is greater
         if (config.plot_day === null) {
-            config.plot_day = studyDayRange[0] > 0 ? studyDayRange[0] : 0;
-            studyDayInput.attr('value', config.plot_day);
+            config.plot_day =
+                chart.controls.studyDayRange[0] > 0 ? chart.controls.studyDayRange[0] : 0;
+            chart.controls.studyDayInput.node().value = config.plot_day;
         }
 
-        //redraw the chart when the studyDay changes
-        //studyDayInput.on('change', function() {
-        //    console.log('drawing with new study day');
-        //    chart.draw();
-        //});
+        /*
+        function showNextStudyDay() {
+            if (config.plot_day < chart.studyDayRange[1]) {
+                config.plot_day = config.plot_day + 7;
+                studyDayInput.node().value = config.plot_day;
+                chart.draw();
+            } else {
+                config.plot_day = chart.studyDayRange[1];
+                studyDayInput.node().value = config.plot_day;
+                chart.draw();
+                chart.moving = false;
+                clearInterval(chart.timer);
+                studyDayControlWrap.select('button').html('&#9658;');
+            }
+        }
+        */
 
         //add a play button
+        chart.moving = false;
         studyDayControlWrap
             .append('button')
-            .html('&#9658;')
+            .html('&#9658;') //play symbol
             .style('padding', '0.2em 0.5em 0.2em 0.5em')
             .style('margin-left', '0.5em')
             .style('border-radius', '0.4em')
             .on('click', function(d) {
                 console.log('Gap Minding!');
+                console.log(chart);
+                var button = d3.select(this);
+                if (button.html() == '&#9632;') {
+                    //stop button
+                    stopTransition.call(chart);
+                    button.html = '&#9658;';
+                } else {
+                    //play button
+                    startTransition.call(chart);
+                    button.html = '&#9632;';
+                }
             });
     }
 
@@ -2497,12 +2604,28 @@
         var config = this.config;
         var domain = this[dimension].domain();
         var measure = config[dimension].column;
+        var measure_long = config.measure_values[measure];
         var cut = config.cuts[measure][config.display];
+        var values = this.imputed_data
+            .filter(function(f) {
+                return f[config.measure_col] == measure_long;
+            })
+            .map(function(m) {
+                return +m[config.display];
+            })
+            .filter(function(m) {
+                return m > 0;
+            })
+            .sort(function(a, b) {
+                return a - b;
+            });
+        console.log(values);
+        var val_extent = d3$1.extent(values);
+        console.log(val_extent);
+        console.log(this);
 
-        //make sure the domain contains the cut point
-        if (cut * 1.01 >= domain[1]) {
-            domain[1] = cut * 1.01;
-        }
+        //make sure the domain contains the cut point and the max possible value for the measure
+        domain[1] = d3$1.max([domain[1], cut * 1.01, val_extent[1]]);
 
         // make sure the domain lower limit captures all of the raw Values
         if (this.config[dimension].type == 'linear') {
@@ -2510,21 +2633,8 @@
             domain[0] = 0;
         } else if (this.config[dimension].type == 'log') {
             // use the smallest raw value for a log axis
-            var measure = config.measure_values[config[dimension].column];
-            var values = this.imputed_data
-                .filter(function(f) {
-                    return f[config.measure_col] == measure;
-                })
-                .map(function(m) {
-                    return +m[config.display];
-                })
-                .filter(function(m) {
-                    return m > 0;
-                })
-                .sort(function(a, b) {
-                    return a - b;
-                });
-            var minValue = d3.min(values);
+
+            var minValue = val_extent[0];
 
             if (minValue < domain[0]) {
                 domain[0] = minValue;
@@ -4167,7 +4277,7 @@
         var points = this.marks[0].circles;
         if (config.point_size != 'Uniform') {
             //create the scale
-            var sizeScale = d3.scale
+            chart.sizeScale = d3.scale
                 .linear()
                 .range([2, 10])
                 .domain(
@@ -4185,7 +4295,7 @@
                 .transition()
                 .attr('r', function(d) {
                     var raw = d.values.raw[0];
-                    return sizeScale(raw[config.point_size]);
+                    return chart.sizeScale(raw[config.point_size]);
                 })
                 .attr('cx', function(d) {
                     return _this.x(d.values.x);
