@@ -2081,6 +2081,7 @@
             .style('padding', '0.2em 0.5em 0.2em 0.5em')
             .style('margin-left', '0.5em')
             .style('border-radius', '0.4em')
+            .style('display', 'none')
             .on('click', function(d) {
                 console.log('Gap Minding!');
                 console.log(chart);
