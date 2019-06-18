@@ -11,10 +11,7 @@ export function setDomain(dimension) {
         .map(m => +m[config.display])
         .filter(m => m > 0)
         .sort((a, b) => a - b);
-    console.log(values);
     var val_extent = extent(values);
-    console.log(val_extent);
-    console.log(this);
 
     //make sure the domain contains the cut point and the max possible value for the measure
     domain[1] = max([domain[1], cut * 1.01, val_extent[1]]);
