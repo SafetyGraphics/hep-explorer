@@ -1519,10 +1519,10 @@
         console.log('Transition Starting');
 
         function reposition(point) {
-            point.attr('cx', function (d) {
+            point.transition().duration(100).attr('cx', function (d) {
                 return chart.x(d[config.x.column]);
             }).attr('cy', function (d) {
-                return chart.x(d[config.y.column]);
+                return chart.y(d[config.y.column]);
             }).attr('r', function (d) {
                 return config.point_size == 'Uniform' ? d.mark.radius || config.flex_point_size : chart.sizeScale(d[config.point_size]);
             });
@@ -1551,7 +1551,7 @@
         }
 
         function showDay(currentDay) {
-            console.log('Drawing: day ' + currentDay);
+            //console.log('Drawing: day ' + currentDay);
             //update the controls
             config.plot_day = currentDay;
             chart.controls.studyDayInput.node().value = config.plot_day;
@@ -1580,8 +1580,8 @@
 
     function stopTransition() {
         console.log('Transition Stopping');
-        chart.myTransition.duration(0);
-        chart.draw();
+        this.myTransition.duration(0);
+        this.draw();
     }
 
     function initStudyDayControl() {
@@ -1597,7 +1597,9 @@
         chart.controls.studyDayInput.attr('type', 'range');
 
         //set min and max values and add annotations
-        chart.controls.studyDayRange = d3$1.extent(chart.imputed_data, function (d) {
+        chart.controls.studyDayRange = d3$1.extent(chart.imputed_data.filter(function (d) {
+            return d.analysisFlag;
+        }), function (d) {
             return d[config.studyday_col];
         });
         chart.controls.studyDayInput.attr('min', chart.controls.studyDayRange[0]);
@@ -1632,19 +1634,25 @@
 
         //add a play button
         chart.moving = false;
-        studyDayControlWrap.append('button').html('&#9658;') //play symbol
-        .style('padding', '0.2em 0.5em 0.2em 0.5em').style('margin-left', '0.5em').style('border-radius', '0.4em').style('display', 'none').on('click', function (d) {
+        studyDayControlWrap.append('button').datum({ state: 'play' }).html('&#9658;') //play symbol
+        .style('padding', '0.2em 0.5em 0.2em 0.5em').style('margin-left', '0.5em').style('border-radius', '0.4em')
+        //.style('display', 'none')
+        .on('click', function (d) {
             console.log('Gap Minding!');
             console.log(chart);
             var button = d3.select(this);
-            if (button.html() == '&#9632;') {
-                //stop button
-                stopTransition.call(chart);
-                button.html = '&#9658;';
-            } else {
+            if (d.state === 'play') {
+                console.log('play');
+                d.state = 'stop';
                 //play button
+                button.html('&#9632;');
                 startTransition.call(chart);
-                button.html = '&#9632;';
+            } else {
+                console.log('stop');
+                d.state = 'play';
+                //stop button
+                button.html('&#9658;');
+                stopTransition.call(chart);
             }
         });
     }
@@ -1780,72 +1788,61 @@
                 return f.analysisFlag;
             });
 
-            if (matches.length == 0) {
+            participant_obj.drop_participant = matches.length === 0;
+
+            if (participant_obj.drop_participant) {
                 if (config.debug) {
                     console.warn('No analysis records found for ' + d[0][config.id_col] + ' for ' + mKey);
                 }
 
-                participant_obj.drop_participant = true;
                 participant_obj.drop_reason = 'No analysis results found for 1+ key measure, including ' + mKey + '.';
-                return participant_obj;
             } else {
-                participant_obj.drop_participant = false;
-            }
-
-            //keep an array of all [value, studyday] pairs for the measure
-            participant_obj[mKey + '_raw'] = matches.map(function (m) {
-                return { value: m[config.display], day: m[config.studyday_col] };
-            });
-
-            //get the current record for each participant
-            if (config.plot_max_values) {
-                //get record with maximum value for the current display type
-                participant_obj[mKey] = d3.max(matches, function (d) {
-                    return +d[config.display];
+                //keep an array of all [value, studyday] pairs for the measure
+                participant_obj[mKey + '_raw'] = matches.map(function (m) {
+                    return { value: m[config.display], day: m[config.studyday_col] };
                 });
-                console.log('got max val');
-            } else {
-                //get the most recent measure before config.plot_day
-                var getLastMeasureIndex = d3.bisector(function (d) {
-                    return d.day;
-                }).left;
-                var lastMeasureIndexPlusOne = getLastMeasureIndex(participant_obj[mKey + '_raw'], config.plot_day);
-                var lastMeasureIndex = lastMeasureIndexPlusOne - 1;
 
-                /*
-                console.log('day:' + config.plot_day);
-                console.log('raw measures:');
-                console.log(participant_obj[mKey + '_raw']);
-                console.log('index:' + lastMeasureIndex);
-                */
+                //get the current record for each participant
+                if (config.plot_max_values) {
+                    //get record with maximum value for the current display type
+                    participant_obj[mKey] = d3.max(matches, function (d) {
+                        return +d[config.display];
+                    });
+                } else {
+                    //get the most recent measure on or before config.plot_day
+                    var onOrBefore = participant_obj[mKey + '_raw'].filter(function (di) {
+                        return di.day <= config.plot_day;
+                    });
+                    var latest = onOrBefore.pop();
 
-                participant_obj[mKey] = lastMeasureIndex >= 0 ? participant_obj[mKey + '_raw'][lastMeasureIndex]['value'] : null;
-            }
+                    participant_obj[mKey] = latest ? latest.value : null;
+                }
 
-            var maxRecord = matches.find(function (d) {
-                return participant_obj[mKey] == +d[config.display];
-            });
+                var maxRecord = matches.find(function (d) {
+                    return participant_obj[mKey] == +d[config.display];
+                });
 
-            //map all measure specific values
-            config.flat_cols.forEach(function (col) {
-                participant_obj[mKey + '_' + col] = maxRecord ? maxRecord[col] : null;
-            });
+                //map all measure specific values
+                config.flat_cols.forEach(function (col) {
+                    participant_obj[mKey + '_' + col] = maxRecord ? maxRecord[col] : null;
+                });
 
-            //determine whether the value is above the specified threshold
-            if (config.cuts[mKey][config.display]) {
-                config.show_quadrants = true;
-                participant_obj[mKey + '_cut'] = config.cuts[mKey][config.display];
-                participant_obj[mKey + '_flagged'] = participant_obj[mKey] >= participant_obj[mKey + '_cut'];
-            } else {
-                config.show_quadrants = false;
-                participant_obj[mKey + '_cut'] = null;
-                participant_obj[mKey + '_flagged'] = null;
-            }
+                //determine whether the value is above the specified threshold
+                if (config.cuts[mKey][config.display]) {
+                    config.show_quadrants = true;
+                    participant_obj[mKey + '_cut'] = config.cuts[mKey][config.display];
+                    participant_obj[mKey + '_flagged'] = participant_obj[mKey] >= participant_obj[mKey + '_cut'];
+                } else {
+                    config.show_quadrants = false;
+                    participant_obj[mKey + '_cut'] = null;
+                    participant_obj[mKey + '_flagged'] = null;
+                }
 
-            //save study days for each axis;
-            if (maxRecord) {
-                if (mKey == config.x.column) participant_obj.days_x = maxRecord[config.studyday_col];
-                if (mKey == config.y.column) participant_obj.days_y = maxRecord[config.studyday_col];
+                //save study days for each axis;
+                if (maxRecord) {
+                    if (mKey == config.x.column) participant_obj.days_x = maxRecord[config.studyday_col];
+                    if (mKey == config.y.column) participant_obj.days_y = maxRecord[config.studyday_col];
+                }
             }
         });
 
@@ -2273,6 +2270,8 @@
 
     //draw marginal rug for visit-level measures
     function drawRugs(d, axis) {
+        var _this = this;
+
         var chart = this;
         var config = this.config;
 
@@ -2282,6 +2281,7 @@
         var matches = allMatches.filter(function (f) {
             return f[config.measure_col] == measure;
         });
+        console.log(matches);
 
         //draw the rug
         var min_value = axis == 'x' ? chart.y.domain()[0] : chart.x.domain()[0];
@@ -2293,10 +2293,12 @@
         //        .attr('dy', axis == 'x' ? '-0.2em' : null)
         .attr('text-anchor', axis == 'y' ? 'end' : null).attr('alignment-baseline', axis == 'x' ? 'hanging' : null).attr('font-size', axis == 'x' ? '6px' : null).attr('stroke', function (d) {
             return chart.colorScale(d[config.color_by]);
+        }).attr('stroke-width', function (d) {
+            return d[_this.config.studyday_col] <= _this.config.plot_day ? '5px' : '1px';
         }).text(function (d) {
             return axis == 'x' ? '|' : '–';
         }).append('svg:title').text(function (d) {
-            return d[config.measure_col] + '=' + d3.format('.2f')(d.absolute) + ' (' + d3.format('.2f')(d.relative) + ' xULN) @ ' + d[config.visit_col];
+            return d[config.measure_col] + '=' + d3.format('.2f')(d.absolute) + ' (' + d3.format('.2f')(d.relative_uln) + ' xULN) @ ' + d[config.visit_col] + '/Study Day ' + d[config.studyday_col];
         });
     }
 
@@ -3553,7 +3555,7 @@
         var formatx = fmt ? d3.format(fmt) : d3.format('.2f');
 
         boxplot.selectAll('.boxplot').append('title').text(function (d) {
-            return 'N = ' + d.values.length + '\n' + 'd3.min = ' + d3.min(d.values) + '\n' + '5th % = ' + formatx(d3.quantile(d.values, 0.05)) + '\n' + 'Q1 = ' + formatx(d3.quantile(d.values, 0.25)) + '\n' + 'd3.median = ' + formatx(d3.median(d.values)) + '\n' + 'Q3 = ' + formatx(d3.quantile(d.values, 0.75)) + '\n' + '95th % = ' + formatx(d3.quantile(d.values, 0.95)) + '\n' + 'd3.max = ' + d3.max(d.values) + '\n' + 'd3.mean = ' + formatx(d3.mean(d.values)) + '\n' + 'StDev = ' + formatx(d3.deviation(d.values));
+            return 'N = ' + d.values.length + '\n' + 'Min = ' + d3.min(d.values) + '\n' + '5th % = ' + formatx(d3.quantile(d.values, 0.05)) + '\n' + 'Q1 = ' + formatx(d3.quantile(d.values, 0.25)) + '\n' + 'Median = ' + formatx(d3.median(d.values)) + '\n' + 'Q3 = ' + formatx(d3.quantile(d.values, 0.75)) + '\n' + '95th % = ' + formatx(d3.quantile(d.values, 0.95)) + '\n' + 'Max = ' + d3.max(d.values) + '\n' + 'Mean = ' + formatx(d3.mean(d.values)) + '\n' + 'StDev = ' + formatx(d3.deviation(d.values));
         });
     }
 

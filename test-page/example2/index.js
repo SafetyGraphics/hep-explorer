@@ -25,7 +25,6 @@ const settings = {
         'TB':'Total Bilirubin',
         'ALP':"Alkaline Phosphatase"
     },
-
     baseline:{
         value_col:"STUDYDAY",
         values:[1]

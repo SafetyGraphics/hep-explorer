@@ -124,7 +124,7 @@ export function addBoxPlot(
                 'N = ' +
                 d.values.length +
                 '\n' +
-                'd3.min = ' +
+                'Min = ' +
                 d3.min(d.values) +
                 '\n' +
                 '5th % = ' +
@@ -133,7 +133,7 @@ export function addBoxPlot(
                 'Q1 = ' +
                 formatx(d3.quantile(d.values, 0.25)) +
                 '\n' +
-                'd3.median = ' +
+                'Median = ' +
                 formatx(d3.median(d.values)) +
                 '\n' +
                 'Q3 = ' +
@@ -142,10 +142,10 @@ export function addBoxPlot(
                 '95th % = ' +
                 formatx(d3.quantile(d.values, 0.95)) +
                 '\n' +
-                'd3.max = ' +
+                'Max = ' +
                 d3.max(d.values) +
                 '\n' +
-                'd3.mean = ' +
+                'Mean = ' +
                 formatx(d3.mean(d.values)) +
                 '\n' +
                 'StDev = ' +
