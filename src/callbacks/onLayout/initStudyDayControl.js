@@ -15,7 +15,7 @@ export default function initStudyDayControl() {
     chart.controls.studyDayInput.attr('type', 'range');
 
     //set min and max values and add annotations
-    chart.controls.studyDayRange = extent(chart.imputed_data, d => d[config.studyday_col]);
+    chart.controls.studyDayRange = extent(chart.imputed_data.filter(d => d.analysisFlag), d => d[config.studyday_col]);
     chart.controls.studyDayInput.attr('min', chart.controls.studyDayRange[0]);
     chart.controls.studyDayInput.attr('max', chart.controls.studyDayRange[1]);
     chart.controls.studyDayInput.attr('step', 7);
@@ -60,23 +60,28 @@ export default function initStudyDayControl() {
     chart.moving = false;
     studyDayControlWrap
         .append('button')
+        .datum({state: 'play'})
         .html('&#9658;') //play symbol
         .style('padding', '0.2em 0.5em 0.2em 0.5em')
         .style('margin-left', '0.5em')
         .style('border-radius', '0.4em')
-        .style('display', 'none')
+        //.style('display', 'none')
         .on('click', function(d) {
             console.log('Gap Minding!');
             console.log(chart);
             var button = d3.select(this);
-            if (button.html() == '&#9632;') {
-                //stop button
-                stopTransition.call(chart);
-                button.html = '&#9658;';
-            } else {
+            if (d.state === 'play') {
+                console.log('play');
+                d.state = 'stop';
                 //play button
+                button.html('&#9632;');
                 startTransition.call(chart);
-                button.html = '&#9632;';
+            } else {
+                console.log('stop');
+                d.state = 'play';
+                //stop button
+                button.html('&#9658;');
+                stopTransition.call(chart);
             }
         });
 }

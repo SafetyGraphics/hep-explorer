@@ -5,11 +5,13 @@ export default function startTransition() {
 
     function reposition(point) {
         point
+            .transition()
+            .duration(100)
             .attr('cx', function(d) {
                 return chart.x(d[config.x.column]);
             })
             .attr('cy', function(d) {
-                return chart.x(d[config.y.column]);
+                return chart.y(d[config.y.column]);
             })
             .attr('r', function(d) {
                 return config.point_size == 'Uniform'
@@ -39,7 +41,7 @@ export default function startTransition() {
     }
 
     function showDay(currentDay) {
-        console.log('Drawing: day ' + currentDay);
+        //console.log('Drawing: day ' + currentDay);
         //update the controls
         config.plot_day = currentDay;
         chart.controls.studyDayInput.node().value = config.plot_day;
