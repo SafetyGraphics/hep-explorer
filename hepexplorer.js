@@ -1981,7 +1981,13 @@
             //update the controls
             config.plot_day = currentDay;
             chart.controls.studyDayInput.node().value = config.plot_day;
-            //TODO: update the label
+
+            //update the label
+            chart.controls.studyDayControlWrap
+                .select('span.span-description')
+                .html('Showing data from: <strong>Day ' + Math.floor(config.plot_day) + '</strong>')
+                .select('strong')
+                .style('color', 'blue');
 
             //reposition the points
             var points = chart.marks[0].circles
@@ -2006,8 +2012,11 @@
             .transition()
             .duration(30000)
             .ease('linear')
-            .tween('studyday', tweenStudyDay);
-        //  .each('end', chart.draw());
+            .tween('studyday', tweenStudyDay)
+            .each('end', function() {
+                console.log('All done with animation. drawing chart.');
+                chart.draw();
+            });
     }
 
     function stopTransition() {
@@ -2016,16 +2025,61 @@
         this.draw();
     }
 
+    // &#9658; = play symbol
+    // &#9632; = stop symbol
+    // &#8634; = restart symbol
+
+    function initPlayButton() {
+        var chart = this;
+        var config = this.config;
+        chart.controls.studyDayPlayButton = chart.controls.studyDayControlWrap
+            .append('button')
+            .datum({ state: 'play' })
+            .html('&#9658;') //play symbol
+            .style('padding', '0.2em 0.5em 0.2em 0.5em')
+            .style('margin-left', '0.5em')
+            .style('border-radius', '0.4em')
+            //.style('display', 'none')
+            .on('click', function(d) {
+                console.log('Gap Minding!');
+                console.log(chart);
+                var button = d3.select(this);
+                if (d.state === 'play') {
+                    console.log('playing transition');
+                    d.state = 'stop';
+                    button.html('&#9632;');
+                    startTransition.call(chart);
+                } else if (d.state === 'restart') {
+                    console.log('restarting transition');
+
+                    config.plot_day =
+                        chart.controls.studyDayRange[0] > 0 ? chart.controls.studyDayRange[0] : 0;
+                    chart.controls.studyDayInput.node().value = config.plot_day;
+                    chart.draw();
+
+                    d.state = 'stop';
+                    button.html('&#9632;');
+                    startTransition.call(chart);
+                } else {
+                    console.log('stopping transition');
+
+                    d.state = 'play';
+                    button.html('&#9658;');
+                    stopTransition.call(chart);
+                }
+            });
+    }
+
     function initStudyDayControl() {
         var chart = this;
         var config = this.config;
-        var studyDayControlWrap = this.controls.wrap
+        chart.controls.studyDayControlWrap = chart.controls.wrap
             .selectAll('div')
             .filter(function(controlInput) {
                 return controlInput.label === 'Study Day';
             });
 
-        chart.controls.studyDayInput = studyDayControlWrap.select('input');
+        chart.controls.studyDayInput = chart.controls.studyDayControlWrap.select('input');
 
         //convert control to a slider
         chart.controls.studyDayInput.attr('type', 'range');
@@ -2042,13 +2096,13 @@
         chart.controls.studyDayInput.attr('min', chart.controls.studyDayRange[0]);
         chart.controls.studyDayInput.attr('max', chart.controls.studyDayRange[1]);
 
-        studyDayControlWrap
+        chart.controls.studyDayControlWrap
             .insert('span', 'input')
             .attr('class', 'span-description')
             .style('display', 'inline-block')
             .style('padding-right', '0.2em')
             .text(chart.controls.studyDayRange[0]);
-        studyDayControlWrap
+        chart.controls.studyDayControlWrap
             .append('span')
             .attr('class', 'span-description')
             .style('display', 'inline-block')
@@ -2062,51 +2116,7 @@
             chart.controls.studyDayInput.node().value = config.plot_day;
         }
 
-        /*
-        function showNextStudyDay() {
-            if (config.plot_day < chart.studyDayRange[1]) {
-                config.plot_day = config.plot_day + 7;
-                studyDayInput.node().value = config.plot_day;
-                chart.draw();
-            } else {
-                config.plot_day = chart.studyDayRange[1];
-                studyDayInput.node().value = config.plot_day;
-                chart.draw();
-                chart.moving = false;
-                clearInterval(chart.timer);
-                studyDayControlWrap.select('button').html('&#9658;');
-            }
-        }
-        */
-
-        //add a play button
-        chart.moving = false;
-        studyDayControlWrap
-            .append('button')
-            .datum({ state: 'play' })
-            .html('&#9658;') //play symbol
-            .style('padding', '0.2em 0.5em 0.2em 0.5em')
-            .style('margin-left', '0.5em')
-            .style('border-radius', '0.4em')
-            //.style('display', 'none')
-            .on('click', function(d) {
-                console.log('Gap Minding!');
-                console.log(chart);
-                var button = d3.select(this);
-                if (d.state === 'play') {
-                    console.log('play');
-                    d.state = 'stop';
-                    //play button
-                    button.html('&#9632;');
-                    startTransition.call(chart);
-                } else {
-                    console.log('stop');
-                    d.state = 'play';
-                    //stop button
-                    button.html('&#9658;');
-                    stopTransition.call(chart);
-                }
-            });
+        initPlayButton.call(this);
     }
 
     function onLayout() {
@@ -2809,19 +2819,24 @@
     }
 
     function updateStudyDayControl() {
+        var chart = this;
         var config = this.config;
-        var studyDayControlWrap = this.controls.wrap
-            .selectAll('div')
-            .filter(function(controlInput) {
-                return controlInput.label === 'Study Day';
-            });
 
         // hide study day control if viewing max values
-        studyDayControlWrap.style('display', config.plot_max_values ? 'none' : null);
+        chart.controls.studyDayControlWrap.style('display', config.plot_max_values ? 'none' : null);
+
+        //set the status of the play button
+        if (config.plot_day >= chart.controls.studyDayRange[1]) {
+            chart.controls.studyDayPlayButton.datum({ state: 'restart' });
+            chart.controls.studyDayPlayButton.html('&#8634;');
+        } else {
+            chart.controls.studyDayPlayButton.datum({ state: 'play' });
+            chart.controls.studyDayPlayButton.html('&#9658;');
+        }
 
         //update the study day control label with the currently selected values
-        var currentValue = studyDayControlWrap.select('input').property('value');
-        studyDayControlWrap
+        var currentValue = chart.controls.studyDayControlWrap.select('input').property('value');
+        chart.controls.studyDayControlWrap
             .select('span.span-description')
             .html('Showing data from: <strong>Day ' + currentValue + '</strong>')
             .select('strong')

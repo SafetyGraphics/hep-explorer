@@ -45,7 +45,13 @@ export default function startTransition() {
         //update the controls
         config.plot_day = currentDay;
         chart.controls.studyDayInput.node().value = config.plot_day;
-        //TODO: update the label
+
+        //update the label
+        chart.controls.studyDayControlWrap
+            .select('span.span-description')
+            .html('Showing data from: <strong>Day ' + Math.floor(config.plot_day) + '</strong>')
+            .select('strong')
+            .style('color', 'blue');
 
         //reposition the points
         var points = chart.marks[0].circles
@@ -70,6 +76,9 @@ export default function startTransition() {
         .transition()
         .duration(30000)
         .ease('linear')
-        .tween('studyday', tweenStudyDay);
-    //  .each('end', chart.draw());
+        .tween('studyday', tweenStudyDay)
+        .each('end', function() {
+            console.log('All done with animation. drawing chart.');
+            chart.draw();
+        });
 }
