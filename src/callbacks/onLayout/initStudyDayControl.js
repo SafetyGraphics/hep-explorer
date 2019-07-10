@@ -15,10 +15,12 @@ export default function initStudyDayControl() {
     chart.controls.studyDayInput.attr('type', 'range');
 
     //set min and max values and add annotations
-    chart.controls.studyDayRange = extent(chart.imputed_data.filter(d => d.analysisFlag), d => d[config.studyday_col]);
+    chart.controls.studyDayRange = extent(
+        chart.imputed_data.filter(d => d.analysisFlag),
+        d => d[config.studyday_col]
+    );
     chart.controls.studyDayInput.attr('min', chart.controls.studyDayRange[0]);
     chart.controls.studyDayInput.attr('max', chart.controls.studyDayRange[1]);
-    chart.controls.studyDayInput.attr('step', 7);
 
     studyDayControlWrap
         .insert('span', 'input')
@@ -60,7 +62,7 @@ export default function initStudyDayControl() {
     chart.moving = false;
     studyDayControlWrap
         .append('button')
-        .datum({state: 'play'})
+        .datum({ state: 'play' })
         .html('&#9658;') //play symbol
         .style('padding', '0.2em 0.5em 0.2em 0.5em')
         .style('margin-left', '0.5em')

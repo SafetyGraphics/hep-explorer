@@ -37,13 +37,12 @@ export default function getMaxValues(d) {
                 participant_obj[mKey] = d3.max(matches, d => +d[config.display]);
             } else {
                 //get the most recent measure on or before config.plot_day
-                var onOrBefore = participant_obj[mKey + '_raw']
-                    .filter(di => di.day <= config.plot_day);
+                var onOrBefore = participant_obj[mKey + '_raw'].filter(
+                    di => di.day <= config.plot_day
+                );
                 var latest = onOrBefore.pop();
 
-                participant_obj[mKey] = latest
-                    ? latest.value
-                    : null;
+                participant_obj[mKey] = latest ? latest.value : null;
             }
 
             var maxRecord = matches.find(d => participant_obj[mKey] == +d[config.display]);
@@ -67,8 +66,10 @@ export default function getMaxValues(d) {
 
             //save study days for each axis;
             if (maxRecord) {
-                if (mKey == config.x.column) participant_obj.days_x = maxRecord[config.studyday_col];
-                if (mKey == config.y.column) participant_obj.days_y = maxRecord[config.studyday_col];
+                if (mKey == config.x.column)
+                    participant_obj.days_x = maxRecord[config.studyday_col];
+                if (mKey == config.y.column)
+                    participant_obj.days_y = maxRecord[config.studyday_col];
             }
         }
     });
