@@ -1,5 +1,5 @@
-import startTransition from './startTransition';
-import stopTransition from './stopTransition';
+import startAnimation from './startAnimation';
+import stopAnimation from './stopAnimation';
 
 // &#9658; = play symbol
 // &#9632; = stop symbol
@@ -21,27 +21,16 @@ export default function initPlayButton() {
             console.log(chart);
             var button = d3.select(this);
             if (d.state === 'play') {
-                console.log('playing transition');
-                d.state = 'stop';
-                button.html('&#9632;');
-                startTransition.call(chart);
+                startAnimation.call(chart);
             } else if (d.state === 'restart') {
-                console.log('restarting transition');
-
                 config.plot_day =
                     chart.controls.studyDayRange[0] > 0 ? chart.controls.studyDayRange[0] : 0;
                 chart.controls.studyDayInput.node().value = config.plot_day;
                 chart.draw();
 
-                d.state = 'stop';
-                button.html('&#9632;');
-                startTransition.call(chart);
+                startAnimation.call(chart);
             } else {
-                console.log('stopping transition');
-
-                d.state = 'play';
-                button.html('&#9658;');
-                stopTransition.call(chart);
+                stopAnimation.call(chart);
             }
         });
 }

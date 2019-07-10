@@ -1932,10 +1932,10 @@
             .style('border-radius', '0.2em');
     }
 
-    function startTransition() {
+    function startAnimation() {
         var chart = this;
         var config = this.config;
-        console.log('Transition Starting');
+        console.log('Animation Starting');
 
         function reposition(point) {
             point
@@ -2008,9 +2008,19 @@
             };
         }
 
+        //show the stop button
+        chart.controls.studyDayPlayButton.datum({ state: 'stop' });
+        chart.controls.studyDayPlayButton.html('&#9632;');
+
+        // calculate a duration
+        var day_count = chart.controls.studyDayRange[1] - config.plot_day;
+        console.log(day_count);
+        var duration = day_count < 300 ? day_count * 100 : 30000;
+        console.log(duration);
+        // Initialize the Transition
         chart.myTransition = chart.svg
             .transition()
-            .duration(30000)
+            .duration(duration)
             .ease('linear')
             .tween('studyday', tweenStudyDay)
             .each('end', function() {
@@ -2019,8 +2029,9 @@
             });
     }
 
-    function stopTransition() {
-        console.log('Transition Stopping');
+    function stopAnimation() {
+        console.log('Animation Stopping');
+
         this.myTransition.duration(0);
         this.draw();
     }
@@ -2045,27 +2056,16 @@
                 console.log(chart);
                 var button = d3.select(this);
                 if (d.state === 'play') {
-                    console.log('playing transition');
-                    d.state = 'stop';
-                    button.html('&#9632;');
-                    startTransition.call(chart);
+                    startAnimation.call(chart);
                 } else if (d.state === 'restart') {
-                    console.log('restarting transition');
-
                     config.plot_day =
                         chart.controls.studyDayRange[0] > 0 ? chart.controls.studyDayRange[0] : 0;
                     chart.controls.studyDayInput.node().value = config.plot_day;
                     chart.draw();
 
-                    d.state = 'stop';
-                    button.html('&#9632;');
-                    startTransition.call(chart);
+                    startAnimation.call(chart);
                 } else {
-                    console.log('stopping transition');
-
-                    d.state = 'play';
-                    button.html('&#9658;');
-                    stopTransition.call(chart);
+                    stopAnimation.call(chart);
                 }
             });
     }
