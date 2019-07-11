@@ -17,8 +17,6 @@ export default function initPlayButton() {
         .style('border-radius', '0.4em')
         //.style('display', 'none')
         .on('click', function(d) {
-            console.log('Gap Minding!');
-            console.log(chart);
             var button = d3.select(this);
             if (d.state === 'play') {
                 startAnimation.call(chart);

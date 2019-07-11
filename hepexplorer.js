@@ -2031,9 +2031,15 @@
 
     function stopAnimation() {
         console.log('Animation Stopping');
-
-        this.myTransition.duration(0);
-        this.draw();
+        var chart = this;
+        chart.svg
+            .transition()
+            .duration(0)
+            .each('end', function() {
+                console.log('Cancelled animation. drawing chart.');
+                chart.draw();
+            });
+        chart.draw();
     }
 
     // &#9658; = play symbol

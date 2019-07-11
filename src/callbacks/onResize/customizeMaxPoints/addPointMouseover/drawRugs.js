@@ -7,7 +7,6 @@ export function drawRugs(d, axis) {
     var allMatches = d.values.raw[0].raw;
     const measure = config.measure_values[config[axis].column];
     const matches = allMatches.filter(f => f[config.measure_col] == measure);
-    //console.log(matches);
 
     //draw the rug
     var min_value = axis == 'x' ? chart.y.domain()[0] : chart.x.domain()[0];

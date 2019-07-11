@@ -1,7 +1,6 @@
 export default function startAnimation() {
     var chart = this;
     var config = this.config;
-    console.log('Animation Starting');
 
     function reposition(point) {
         point
@@ -41,7 +40,6 @@ export default function startAnimation() {
     }
 
     function showDay(currentDay) {
-        //console.log('Drawing: day ' + currentDay);
         //update the controls
         config.plot_day = currentDay;
         chart.controls.studyDayInput.node().value = config.plot_day;
@@ -64,7 +62,6 @@ export default function startAnimation() {
     function tweenStudyDay() {
         var min = config.plot_day;
         var max = chart.controls.studyDayRange[1];
-        console.log(min + '-' + max);
         var studyday = d3.interpolateNumber(min, max);
 
         return function(t) {
@@ -78,17 +75,12 @@ export default function startAnimation() {
 
     // calculate a duration
     const day_count = chart.controls.studyDayRange[1] - config.plot_day;
-    console.log(day_count);
     const duration = day_count < 300 ? day_count * 100 : 30000;
-    console.log(duration);
     // Initialize the Transition
     chart.myTransition = chart.svg
         .transition()
         .duration(duration)
         .ease('linear')
         .tween('studyday', tweenStudyDay)
-        .each('end', function() {
-            console.log('All done with animation. drawing chart.');
-            chart.draw();
-        });
+        .each('end', chart.draw());
 }
