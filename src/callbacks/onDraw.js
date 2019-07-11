@@ -8,6 +8,9 @@ import hideEmptyChart from './onDraw/hideEmptyChart';
 import updateStudyDayControl from './onDraw/updateStudyDayControl';
 
 export default function onDraw() {
+    //show/hide the study day controls
+    updateStudyDayControl.call(this);
+
     //clear participant Details (if they exist)
     clearParticipantDetails.call(this);
 
@@ -27,7 +30,4 @@ export default function onDraw() {
     //update the count in the filter label
     updateFilterLabel.call(this);
     hideEmptyChart.call(this);
-
-    //show/hide the study day controls
-    updateStudyDayControl.call(this);
 }

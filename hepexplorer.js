@@ -1935,7 +1935,6 @@
     function startAnimation() {
         var chart = this;
         var config = this.config;
-        console.log('Animation Starting');
 
         function reposition(point) {
             point
@@ -1977,7 +1976,6 @@
         }
 
         function showDay(currentDay) {
-            //console.log('Drawing: day ' + currentDay);
             //update the controls
             config.plot_day = currentDay;
             chart.controls.studyDayInput.node().value = config.plot_day;
@@ -2000,7 +1998,6 @@
         function tweenStudyDay() {
             var min = config.plot_day;
             var max = chart.controls.studyDayRange[1];
-            console.log(min + '-' + max);
             var studyday = d3.interpolateNumber(min, max);
 
             return function(t) {
@@ -2014,32 +2011,22 @@
 
         // calculate a duration
         var day_count = chart.controls.studyDayRange[1] - config.plot_day;
-        console.log(day_count);
         var duration = day_count < 300 ? day_count * 100 : 30000;
-        console.log(duration);
         // Initialize the Transition
         chart.myTransition = chart.svg
             .transition()
             .duration(duration)
             .ease('linear')
             .tween('studyday', tweenStudyDay)
-            .each('end', function() {
-                console.log('All done with animation. drawing chart.');
-                chart.draw();
-            });
+            .each('end', chart.draw());
     }
 
     function stopAnimation() {
-        console.log('Animation Stopping');
         var chart = this;
         chart.svg
             .transition()
             .duration(0)
-            .each('end', function() {
-                console.log('Cancelled animation. drawing chart.');
-                chart.draw();
-            });
-        chart.draw();
+            .each('end', chart.draw());
     }
 
     // &#9658; = play symbol
@@ -2058,8 +2045,6 @@
             .style('border-radius', '0.4em')
             //.style('display', 'none')
             .on('click', function(d) {
-                console.log('Gap Minding!');
-                console.log(chart);
                 var button = d3.select(this);
                 if (d.state === 'play') {
                     startAnimation.call(chart);
@@ -2828,6 +2813,9 @@
         var chart = this;
         var config = this.config;
 
+        // cancel the animation (if any is running)
+        chart.svg.transition().duration(0);
+
         // hide study day control if viewing max values
         chart.controls.studyDayControlWrap.style('display', config.plot_max_values ? 'none' : null);
 
@@ -2850,6 +2838,9 @@
     }
 
     function onDraw() {
+        //show/hide the study day controls
+        updateStudyDayControl.call(this);
+
         //clear participant Details (if they exist)
         clearParticipantDetails.call(this);
 
@@ -2869,9 +2860,6 @@
         //update the count in the filter label
         updateFilterLabel.call(this);
         hideEmptyChart.call(this);
-
-        //show/hide the study day controls
-        updateStudyDayControl.call(this);
     }
 
     //draw marginal rug for visit-level measures
@@ -2887,7 +2875,6 @@
         var matches = allMatches.filter(function(f) {
             return f[config.measure_col] == measure;
         });
-        //console.log(matches);
 
         //draw the rug
         var min_value = axis == 'x' ? chart.y.domain()[0] : chart.x.domain()[0];

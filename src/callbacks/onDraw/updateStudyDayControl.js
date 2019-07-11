@@ -2,6 +2,9 @@ export default function updateStudyDayControl() {
     var chart = this;
     var config = this.config;
 
+    // cancel the animation (if any is running)
+    chart.svg.transition().duration(0);
+
     // hide study day control if viewing max values
     chart.controls.studyDayControlWrap.style('display', config.plot_max_values ? 'none' : null);
 
