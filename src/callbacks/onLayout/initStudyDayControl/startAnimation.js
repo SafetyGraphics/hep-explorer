@@ -1,11 +1,15 @@
 export default function startAnimation() {
     var chart = this;
     var config = this.config;
+    // calculate animation duration
+    const day_count = chart.controls.studyDayRange[1] - config.plot_day;
+    const duration = day_count < 300 ? day_count * 100 : 30000;
+    const day_duration = duration / day_count;
 
     function reposition(point) {
         point
             .transition()
-            .duration(100)
+            .duration(day_duration)
             .attr('cx', function(d) {
                 return chart.x(d[config.x.column]);
             })
@@ -73,14 +77,13 @@ export default function startAnimation() {
     chart.controls.studyDayPlayButton.datum({ state: 'stop' });
     chart.controls.studyDayPlayButton.html('&#9632;');
 
-    // calculate a duration
-    const day_count = chart.controls.studyDayRange[1] - config.plot_day;
-    const duration = day_count < 300 ? day_count * 100 : 30000;
     // Initialize the Transition
     chart.myTransition = chart.svg
         .transition()
         .duration(duration)
         .ease('linear')
         .tween('studyday', tweenStudyDay)
-        .each('end', chart.draw());
+        .each('end', function() {
+            chart.draw();
+        });
 }

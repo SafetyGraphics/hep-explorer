@@ -3,7 +3,22 @@ export default function updateStudyDayControl() {
     var config = this.config;
 
     // cancel the animation (if any is running)
-    chart.svg.transition().duration(0);
+    var activeAnimation = chart.controls.studyDayPlayButton.datum().state == 'stop';
+    console.log(activeAnimation);
+    if (activeAnimation) {
+        chart.svg.transition().duration(0);
+        /* Doesn't seem to help ...
+        this.svg
+            .select('g.point-supergroup.mark1')
+            .selectAll('g.point')
+            .select('circle')
+            .call(function() {
+                d3.select(this)
+                    .transition()
+                    .duration(0);
+            });
+        */
+    }
 
     // hide study day control if viewing max values
     chart.controls.studyDayControlWrap.style('display', config.plot_max_values ? 'none' : null);

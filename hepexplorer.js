@@ -1935,11 +1935,15 @@
     function startAnimation() {
         var chart = this;
         var config = this.config;
+        // calculate animation duration
+        var day_count = chart.controls.studyDayRange[1] - config.plot_day;
+        var duration = day_count < 300 ? day_count * 100 : 30000;
+        var day_duration = duration / day_count;
 
         function reposition(point) {
             point
                 .transition()
-                .duration(100)
+                .duration(day_duration)
                 .attr('cx', function(d) {
                     return chart.x(d[config.x.column]);
                 })
@@ -2009,16 +2013,15 @@
         chart.controls.studyDayPlayButton.datum({ state: 'stop' });
         chart.controls.studyDayPlayButton.html('&#9632;');
 
-        // calculate a duration
-        var day_count = chart.controls.studyDayRange[1] - config.plot_day;
-        var duration = day_count < 300 ? day_count * 100 : 30000;
         // Initialize the Transition
         chart.myTransition = chart.svg
             .transition()
             .duration(duration)
             .ease('linear')
             .tween('studyday', tweenStudyDay)
-            .each('end', chart.draw());
+            .each('end', function() {
+                chart.draw();
+            });
     }
 
     function stopAnimation() {
@@ -2814,7 +2817,22 @@
         var config = this.config;
 
         // cancel the animation (if any is running)
-        chart.svg.transition().duration(0);
+        var activeAnimation = chart.controls.studyDayPlayButton.datum().state == 'stop';
+        console.log(activeAnimation);
+        if (activeAnimation) {
+            chart.svg.transition().duration(0);
+            /* Doesn't seem to help ...
+            this.svg
+                .select('g.point-supergroup.mark1')
+                .selectAll('g.point')
+                .select('circle')
+                .call(function() {
+                    d3.select(this)
+                        .transition()
+                        .duration(0);
+                });
+            */
+        }
 
         // hide study day control if viewing max values
         chart.controls.studyDayControlWrap.style('display', config.plot_max_values ? 'none' : null);
@@ -4832,11 +4850,6 @@
     function onResize$1() {
         //add maximum point interactivity, custom title and formatting
         customizeMaxPoints.call(this);
-
-        //draw visit-level points (if requested)
-        if (this.config.plot_max_values);
-        //  hideMaxPoints.call(this)
-        //  drawVisitPoints.call(this)
 
         //draw the quadrants and add drag interactivity
         updateSummaryTable.call(this);
