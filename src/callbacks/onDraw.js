@@ -1,6 +1,6 @@
 import { updateQuadrantData } from './onDraw/updateQuadrantData';
 import { setDomain } from './onDraw/setDomain';
-import { clearParticipantDetails } from './onResize/customizeMaxPoints/clearParticipantDetails';
+import { clearParticipantDetails } from './onResize/customizePoints/clearParticipantDetails';
 import { updateFilterLabel } from './onDraw/updateFilterLabel';
 import setCutpointMinimums from './onDraw/setCutpointMinimums';
 import syncCutpoints from './onDraw/syncCutpoints';

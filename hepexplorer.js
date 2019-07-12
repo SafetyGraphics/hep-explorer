@@ -1941,6 +1941,7 @@
         var day_duration = duration / day_count;
 
         function reposition(point) {
+            //TODO: recalculate size scale for each time point
             point
                 .transition()
                 .duration(day_duration)
@@ -1951,9 +1952,13 @@
                     return chart.y(d[config.y.column]);
                 })
                 .attr('r', function(d) {
-                    return config.point_size == 'Uniform'
-                        ? d.mark.radius || config.flex_point_size
-                        : chart.sizeScale(d[config.point_size]);
+                    if (d.outOfRange) {
+                        return 1;
+                    } else if (config.point_size == 'Uniform') {
+                        return d.mark.radius || config.flex_point_size;
+                    } else {
+                        return chart.sizeScale(d[config.point_size]);
+                    }
                 });
         }
 
@@ -1966,16 +1971,32 @@
             }
 
             var raw = d.values.raw[0];
+            d.outOfRange = false;
             measures.forEach(function(m) {
                 var vals = raw[m + '_raw'];
+
+                // Did currentDay occur while participant was enrolled?
+                if (vals.length) {
+                    var first = vals[0];
+                    var last = vals[vals.length - 1];
+                    var before = currentDay < first.day;
+                    var after = currentDay > last.day;
+                    d.outOfRange = d.outOfRange || before || after;
+                }
+
+                //Get the most recent data point (or the first point if participant isn't enrolled yet)
                 var getLastMeasureIndex = d3.bisector(function(d) {
                     return d.day;
                 }).left;
                 var lastMeasureIndexPlusOne = getLastMeasureIndex(vals, currentDay);
                 var lastMeasureIndex = lastMeasureIndexPlusOne - 1;
-                d[m] = lastMeasureIndex >= 0 ? vals[lastMeasureIndex]['value'] : null;
+                d[m] =
+                    lastMeasureIndex >= 0
+                        ? vals[lastMeasureIndex]['value']
+                        : vals.length
+                        ? vals[0].value
+                        : null;
             });
-
             return d;
         }
 
@@ -2261,6 +2282,7 @@
         var participant_obj = {};
         participant_obj.days_x = null;
         participant_obj.days_y = null;
+        participant_obj.outOfRange = false;
         Object.keys(config.measure_values).forEach(function(mKey) {
             //get all raw data for the current measure
             var matches = d
@@ -2295,13 +2317,21 @@
                         return +d[config.display];
                     });
                 } else {
+                    //see if all selected config.plot_day was while participant was enrolled
+
+                    var first = participant_obj[mKey + '_raw'][0];
+                    var last = participant_obj[mKey + '_raw'].pop();
+                    var before = config.plot_day < first.day;
+                    var after = config.plot_day > last.day;
+                    participant_obj.outOfRange = participant_obj.outOfRange || before || after;
+
                     //get the most recent measure on or before config.plot_day
                     var onOrBefore = participant_obj[mKey + '_raw'].filter(function(di) {
                         return di.day <= config.plot_day;
                     });
                     var latest = onOrBefore.pop();
 
-                    participant_obj[mKey] = latest ? latest.value : null;
+                    participant_obj[mKey] = latest ? latest.value : first.value;
                 }
 
                 var maxRecord = matches.find(function(d) {
@@ -2343,6 +2373,9 @@
 
         //calculate the day difference between x and y
         participant_obj.day_diff = Math.abs(participant_obj.days_x - participant_obj.days_y);
+
+        //check if both x and y are in range
+        if (!config.plot_max_values);
 
         return participant_obj;
     }
@@ -4301,35 +4334,39 @@
         var chart = this;
         var config = this.config;
         var points = this.marks[0].circles;
-        if (config.point_size != 'Uniform') {
-            //create the scale
-            chart.sizeScale = d3.scale
-                .linear()
-                .range([2, 10])
-                .domain(
-                    d3.extent(
-                        chart.raw_data.map(function(m) {
-                            return m[config.point_size];
-                        })
-                    )
-                );
+        //create the scale
+        chart.sizeScale = d3.scale
+            .linear()
+            .range([2, 10])
+            .domain(
+                d3.extent(
+                    chart.raw_data.map(function(m) {
+                        return m[config.point_size];
+                    })
+                )
+            );
 
-            //draw a legend (coming later?)
+        //draw a legend (coming later?)
 
-            //set the point radius
-            points
-                .transition()
-                .attr('r', function(d) {
-                    var raw = d.values.raw[0];
+        //set the point radius
+        points
+            .transition()
+            .attr('r', function(d) {
+                var raw = d.values.raw[0];
+                if (raw.outOfRange) {
+                    return 1;
+                } else if (config.point_size == 'Uniform') {
+                    return d.mark.radius || config.flex_point_size;
+                } else {
                     return chart.sizeScale(raw[config.point_size]);
-                })
-                .attr('cx', function(d) {
-                    return _this.x(d.values.x);
-                })
-                .attr('cy', function(d) {
-                    return _this.y(d.values.y);
-                });
-        }
+                }
+            })
+            .attr('cx', function(d) {
+                return _this.x(d.values.x);
+            })
+            .attr('cy', function(d) {
+                return _this.y(d.values.y);
+            });
     }
 
     function setPointOpacity() {
@@ -4405,7 +4442,7 @@
             });
     }
 
-    function customizeMaxPoints() {
+    function customizePoints() {
         addPointMouseover.call(this);
         addPointClick.call(this);
         addPointTitles$2.call(this);
@@ -4849,7 +4886,7 @@
 
     function onResize$1() {
         //add maximum point interactivity, custom title and formatting
-        customizeMaxPoints.call(this);
+        customizePoints.call(this);
 
         //draw the quadrants and add drag interactivity
         updateSummaryTable.call(this);

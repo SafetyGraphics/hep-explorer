@@ -7,6 +7,7 @@ export default function startAnimation() {
     const day_duration = duration / day_count;
 
     function reposition(point) {
+        //TODO: recalculate size scale for each time point
         point
             .transition()
             .duration(day_duration)
@@ -17,9 +18,13 @@ export default function startAnimation() {
                 return chart.y(d[config.y.column]);
             })
             .attr('r', function(d) {
-                return config.point_size == 'Uniform'
-                    ? d.mark.radius || config.flex_point_size
-                    : chart.sizeScale(d[config.point_size]);
+                if (d.outOfRange) {
+                    return 1;
+                } else if (config.point_size == 'Uniform') {
+                    return d.mark.radius || config.flex_point_size;
+                } else {
+                    return chart.sizeScale(d[config.point_size]);
+                }
             });
     }
 
@@ -32,14 +37,30 @@ export default function startAnimation() {
         }
 
         var raw = d.values.raw[0];
+        d.outOfRange = false;
         measures.forEach(function(m) {
             var vals = raw[m + '_raw'];
+
+            // Did currentDay occur while participant was enrolled?
+            if (vals.length) {
+                var first = vals[0];
+                var last = vals[vals.length - 1];
+                var before = currentDay < first.day;
+                var after = currentDay > last.day;
+                d.outOfRange = d.outOfRange || before || after;
+            }
+
+            //Get the most recent data point (or the first point if participant isn't enrolled yet)
             var getLastMeasureIndex = d3.bisector(d => d.day).left;
             var lastMeasureIndexPlusOne = getLastMeasureIndex(vals, currentDay);
             var lastMeasureIndex = lastMeasureIndexPlusOne - 1;
-            d[m] = lastMeasureIndex >= 0 ? vals[lastMeasureIndex]['value'] : null;
+            d[m] =
+                lastMeasureIndex >= 0
+                    ? vals[lastMeasureIndex]['value']
+                    : vals.length
+                    ? vals[0].value
+                    : null;
         });
-
         return d;
     }
 

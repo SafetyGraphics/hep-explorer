@@ -8,6 +8,7 @@ export default function getMaxValues(d) {
     var participant_obj = {};
     participant_obj.days_x = null;
     participant_obj.days_y = null;
+    participant_obj.outOfRange = false;
     Object.keys(config.measure_values).forEach(function(mKey) {
         //get all raw data for the current measure
         var matches = d
@@ -36,13 +37,21 @@ export default function getMaxValues(d) {
                 //get record with maximum value for the current display type
                 participant_obj[mKey] = d3.max(matches, d => +d[config.display]);
             } else {
+                //see if all selected config.plot_day was while participant was enrolled
+
+                var first = participant_obj[mKey + '_raw'][0];
+                var last = participant_obj[mKey + '_raw'].pop();
+                var before = config.plot_day < first.day;
+                var after = config.plot_day > last.day;
+                participant_obj.outOfRange = participant_obj.outOfRange || before || after;
+
                 //get the most recent measure on or before config.plot_day
                 var onOrBefore = participant_obj[mKey + '_raw'].filter(
                     di => di.day <= config.plot_day
                 );
                 var latest = onOrBefore.pop();
 
-                participant_obj[mKey] = latest ? latest.value : null;
+                participant_obj[mKey] = latest ? latest.value : first.value;
             }
 
             var maxRecord = matches.find(d => participant_obj[mKey] == +d[config.display]);
@@ -82,6 +91,11 @@ export default function getMaxValues(d) {
 
     //calculate the day difference between x and y
     participant_obj.day_diff = Math.abs(participant_obj.days_x - participant_obj.days_y);
+
+    //check if both x and y are in range
+    if (!config.plot_max_values) {
+        participant_obj;
+    }
 
     return participant_obj;
 }
