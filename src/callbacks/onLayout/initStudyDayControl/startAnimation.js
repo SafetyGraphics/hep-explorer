@@ -66,20 +66,20 @@ export default function startAnimation() {
 
     function showDay(currentDay) {
         //update the controls
-        config.plot_day = currentDay;
+        config.plot_day = Math.floor(currentDay);
         chart.controls.studyDayInput.node().value = config.plot_day;
 
         //update the label
         chart.controls.studyDayControlWrap
             .select('span.span-description')
-            .html('Showing data from: <strong>Day ' + Math.floor(config.plot_day) + '</strong>')
+            .html('Showing data from: <strong>Day ' + config.plot_day + '</strong>')
             .select('strong')
             .style('color', 'blue');
 
         //reposition the points
         var points = chart.marks[0].circles
             .datum(function(d) {
-                return updateDatum(d, currentDay);
+                return updateDatum(d, config.plot_day);
             })
             .call(reposition);
     }
