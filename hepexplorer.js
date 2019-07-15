@@ -1940,8 +1940,10 @@
         var duration = day_count < 300 ? day_count * 100 : 30000;
         var day_duration = duration / day_count;
 
+        var base_size = config.marks[0].radius || config.flex_point_size;
+        var small_size = base_size / 2;
+
         function reposition(point) {
-            //TODO: recalculate size scale for each time point
             point
                 .transition()
                 .duration(day_duration)
@@ -1953,12 +1955,15 @@
                 })
                 .attr('r', function(d) {
                     if (d.outOfRange) {
-                        return 1;
+                        return small_size;
                     } else if (config.point_size == 'Uniform') {
-                        return d.mark.radius || config.flex_point_size;
+                        return base_size;
                     } else {
                         return chart.sizeScale(d[config.point_size]);
                     }
+                })
+                .attr('fill-opacity', function(d) {
+                    return config.plot_day < d.day_range[0] ? 0 : 1;
                 });
         }
 
@@ -1972,6 +1977,7 @@
 
             var raw = d.values.raw[0];
             d.outOfRange = false;
+            d.day_range = raw.day_range;
             measures.forEach(function(m) {
                 var vals = raw[m + '_raw'];
 
@@ -2306,9 +2312,16 @@
                     'No analysis results found for 1+ key measure, including ' + mKey + '.';
             } else {
                 //keep an array of all [value, studyday] pairs for the measure
-                participant_obj[mKey + '_raw'] = matches.map(function(m) {
-                    return { value: m[config.display], day: m[config.studyday_col] };
-                });
+                participant_obj[mKey + '_raw'] = matches
+                    .map(function(m, i) {
+                        return {
+                            value: m[config.display],
+                            day: m[config.studyday_col]
+                        };
+                    })
+                    .sort(function(a, b) {
+                        return a.day - b.day;
+                    });
 
                 //get the current record for each participant
                 if (config.plot_max_values) {
@@ -2318,7 +2331,6 @@
                     });
                 } else {
                     //see if all selected config.plot_day was while participant was enrolled
-
                     var first = participant_obj[mKey + '_raw'][0];
                     var last = participant_obj[mKey + '_raw'].pop();
                     var before = config.plot_day < first.day;
@@ -2373,6 +2385,17 @@
 
         //calculate the day difference between x and y
         participant_obj.day_diff = Math.abs(participant_obj.days_x - participant_obj.days_y);
+
+        var vals = d
+            .filter(function(f) {
+                return f.analysisFlag;
+            })
+            .filter(function(f) {
+                return f.key_measure;
+            });
+        participant_obj.day_range = d3$1.extent(vals, function(d) {
+            return d[config.studyday_col];
+        });
 
         //check if both x and y are in range
         if (!config.plot_max_values);
@@ -2851,20 +2874,8 @@
 
         // cancel the animation (if any is running)
         var activeAnimation = chart.controls.studyDayPlayButton.datum().state == 'stop';
-        console.log(activeAnimation);
         if (activeAnimation) {
             chart.svg.transition().duration(0);
-            /* Doesn't seem to help ...
-            this.svg
-                .select('g.point-supergroup.mark1')
-                .selectAll('g.point')
-                .select('circle')
-                .call(function() {
-                    d3.select(this)
-                        .transition()
-                        .duration(0);
-                });
-            */
         }
 
         // hide study day control if viewing max values
@@ -4334,10 +4345,16 @@
         var chart = this;
         var config = this.config;
         var points = this.marks[0].circles;
+
         //create the scale
+        var base_size = config.marks[0].radius || config.flex_point_size;
+        var max_size = base_size * 5;
+        var small_size = base_size / 2;
+
+        //TODO: use all possible point sizes for size scale when viewing by study-day
         chart.sizeScale = d3.scale
             .linear()
-            .range([2, 10])
+            .range([base_size, max_size])
             .domain(
                 d3.extent(
                     chart.raw_data.map(function(m) {
@@ -4354,9 +4371,9 @@
             .attr('r', function(d) {
                 var raw = d.values.raw[0];
                 if (raw.outOfRange) {
-                    return 1;
+                    return small_size;
                 } else if (config.point_size == 'Uniform') {
-                    return d.mark.radius || config.flex_point_size;
+                    return base_size;
                 } else {
                     return chart.sizeScale(raw[config.point_size]);
                 }
@@ -4370,11 +4387,20 @@
     }
 
     function setPointOpacity() {
+        var chart = this;
         var config = this.config;
         var points = this.marks[0].circles;
+
         points.attr('fill-opacity', function(d) {
-            return d.values.raw[0].day_diff <= config.visit_window ? 1 : 0;
-        }); //fill points in visit_window
+            var raw = d.values.raw[0];
+            if (chart.plot_max_values) {
+                // if viewing max values, fill based on time window
+                return raw.day_diff <= config.visit_window ? 1 : 0;
+            } else {
+                //fill points after participants first day
+                return config.plot_day < raw.day_range[0] ? 0 : 1;
+            }
+        });
     }
 
     // Reposition any exisiting participant marks when the chart is resized
@@ -4865,23 +4891,31 @@
     }
 
     function updateTimingFootnote() {
+        var chart = this;
         var config = this.config;
-        var windowText =
-            config.visit_window == 0
-                ? 'on the same day'
-                : config.visit_window == 1
-                ? 'within 1 day'
-                : 'within ' + config.visit_window + ' days';
-        var timingFootnote =
-            ' Points where maximum ' +
-            config.measure_values[config.x.column] +
-            ' and ' +
-            config.measure_values[config.y.column] +
-            ' values were collected ' +
-            windowText +
-            ' are filled, others are empty.';
 
-        this.footnote.timing.text(timingFootnote);
+        if (chart.plot_max_values) {
+            var windowText =
+                config.visit_window == 0
+                    ? 'on the same day'
+                    : config.visit_window == 1
+                    ? 'within 1 day'
+                    : 'within ' + config.visit_window + ' days';
+            var timingFootnote =
+                ' Points where maximum ' +
+                config.measure_values[config.x.column] +
+                ' and ' +
+                config.measure_values[config.y.column] +
+                ' values were collected ' +
+                windowText +
+                ' are filled, others are empty.';
+
+            this.footnote.timing.text(timingFootnote);
+        } else {
+            var timingFootnote =
+                "Small points are drawn when the selected day occurs outside of the participant's study enrollment; either the first collected measures (empty circle) or last collected measures (filled circle) for the participant are plotted for these points.";
+            this.footnote.timing.text(timingFootnote);
+        }
     }
 
     function onResize$1() {

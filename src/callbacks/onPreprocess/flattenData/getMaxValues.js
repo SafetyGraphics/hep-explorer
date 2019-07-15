@@ -1,5 +1,6 @@
 import addParticipantLevelMetadata from './addParticipantLevelMetadata';
 import calculateRRatio from './calculateRRatio';
+import { extent } from 'd3';
 
 export default function getMaxValues(d) {
     var chart = this;
@@ -28,9 +29,16 @@ export default function getMaxValues(d) {
                 'No analysis results found for 1+ key measure, including ' + mKey + '.';
         } else {
             //keep an array of all [value, studyday] pairs for the measure
-            participant_obj[mKey + '_raw'] = matches.map(function(m) {
-                return { value: m[config.display], day: m[config.studyday_col] };
-            });
+            participant_obj[mKey + '_raw'] = matches
+                .map(function(m, i) {
+                    return {
+                        value: m[config.display],
+                        day: m[config.studyday_col]
+                    };
+                })
+                .sort(function(a, b) {
+                    return a.day - b.day;
+                });
 
             //get the current record for each participant
             if (config.plot_max_values) {
@@ -38,7 +46,6 @@ export default function getMaxValues(d) {
                 participant_obj[mKey] = d3.max(matches, d => +d[config.display]);
             } else {
                 //see if all selected config.plot_day was while participant was enrolled
-
                 var first = participant_obj[mKey + '_raw'][0];
                 var last = participant_obj[mKey + '_raw'].pop();
                 var before = config.plot_day < first.day;
@@ -91,6 +98,9 @@ export default function getMaxValues(d) {
 
     //calculate the day difference between x and y
     participant_obj.day_diff = Math.abs(participant_obj.days_x - participant_obj.days_y);
+
+    var vals = d.filter(f => f.analysisFlag).filter(f => f.key_measure);
+    participant_obj.day_range = extent(vals, d => d[config.studyday_col]);
 
     //check if both x and y are in range
     if (!config.plot_max_values) {
