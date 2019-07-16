@@ -9,5 +9,6 @@ export default function customizePlotStyleToggle() {
         .on('change', function(d) {
             chart.config.plot_max_values = d;
             stopAnimation.call(chart);
+            chart.draw();
         });
 }

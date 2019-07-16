@@ -1938,7 +1938,8 @@
             .transition()
             .duration(0)
             .each('end', function() {
-                chart.draw();
+                chart.controls.studyDayPlayButton.datum({ state: 'play' });
+                chart.controls.studyDayPlayButton.html('&#9658;');
             });
     }
 
@@ -1953,6 +1954,7 @@
             .on('change', function(d) {
                 chart.config.plot_max_values = d;
                 stopAnimation.call(chart);
+                chart.draw();
             });
     }
 
@@ -2093,7 +2095,6 @@
             //.style('display', 'none')
             .on('click', function(d) {
                 var button = d3.select(this);
-                console.log(d.state);
                 if (d.state === 'play') {
                     startAnimation.call(chart);
                 } else if (d.state === 'restart') {
