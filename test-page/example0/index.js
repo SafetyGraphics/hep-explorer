@@ -7,10 +7,8 @@ d3.csv(
         const instance = hepexplorer(
             '#container', // element
             {
-                filters: ['SEX', 'AGE', 'ARM', 'RACE', 'SITEID'],
             } // settings
         );
         instance.init(data);
-        setTimeout(() => instance.destroy(), 1000);
     }
 );

@@ -2093,6 +2093,7 @@
             //.style('display', 'none')
             .on('click', function(d) {
                 var button = d3.select(this);
+                console.log(d.state);
                 if (d.state === 'play') {
                     startAnimation.call(chart);
                 } else if (d.state === 'restart') {
@@ -2948,8 +2949,6 @@
 
     //draw marginal rug for visit-level measures
     function drawRugs(d, axis) {
-        var _this = this;
-
         var chart = this;
         var config = this.config;
 
@@ -2962,45 +2961,48 @@
 
         //draw the rug
         var min_value = axis == 'x' ? chart.y.domain()[0] : chart.x.domain()[0];
-        chart[axis + '_rug']
+        var rugs = chart[axis + '_rug']
             .selectAll('text')
             .data(matches)
             .enter()
             .append('text')
-            .attr('class', 'rug-tick')
-            .attr('x', function(d) {
-                return axis == 'x' ? chart.x(d[config.display]) : chart.x(min_value);
-            })
-            .attr('y', function(d) {
-                return axis == 'y' ? chart.y(d[config.display]) : chart.y(min_value);
-            })
-            //        .attr('dy', axis == 'x' ? '-0.2em' : null)
-            .attr('text-anchor', axis == 'y' ? 'end' : null)
-            .attr('alignment-baseline', axis == 'x' ? 'hanging' : null)
-            .attr('font-size', axis == 'x' ? '6px' : null)
-            .attr('stroke', function(d) {
-                return chart.colorScale(d[config.color_by]);
-            })
-            .attr('stroke-width', function(d) {
-                return d[_this.config.studyday_col] <= _this.config.plot_day ? '5px' : '1px';
+            .attr({
+                class: 'rug-tick',
+                x: function x(di) {
+                    return axis === 'x' ? chart.x(di[config.display]) : chart.x(min_value);
+                },
+                y: function y(di) {
+                    return axis === 'y' ? chart.y(di[config.display]) : chart.y(min_value);
+                },
+                dy: axis === 'y' ? 4 : 0,
+                'text-anchor': axis === 'y' ? 'end' : null,
+                'alignment-baseline': axis === 'x' ? 'hanging' : null,
+                'font-size': axis === 'x' ? '6px' : null,
+                stroke: function stroke(di) {
+                    return chart.colorScale(di[config.color_by]);
+                },
+                'stroke-width': function strokeWidth(di) {
+                    return di[config.display] === d.values[axis] ? '3px' : '1px';
+                }
             })
             .text(function(d) {
-                return axis == 'x' ? '|' : '–';
-            })
-            .append('svg:title')
-            .text(function(d) {
-                return (
-                    d[config.measure_col] +
-                    '=' +
-                    d3.format('.2f')(d.absolute) +
-                    ' (' +
-                    d3.format('.2f')(d.relative_uln) +
-                    ' xULN) @ ' +
-                    d[config.visit_col] +
-                    '/Study Day ' +
-                    d[config.studyday_col]
-                );
+                return axis === 'x' ? '|' : '–';
             });
+
+        //Add tooltips to rugs.
+        rugs.append('svg:title').text(function(d) {
+            return (
+                d[config.measure_col] +
+                '=' +
+                d3.format('.2f')(d.absolute) +
+                ' (' +
+                d3.format('.2f')(d.relative_uln) +
+                ' xULN) @ ' +
+                d[config.visit_col] +
+                '/Study Day ' +
+                d[config.studyday_col]
+            );
+        });
     }
 
     function addPointMouseover() {
@@ -4304,6 +4306,12 @@
 
         //add event listener to all participant level points
         points.on('click', function(d) {
+            //Stop animation.
+            chart.svg.transition().duration(0);
+            chart.controls.studyDayPlayButton.datum({ state: 'play' });
+            chart.controls.studyDayPlayButton.html('&#9658;');
+
+            //Update chart object.
             chart.clicked_id = d.key;
             clearParticipantDetails.call(chart, d); //clear the previous participant
             chart.config.quadrants.table.wrap.style('display', 'none'); //hide the quadrant summary
