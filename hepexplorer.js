@@ -1,10 +1,10 @@
 (function(global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined'
-        ? (module.exports = factory(require('webcharts'), require('d3')))
+        ? (module.exports = factory(require('webcharts')))
         : typeof define === 'function' && define.amd
-        ? define(['webcharts', 'd3'], factory)
-        : (global.hepexplorer = factory(global.webCharts, global.d3));
-})(this, function(webcharts, d3$1) {
+        ? define(['webcharts'], factory)
+        : (global.hepexplorer = factory(global.webCharts));
+})(this, function(webcharts) {
     'use strict';
 
     if (typeof Object.assign != 'function') {
@@ -1466,7 +1466,7 @@
                 chart.destroy();
                 chart = null;
 
-                var newChart = safetyedish(initial_container, initial_settings);
+                var newChart = hepexplorer(initial_container, initial_settings);
                 newChart.init(initial_data);
             });
     }
@@ -2123,7 +2123,7 @@
         chart.controls.studyDayInput.attr('type', 'range');
 
         //set min and max values and add annotations
-        chart.controls.studyDayRange = d3$1.extent(
+        chart.controls.studyDayRange = d3.extent(
             chart.imputed_data.filter(function(d) {
                 return d.analysisFlag;
             }),
@@ -2415,7 +2415,7 @@
             .filter(function(f) {
                 return f.key_measure;
             });
-        participant_obj.day_range = d3$1.extent(vals, function(d) {
+        participant_obj.day_range = d3.extent(vals, function(d) {
             return d[config.studyday_col];
         });
 
@@ -2696,10 +2696,10 @@
             .sort(function(a, b) {
                 return a - b;
             });
-        var val_extent = d3$1.extent(values);
+        var val_extent = d3.extent(values);
 
         //make sure the domain contains the cut point and the max possible value for the measure
-        domain[1] = d3$1.max([domain[1], cut * 1.01, val_extent[1]]);
+        domain[1] = d3.max([domain[1], cut * 1.01, val_extent[1]]);
 
         // make sure the domain lower limit captures all of the raw Values
         if (this.config[dimension].type == 'linear') {
@@ -4963,13 +4963,18 @@
         updateTimingFootnote.call(this);
     }
 
+    function onDestroy() {
+        this.emptyChartWarning.remove();
+    }
+
     var callbacks = {
         onInit: onInit,
         onLayout: onLayout,
         onPreprocess: onPreprocess,
         onDataTransform: onDataTransform,
         onDraw: onDraw,
-        onResize: onResize$1
+        onResize: onResize$1,
+        onDestroy: onDestroy
     };
 
     function init$6() {
@@ -4988,7 +4993,11 @@
         this.chart.init(lb);
     }
 
-    function safetyedish(element, settings) {
+    function destroy() {
+        this.chart.destroy();
+    }
+
+    function hepexplorer(element, settings) {
         var initial_settings = clone(settings);
         var defaultSettings = configuration.settings();
         var controlInputs = configuration.controlInputs();
@@ -5008,15 +5017,16 @@
         for (var callback in callbacks) {
             chart.on(callback.substring(2).toLowerCase(), callbacks[callback]);
         }
-        var se = {
+        var hepexplorer = {
             element: element,
             settings: settings,
             chart: chart,
-            init: init$6
+            init: init$6,
+            destroy: destroy
         };
 
-        return se;
+        return hepexplorer;
     }
 
-    return safetyedish;
+    return hepexplorer;
 });

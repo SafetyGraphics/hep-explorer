@@ -1,4 +1,3 @@
-import { extent } from 'd3';
 import initPlayButton from './initStudyDayControl/initPlayButton';
 
 export default function initStudyDayControl() {
@@ -14,7 +13,7 @@ export default function initStudyDayControl() {
     chart.controls.studyDayInput.attr('type', 'range');
 
     //set min and max values and add annotations
-    chart.controls.studyDayRange = extent(
+    chart.controls.studyDayRange = d3.extent(
         chart.imputed_data.filter(d => d.analysisFlag),
         d => d[config.studyday_col]
     );

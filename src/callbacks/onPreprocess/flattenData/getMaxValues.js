@@ -1,6 +1,5 @@
 import addParticipantLevelMetadata from './addParticipantLevelMetadata';
 import calculateRRatio from './calculateRRatio';
-import { extent } from 'd3';
 
 export default function getMaxValues(d) {
     var chart = this;
@@ -104,7 +103,7 @@ export default function getMaxValues(d) {
     participant_obj.day_diff = Math.abs(participant_obj.days_x - participant_obj.days_y);
 
     var vals = d.filter(f => f.analysisFlag).filter(f => f.key_measure);
-    participant_obj.day_range = extent(vals, d => d[config.studyday_col]);
+    participant_obj.day_range = d3.extent(vals, d => d[config.studyday_col]);
 
     //check if both x and y are in range
     if (!config.plot_max_values) {
