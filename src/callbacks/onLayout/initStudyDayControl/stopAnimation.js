@@ -3,5 +3,7 @@ export default function stopAnimation() {
     chart.svg
         .transition()
         .duration(0)
-        .each('end', chart.draw());
+        .each('end', function() {
+            chart.draw();
+        });
 }

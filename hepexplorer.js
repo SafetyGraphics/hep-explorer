@@ -1932,6 +1932,30 @@
             .style('border-radius', '0.2em');
     }
 
+    function stopAnimation() {
+        var chart = this;
+        chart.svg
+            .transition()
+            .duration(0)
+            .each('end', function() {
+                chart.draw();
+            });
+    }
+
+    function customizePlotStyleToggle() {
+        var chart = this;
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return d.option === 'plot_max_values';
+            })
+            .selectAll('input')
+            .on('change', function(d) {
+                chart.config.plot_max_values = d;
+                stopAnimation.call(chart);
+            });
+    }
+
     function startAnimation() {
         var chart = this;
         var config = this.config;
@@ -1982,7 +2006,8 @@
                 var vals = raw[m + '_raw'];
 
                 // Did currentDay occur while participant was enrolled?
-                if (vals.length) {
+                if (vals && vals.length) {
+                    // && [config.x.column, config.y.column].includes(m)) { // out-of-range should be calculated study day of with x- and y-axis measures
                     var first = vals[0];
                     var last = vals[vals.length - 1];
                     var before = currentDay < first.day;
@@ -1994,12 +2019,12 @@
                 var getLastMeasureIndex = d3.bisector(function(d) {
                     return d.day;
                 }).left;
-                var lastMeasureIndexPlusOne = getLastMeasureIndex(vals, currentDay);
+                var lastMeasureIndexPlusOne = vals ? getLastMeasureIndex(vals, currentDay) : 0;
                 var lastMeasureIndex = lastMeasureIndexPlusOne - 1;
                 d[m] =
                     lastMeasureIndex >= 0
                         ? vals[lastMeasureIndex]['value']
-                        : vals.length
+                        : vals && vals.length
                         ? vals[0].value
                         : null;
             });
@@ -2049,14 +2074,6 @@
             .each('end', function() {
                 chart.draw();
             });
-    }
-
-    function stopAnimation() {
-        var chart = this;
-        chart.svg
-            .transition()
-            .duration(0)
-            .each('end', chart.draw());
     }
 
     // &#9658; = play symbol
@@ -2158,6 +2175,7 @@
         initVisitPath.call(this);
         initParticipantDetails.call(this);
         initResetButton.call(this);
+        customizePlotStyleToggle.call(this);
         initDisplayControl.call(this);
         initControlLabels.call(this);
         initEmptyChartWarning.call(this);
@@ -2332,10 +2350,14 @@
                 } else {
                     //see if all selected config.plot_day was while participant was enrolled
                     var first = participant_obj[mKey + '_raw'][0];
-                    var last = participant_obj[mKey + '_raw'].pop();
-                    var before = config.plot_day < first.day;
-                    var after = config.plot_day > last.day;
-                    participant_obj.outOfRange = participant_obj.outOfRange || before || after;
+                    var last = participant_obj[mKey + '_raw'].slice().pop(); // Array.pop() alters the original array, but not if you slice and dice it!
+
+                    if ([config.x.column, config.y.column].includes(mKey)) {
+                        // out-of-range should be calculated study day of with x- and y-axis measures
+                        var before = config.plot_day < first.day;
+                        var after = config.plot_day > last.day;
+                        participant_obj.outOfRange = participant_obj.outOfRange || before || after;
+                    }
 
                     //get the most recent measure on or before config.plot_day
                     var onOrBefore = participant_obj[mKey + '_raw'].filter(function(di) {

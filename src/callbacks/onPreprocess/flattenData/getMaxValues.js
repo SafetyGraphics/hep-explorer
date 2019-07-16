@@ -47,15 +47,19 @@ export default function getMaxValues(d) {
             } else {
                 //see if all selected config.plot_day was while participant was enrolled
                 var first = participant_obj[mKey + '_raw'][0];
-                var last = participant_obj[mKey + '_raw'].pop();
-                var before = config.plot_day < first.day;
-                var after = config.plot_day > last.day;
-                participant_obj.outOfRange = participant_obj.outOfRange || before || after;
+                var last = participant_obj[mKey + '_raw'].slice().pop(); // Array.pop() alters the original array, but not if you slice and dice it!
+
+                if ([config.x.column, config.y.column].includes(mKey)) {
+                    // out-of-range should be calculated study day of with x- and y-axis measures
+                    var before = config.plot_day < first.day;
+                    var after = config.plot_day > last.day;
+                    participant_obj.outOfRange = participant_obj.outOfRange || before || after;
+                }
 
                 //get the most recent measure on or before config.plot_day
-                var onOrBefore = participant_obj[mKey + '_raw'].filter(
-                    di => di.day <= config.plot_day
-                );
+                var onOrBefore = participant_obj[mKey + '_raw'].filter(di => {
+                    return di.day <= config.plot_day;
+                });
                 var latest = onOrBefore.pop();
 
                 participant_obj[mKey] = latest ? latest.value : first.value;

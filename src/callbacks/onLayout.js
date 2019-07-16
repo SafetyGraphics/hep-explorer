@@ -14,6 +14,7 @@ import { initControlLabels } from './onLayout/initControlLabels';
 import { addFootnote } from './onLayout/addFootnote';
 import { addDownloadButton } from './onLayout/addDownloadButton';
 import { initEmptyChartWarning } from './onLayout/initEmptyChartWarning';
+import customizePlotStyleToggle from './onLayout/customizePlotStyleToggle';
 import initStudyDayControl from './onLayout/initStudyDayControl';
 
 export default function onLayout() {
@@ -34,6 +35,7 @@ export default function onLayout() {
     initVisitPath.call(this);
     initParticipantDetails.call(this);
     initResetButton.call(this);
+    customizePlotStyleToggle.call(this);
     initDisplayControl.call(this);
     initControlLabels.call(this);
     initEmptyChartWarning.call(this);
