@@ -6,5 +6,6 @@ export default function stopAnimation() {
         .each('end', function() {
             chart.controls.studyDayPlayButton.datum({ state: 'play' });
             chart.controls.studyDayPlayButton.html('&#9658;');
+            chart.draw();
         });
 }
