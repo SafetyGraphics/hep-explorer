@@ -1,8 +1,11 @@
 export default function calculateRRatios(d, participant_obj) {
     var chart = this;
     var config = this.config;
-    //R-ratio should be the ratio of ALT to ALP, i.e. the x-axis to the z-axis.
-    participant_obj.rRatio_overall =
+
+    // R-ratio should be the ratio of ALT to ALP
+
+    // For current time point or maximal values (depends on view)
+    participant_obj.rRatio_current =
         participant_obj['ALT_relative_uln'] / participant_obj['ALP_relative_uln'];
 
     //get r-ratio data for every visit where both ALT and ALP are available
@@ -32,6 +35,13 @@ export default function calculateRRatios(d, participant_obj) {
             f.rRatio = f['alt_relative_uln'] / f['alp_relative_uln'];
             return f.rRatio;
         });
-    participant_obj.rRatio_max = d3.max(participant_obj.rRatio_raw, f => f.rRatio);
-    participant_obj.rRatio = d3.max([participant_obj.rRatio_max, participant_obj.rRatio_overall]);
+
+    participant_obj.rRatio_max = d3.max(participant_obj.rRatio_raw, f => f.rRatio); //max rRatio for all visits
+    participant_obj.rRatio_max_anly = d3.max(
+        participant_obj.rRatio_raw.filter(f => f.analysisFlag),
+        f => f.rRatio
+    ); //max rRatio for analysis visits
+
+    // Use the max value across all analysis visits for maximal R Ratio, otherwise just use the current time point
+    particpant_obj.rRatio = config.plot_max_values ? rRatio_max_anly : rRatio_current;
 }

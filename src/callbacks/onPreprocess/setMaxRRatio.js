@@ -8,7 +8,7 @@ export default function setMaxRRatio() {
     //if no max value is defined, use the max value from the data
     if (this.config.r_ratio_filter) {
         if (!config.r_ratio[1]) {
-            let raw_max_r_ratio = d3.max(this.raw_data, d => d.rRatio);
+            let raw_max_r_ratio = d3.max(this.raw_data, d => d.rRatio_max);
             config.max_r_ratio = Math.ceil(raw_max_r_ratio * 10) / 10; //round up to the nearest 0.1
             config.r_ratio[1] = config.max_r_ratio;
             chart.controls.wrap
