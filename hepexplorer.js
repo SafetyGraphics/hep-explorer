@@ -1,8 +1,8 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('webcharts'), require('d3')) :
-    typeof define === 'function' && define.amd ? define(['webcharts', 'd3'], factory) :
-    (global.hepexplorer = factory(global.webCharts,global.d3));
-}(this, (function (webcharts,d3$1) { 'use strict';
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('webcharts')) :
+    typeof define === 'function' && define.amd ? define(['webcharts'], factory) :
+    (global.hepexplorer = factory(global.webCharts));
+}(this, (function (webcharts) { 'use strict';
 
     if (typeof Object.assign != 'function') {
         Object.defineProperty(Object, 'assign', {
@@ -1229,7 +1229,7 @@
             chart.destroy();
             chart = null;
 
-            var newChart = safetyedish(initial_container, initial_settings);
+            var newChart = hepexplorer(initial_container, initial_settings);
             newChart.init(initial_data);
         });
     }
@@ -1513,18 +1513,51 @@
         this.emptyChartWarning = d3.select(this.element).append('span').text('No data selected. Try updating your settings or resetting the chart. ').style('display', 'none').style('color', '#a94442').style('background-color', '#f2dede').style('border', '1px solid #ebccd1').style('padding', '0.5em').style('margin', '0 2% 12px 2%').style('border-radius', '0.2em');
     }
 
-    function startTransition() {
+    function stopAnimation() {
+        var chart = this;
+        chart.svg.transition().duration(0).each('end', function () {
+            chart.controls.studyDayPlayButton.datum({ state: 'play' });
+            chart.controls.studyDayPlayButton.html('&#9658;');
+            chart.draw();
+        });
+    }
+
+    function customizePlotStyleToggle() {
+        var chart = this;
+        this.controls.wrap.selectAll('.control-group').filter(function (d) {
+            return d.option === 'plot_max_values';
+        }).selectAll('input').on('change', function (d) {
+            chart.config.plot_max_values = d;
+            stopAnimation.call(chart);
+        });
+    }
+
+    function startAnimation() {
         var chart = this;
         var config = this.config;
-        console.log('Transition Starting');
+        // calculate animation duration
+        var day_count = chart.controls.studyDayRange[1] - config.plot_day;
+        var duration = day_count < 300 ? day_count * 100 : 30000;
+        var day_duration = duration / day_count;
+
+        var base_size = config.marks[0].radius || config.flex_point_size;
+        var small_size = base_size / 2;
 
         function reposition(point) {
-            point.transition().duration(100).attr('cx', function (d) {
+            point.transition().duration(day_duration).attr('cx', function (d) {
                 return chart.x(d[config.x.column]);
             }).attr('cy', function (d) {
                 return chart.y(d[config.y.column]);
             }).attr('r', function (d) {
-                return config.point_size == 'Uniform' ? d.mark.radius || config.flex_point_size : chart.sizeScale(d[config.point_size]);
+                if (d.outOfRange) {
+                    return small_size;
+                } else if (config.point_size == 'Uniform') {
+                    return base_size;
+                } else {
+                    return chart.sizeScale(d[config.point_size]);
+                }
+            }).attr('fill-opacity', function (d) {
+                return config.plot_day < d.day_range[0] ? 0 : 1;
             });
         }
 
@@ -1537,36 +1570,49 @@
             }
 
             var raw = d.values.raw[0];
+            d.outOfRange = false;
+            d.day_range = raw.day_range;
             measures.forEach(function (m) {
                 var vals = raw[m + '_raw'];
+
+                // Did currentDay occur while participant was enrolled?
+                if (vals && vals.length) {
+                    // && [config.x.column, config.y.column].includes(m)) { // out-of-range should be calculated study day of with x- and y-axis measures
+                    var first = vals[0];
+                    var last = vals[vals.length - 1];
+                    var before = currentDay < first.day;
+                    var after = currentDay > last.day;
+                    d.outOfRange = d.outOfRange || before || after;
+                }
+
+                //Get the most recent data point (or the first point if participant isn't enrolled yet)
                 var getLastMeasureIndex = d3.bisector(function (d) {
                     return d.day;
                 }).left;
-                var lastMeasureIndexPlusOne = getLastMeasureIndex(vals, currentDay);
+                var lastMeasureIndexPlusOne = vals ? getLastMeasureIndex(vals, currentDay) : 0;
                 var lastMeasureIndex = lastMeasureIndexPlusOne - 1;
-                d[m] = lastMeasureIndex >= 0 ? vals[lastMeasureIndex]['value'] : null;
+                d[m] = lastMeasureIndex >= 0 ? vals[lastMeasureIndex]['value'] : vals && vals.length ? vals[0].value : null;
             });
-
             return d;
         }
 
         function showDay(currentDay) {
-            //console.log('Drawing: day ' + currentDay);
             //update the controls
-            config.plot_day = currentDay;
+            config.plot_day = Math.floor(currentDay);
             chart.controls.studyDayInput.node().value = config.plot_day;
-            //TODO: update the label
+
+            //update the label
+            chart.controls.studyDayControlWrap.select('span.span-description').html('Showing data from: <strong>Day ' + config.plot_day + '</strong>').select('strong').style('color', 'blue');
 
             //reposition the points
             var points = chart.marks[0].circles.datum(function (d) {
-                return updateDatum(d, currentDay);
+                return updateDatum(d, config.plot_day);
             }).call(reposition);
         }
 
         function tweenStudyDay() {
             var min = config.plot_day;
             var max = chart.controls.studyDayRange[1];
-            console.log(min + '-' + max);
             var studyday = d3.interpolateNumber(min, max);
 
             return function (t) {
@@ -1574,40 +1620,65 @@
             };
         }
 
-        chart.myTransition = chart.svg.transition().duration(30000).ease('linear').tween('studyday', tweenStudyDay);
-        //  .each('end', chart.draw());
+        //show the stop button
+        chart.controls.studyDayPlayButton.datum({ state: 'stop' });
+        chart.controls.studyDayPlayButton.html('&#9632;');
+
+        // Initialize the Transition
+        chart.myTransition = chart.svg.transition().duration(duration).ease('linear').tween('studyday', tweenStudyDay).each('end', function () {
+            chart.draw();
+        });
     }
 
-    function stopTransition() {
-        console.log('Transition Stopping');
-        this.myTransition.duration(0);
-        this.draw();
+    // &#9658; = play symbol
+    // &#9632; = stop symbol
+    // &#8634; = restart symbol
+
+    function initPlayButton() {
+        var chart = this;
+        var config = this.config;
+        chart.controls.studyDayPlayButton = chart.controls.studyDayControlWrap.append('button').datum({ state: 'play' }).html('&#9658;') //play symbol
+        .style('padding', '0.2em 0.5em 0.2em 0.5em').style('margin-left', '0.5em').style('border-radius', '0.4em')
+        //.style('display', 'none')
+        .on('click', function (d) {
+            var button = d3.select(this);
+            if (d.state === 'play') {
+                startAnimation.call(chart);
+            } else if (d.state === 'restart') {
+                config.plot_day = chart.controls.studyDayRange[0] > 0 ? chart.controls.studyDayRange[0] : 0;
+                chart.controls.studyDayInput.node().value = config.plot_day;
+                chart.draw();
+
+                startAnimation.call(chart);
+            } else {
+                stopAnimation.call(chart);
+            }
+        });
     }
 
     function initStudyDayControl() {
         var chart = this;
         var config = this.config;
-        var studyDayControlWrap = this.controls.wrap.selectAll('div').filter(function (controlInput) {
+        chart.controls.studyDayControlWrap = chart.controls.wrap.selectAll('div').filter(function (controlInput) {
             return controlInput.label === 'Study Day';
         });
 
-        chart.controls.studyDayInput = studyDayControlWrap.select('input');
+        chart.controls.studyDayInput = chart.controls.studyDayControlWrap.select('input');
 
         //convert control to a slider
         chart.controls.studyDayInput.attr('type', 'range');
 
         //set min and max values and add annotations
-        chart.controls.studyDayRange = d3$1.extent(chart.imputed_data.filter(function (d) {
+        chart.controls.studyDayRange = d3.extent(chart.imputed_data.filter(function (d) {
             return d.analysisFlag;
         }), function (d) {
             return d[config.studyday_col];
         });
         chart.controls.studyDayInput.attr('min', chart.controls.studyDayRange[0]);
         chart.controls.studyDayInput.attr('max', chart.controls.studyDayRange[1]);
-        chart.controls.studyDayInput.attr('step', 7);
 
-        studyDayControlWrap.insert('span', 'input').attr('class', 'span-description').style('display', 'inline-block').style('padding-right', '0.2em').text(chart.controls.studyDayRange[0]);
-        studyDayControlWrap.append('span').attr('class', 'span-description').style('display', 'inline-block').style('padding-left', '0.2em').text(chart.controls.studyDayRange[1]);
+        chart.controls.studyDayControlWrap.insert('span', 'input').attr('class', 'span-description').style('display', 'inline-block').style('padding-right', '0.2em').text(chart.controls.studyDayRange[0]);
+        chart.controls.studyDayControlWrap.append('span').attr('class', 'span-description').style('display', 'inline-block').style('padding-left', '0.2em').text(chart.controls.studyDayRange[1]);
 
         //initialize plot_day to day 0 or the min value, whichever is greater
         if (config.plot_day === null) {
@@ -1615,46 +1686,7 @@
             chart.controls.studyDayInput.node().value = config.plot_day;
         }
 
-        /*
-        function showNextStudyDay() {
-            if (config.plot_day < chart.studyDayRange[1]) {
-                config.plot_day = config.plot_day + 7;
-                studyDayInput.node().value = config.plot_day;
-                chart.draw();
-            } else {
-                config.plot_day = chart.studyDayRange[1];
-                studyDayInput.node().value = config.plot_day;
-                chart.draw();
-                chart.moving = false;
-                clearInterval(chart.timer);
-                studyDayControlWrap.select('button').html('&#9658;');
-            }
-        }
-        */
-
-        //add a play button
-        chart.moving = false;
-        studyDayControlWrap.append('button').datum({ state: 'play' }).html('&#9658;') //play symbol
-        .style('padding', '0.2em 0.5em 0.2em 0.5em').style('margin-left', '0.5em').style('border-radius', '0.4em')
-        //.style('display', 'none')
-        .on('click', function (d) {
-            console.log('Gap Minding!');
-            console.log(chart);
-            var button = d3.select(this);
-            if (d.state === 'play') {
-                console.log('play');
-                d.state = 'stop';
-                //play button
-                button.html('&#9632;');
-                startTransition.call(chart);
-            } else {
-                console.log('stop');
-                d.state = 'play';
-                //stop button
-                button.html('&#9658;');
-                stopTransition.call(chart);
-            }
-        });
+        initPlayButton.call(this);
     }
 
     function onLayout() {
@@ -1675,6 +1707,7 @@
         initVisitPath.call(this);
         initParticipantDetails.call(this);
         initResetButton.call(this);
+        customizePlotStyleToggle.call(this);
         initDisplayControl.call(this);
         initControlLabels.call(this);
         initEmptyChartWarning.call(this);
@@ -1779,6 +1812,7 @@
         var participant_obj = {};
         participant_obj.days_x = null;
         participant_obj.days_y = null;
+        participant_obj.outOfRange = false;
         Object.keys(config.measure_values).forEach(function (mKey) {
             //get all raw data for the current measure
             var matches = d.filter(function (f) {
@@ -1798,8 +1832,13 @@
                 participant_obj.drop_reason = 'No analysis results found for 1+ key measure, including ' + mKey + '.';
             } else {
                 //keep an array of all [value, studyday] pairs for the measure
-                participant_obj[mKey + '_raw'] = matches.map(function (m) {
-                    return { value: m[config.display], day: m[config.studyday_col] };
+                participant_obj[mKey + '_raw'] = matches.map(function (m, i) {
+                    return {
+                        value: m[config.display],
+                        day: m[config.studyday_col]
+                    };
+                }).sort(function (a, b) {
+                    return a.day - b.day;
                 });
 
                 //get the current record for each participant
@@ -1809,13 +1848,24 @@
                         return +d[config.display];
                     });
                 } else {
+                    //see if all selected config.plot_day was while participant was enrolled
+                    var first = participant_obj[mKey + '_raw'][0];
+                    var last = participant_obj[mKey + '_raw'].slice().pop(); // Array.pop() alters the original array, but not if you slice and dice it!
+
+                    if ([config.x.column, config.y.column].includes(mKey)) {
+                        // out-of-range should be calculated study day of with x- and y-axis measures
+                        var before = config.plot_day < first.day;
+                        var after = config.plot_day > last.day;
+                        participant_obj.outOfRange = participant_obj.outOfRange || before || after;
+                    }
+
                     //get the most recent measure on or before config.plot_day
                     var onOrBefore = participant_obj[mKey + '_raw'].filter(function (di) {
                         return di.day <= config.plot_day;
                     });
                     var latest = onOrBefore.pop();
 
-                    participant_obj[mKey] = latest ? latest.value : null;
+                    participant_obj[mKey] = latest ? latest.value : first.value;
                 }
 
                 var maxRecord = matches.find(function (d) {
@@ -1854,6 +1904,18 @@
 
         //calculate the day difference between x and y
         participant_obj.day_diff = Math.abs(participant_obj.days_x - participant_obj.days_y);
+
+        var vals = d.filter(function (f) {
+            return f.analysisFlag;
+        }).filter(function (f) {
+            return f.key_measure;
+        });
+        participant_obj.day_range = d3.extent(vals, function (d) {
+            return d[config.studyday_col];
+        });
+
+        //check if both x and y are in range
+        if (!config.plot_max_values) ;
 
         return participant_obj;
     }
@@ -2065,10 +2127,10 @@
         }).sort(function (a, b) {
             return a - b;
         });
-        var val_extent = d3$1.extent(values);
+        var val_extent = d3.extent(values);
 
         //make sure the domain contains the cut point and the max possible value for the measure
-        domain[1] = d3$1.max([domain[1], cut * 1.01, val_extent[1]]);
+        domain[1] = d3.max([domain[1], cut * 1.01, val_extent[1]]);
 
         // make sure the domain lower limit captures all of the raw Values
         if (this.config[dimension].type == 'linear') {
@@ -2230,20 +2292,36 @@
     }
 
     function updateStudyDayControl() {
+        var chart = this;
         var config = this.config;
-        var studyDayControlWrap = this.controls.wrap.selectAll('div').filter(function (controlInput) {
-            return controlInput.label === 'Study Day';
-        });
+
+        // cancel the animation (if any is running)
+        var activeAnimation = chart.controls.studyDayPlayButton.datum().state == 'stop';
+        if (activeAnimation) {
+            chart.svg.transition().duration(0);
+        }
 
         // hide study day control if viewing max values
-        studyDayControlWrap.style('display', config.plot_max_values ? 'none' : null);
+        chart.controls.studyDayControlWrap.style('display', config.plot_max_values ? 'none' : null);
+
+        //set the status of the play button
+        if (config.plot_day >= chart.controls.studyDayRange[1]) {
+            chart.controls.studyDayPlayButton.datum({ state: 'restart' });
+            chart.controls.studyDayPlayButton.html('&#8634;');
+        } else {
+            chart.controls.studyDayPlayButton.datum({ state: 'play' });
+            chart.controls.studyDayPlayButton.html('&#9658;');
+        }
 
         //update the study day control label with the currently selected values
-        var currentValue = studyDayControlWrap.select('input').property('value');
-        studyDayControlWrap.select('span.span-description').html('Showing data from: <strong>Day ' + currentValue + '</strong>').select('strong').style('color', 'blue');
+        var currentValue = chart.controls.studyDayControlWrap.select('input').property('value');
+        chart.controls.studyDayControlWrap.select('span.span-description').html('Showing data from: <strong>Day ' + currentValue + '</strong>').select('strong').style('color', 'blue');
     }
 
     function onDraw() {
+        //show/hide the study day controls
+        updateStudyDayControl.call(this);
+
         //clear participant Details (if they exist)
         clearParticipantDetails.call(this);
 
@@ -2263,15 +2341,10 @@
         //update the count in the filter label
         updateFilterLabel.call(this);
         hideEmptyChart.call(this);
-
-        //show/hide the study day controls
-        updateStudyDayControl.call(this);
     }
 
     //draw marginal rug for visit-level measures
     function drawRugs(d, axis) {
-        var _this = this;
-
         var chart = this;
         var config = this.config;
 
@@ -2281,23 +2354,33 @@
         var matches = allMatches.filter(function (f) {
             return f[config.measure_col] == measure;
         });
-        console.log(matches);
 
         //draw the rug
         var min_value = axis == 'x' ? chart.y.domain()[0] : chart.x.domain()[0];
-        chart[axis + '_rug'].selectAll('text').data(matches).enter().append('text').attr('class', 'rug-tick').attr('x', function (d) {
-            return axis == 'x' ? chart.x(d[config.display]) : chart.x(min_value);
-        }).attr('y', function (d) {
-            return axis == 'y' ? chart.y(d[config.display]) : chart.y(min_value);
-        })
-        //        .attr('dy', axis == 'x' ? '-0.2em' : null)
-        .attr('text-anchor', axis == 'y' ? 'end' : null).attr('alignment-baseline', axis == 'x' ? 'hanging' : null).attr('font-size', axis == 'x' ? '6px' : null).attr('stroke', function (d) {
-            return chart.colorScale(d[config.color_by]);
-        }).attr('stroke-width', function (d) {
-            return d[_this.config.studyday_col] <= _this.config.plot_day ? '5px' : '1px';
+        var rugs = chart[axis + '_rug'].selectAll('text').data(matches).enter().append('text').attr({
+            class: 'rug-tick',
+            x: function x(di) {
+                return axis === 'x' ? chart.x(di[config.display]) : chart.x(min_value);
+            },
+            y: function y(di) {
+                return axis === 'y' ? chart.y(di[config.display]) : chart.y(min_value);
+            },
+            dy: axis === 'y' ? 4 : 0,
+            'text-anchor': axis === 'y' ? 'end' : null,
+            'alignment-baseline': axis === 'x' ? 'hanging' : null,
+            'font-size': axis === 'x' ? '6px' : null,
+            stroke: function stroke(di) {
+                return chart.colorScale(di[config.color_by]);
+            },
+            'stroke-width': function strokeWidth(di) {
+                return di[config.display] === d.values[axis] ? '3px' : '1px';
+            }
         }).text(function (d) {
-            return axis == 'x' ? '|' : '–';
-        }).append('svg:title').text(function (d) {
+            return axis === 'x' ? '|' : '–';
+        });
+
+        //Add tooltips to rugs.
+        rugs.append('svg:title').text(function (d) {
             return d[config.measure_col] + '=' + d3.format('.2f')(d.absolute) + ' (' + d3.format('.2f')(d.relative_uln) + ' xULN) @ ' + d[config.visit_col] + '/Study Day ' + d[config.studyday_col];
         });
     }
@@ -3241,6 +3324,12 @@
 
         //add event listener to all participant level points
         points.on('click', function (d) {
+            //Stop animation.
+            chart.svg.transition().duration(0);
+            chart.controls.studyDayPlayButton.datum({ state: 'play' });
+            chart.controls.studyDayPlayButton.html('&#9658;');
+
+            //Update chart object.
             chart.clicked_id = d.key;
             clearParticipantDetails.call(chart, d); //clear the previous participant
             chart.config.quadrants.table.wrap.style('display', 'none'); //hide the quadrant summary
@@ -3289,32 +3378,51 @@
         var chart = this;
         var config = this.config;
         var points = this.marks[0].circles;
-        if (config.point_size != 'Uniform') {
-            //create the scale
-            chart.sizeScale = d3.scale.linear().range([2, 10]).domain(d3.extent(chart.raw_data.map(function (m) {
-                return m[config.point_size];
-            })));
 
-            //draw a legend (coming later?)
+        //create the scale
+        var base_size = config.marks[0].radius || config.flex_point_size;
+        var max_size = base_size * 5;
+        var small_size = base_size / 2;
 
-            //set the point radius
-            points.transition().attr('r', function (d) {
-                var raw = d.values.raw[0];
+        //TODO: use all possible point sizes for size scale when viewing by study-day
+        chart.sizeScale = d3.scale.linear().range([base_size, max_size]).domain(d3.extent(chart.raw_data.map(function (m) {
+            return m[config.point_size];
+        })));
+
+        //draw a legend (coming later?)
+
+        //set the point radius
+        points.transition().attr('r', function (d) {
+            var raw = d.values.raw[0];
+            if (raw.outOfRange) {
+                return small_size;
+            } else if (config.point_size == 'Uniform') {
+                return base_size;
+            } else {
                 return chart.sizeScale(raw[config.point_size]);
-            }).attr('cx', function (d) {
-                return _this.x(d.values.x);
-            }).attr('cy', function (d) {
-                return _this.y(d.values.y);
-            });
-        }
+            }
+        }).attr('cx', function (d) {
+            return _this.x(d.values.x);
+        }).attr('cy', function (d) {
+            return _this.y(d.values.y);
+        });
     }
 
     function setPointOpacity() {
+        var chart = this;
         var config = this.config;
         var points = this.marks[0].circles;
+
         points.attr('fill-opacity', function (d) {
-            return d.values.raw[0].day_diff <= config.visit_window ? 1 : 0;
-        }); //fill points in visit_window
+            var raw = d.values.raw[0];
+            if (chart.plot_max_values) {
+                // if viewing max values, fill based on time window
+                return raw.day_diff <= config.visit_window ? 1 : 0;
+            } else {
+                //fill points after participants first day
+                return config.plot_day < raw.day_range[0] ? 0 : 1;
+            }
+        });
     }
 
     // Reposition any exisiting participant marks when the chart is resized
@@ -3358,7 +3466,7 @@
         });
     }
 
-    function customizeMaxPoints() {
+    function customizePoints() {
         addPointMouseover.call(this);
         addPointClick.call(this);
         addPointTitles$2.call(this);
@@ -3601,22 +3709,23 @@
     }
 
     function updateTimingFootnote() {
+        var chart = this;
         var config = this.config;
-        var windowText = config.visit_window == 0 ? 'on the same day' : config.visit_window == 1 ? 'within 1 day' : 'within ' + config.visit_window + ' days';
-        var timingFootnote = ' Points where maximum ' + config.measure_values[config.x.column] + ' and ' + config.measure_values[config.y.column] + ' values were collected ' + windowText + ' are filled, others are empty.';
 
-        this.footnote.timing.text(timingFootnote);
+        if (chart.plot_max_values) {
+            var windowText = config.visit_window == 0 ? 'on the same day' : config.visit_window == 1 ? 'within 1 day' : 'within ' + config.visit_window + ' days';
+            var timingFootnote = ' Points where maximum ' + config.measure_values[config.x.column] + ' and ' + config.measure_values[config.y.column] + ' values were collected ' + windowText + ' are filled, others are empty.';
+
+            this.footnote.timing.text(timingFootnote);
+        } else {
+            var timingFootnote = "Small points are drawn when the selected day occurs outside of the participant's study enrollment; either the first collected measures (empty circle) or last collected measures (filled circle) for the participant are plotted for these points.";
+            this.footnote.timing.text(timingFootnote);
+        }
     }
 
     function onResize$1() {
         //add maximum point interactivity, custom title and formatting
-        customizeMaxPoints.call(this);
-
-        //draw visit-level points (if requested)
-        if (this.config.plot_max_values) ;
-        //  hideMaxPoints.call(this)
-        //  drawVisitPoints.call(this)
-
+        customizePoints.call(this);
 
         //draw the quadrants and add drag interactivity
         updateSummaryTable.call(this);
@@ -3637,13 +3746,18 @@
         updateTimingFootnote.call(this);
     }
 
+    function onDestroy() {
+        this.emptyChartWarning.remove();
+    }
+
     var callbacks = {
         onInit: onInit,
         onLayout: onLayout,
         onPreprocess: onPreprocess,
         onDataTransform: onDataTransform,
         onDraw: onDraw,
-        onResize: onResize$1
+        onResize: onResize$1,
+        onDestroy: onDestroy
     };
 
     function init$6() {
@@ -3662,7 +3776,11 @@
         this.chart.init(lb);
     }
 
-    function safetyedish(element, settings) {
+    function destroy() {
+        this.chart.destroy();
+    }
+
+    function hepexplorer(element, settings) {
         var initial_settings = clone(settings);
         var defaultSettings = configuration.settings();
         var controlInputs = configuration.controlInputs();
@@ -3678,16 +3796,17 @@
         //Define callbacks.
         for (var callback in callbacks) {
             chart.on(callback.substring(2).toLowerCase(), callbacks[callback]);
-        }var se = {
+        }var hepexplorer = {
             element: element,
             settings: settings,
             chart: chart,
-            init: init$6
+            init: init$6,
+            destroy: destroy
         };
 
-        return se;
+        return hepexplorer;
     }
 
-    return safetyedish;
+    return hepexplorer;
 
 })));

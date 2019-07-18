@@ -1,4 +1,4 @@
-import customizeMaxPoints from './onResize/customizeMaxPoints';
+import customizePoints from './onResize/customizePoints';
 import { drawQuadrants } from './onResize/drawQuadrants';
 import { updateSummaryTable } from './onLayout/quadrants/updateSummaryTable';
 import { addAxisLabelTitles } from './onResize/addAxisLabelTitles';
@@ -10,13 +10,7 @@ import updateTimingFootnote from './onResize/updateTimingFootnote';
 
 export default function onResize() {
     //add maximum point interactivity, custom title and formatting
-    customizeMaxPoints.call(this);
-
-    //draw visit-level points (if requested)
-    if (this.config.plot_max_values) {
-        //  hideMaxPoints.call(this)
-        //  drawVisitPoints.call(this)
-    }
+    customizePoints.call(this);
 
     //draw the quadrants and add drag interactivity
     updateSummaryTable.call(this);
