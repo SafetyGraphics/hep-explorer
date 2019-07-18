@@ -1,15 +1,13 @@
-(function(global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined'
-        ? (module.exports = factory(require('webcharts'), require('d3')))
-        : typeof define === 'function' && define.amd
-        ? define(['webcharts', 'd3'], factory)
-        : (global.hepexplorer = factory(global.webCharts, global.d3));
-})(this, function(webcharts, d3$1) {
-    'use strict';
+(function (global, factory) {
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('webcharts')) :
+    typeof define === 'function' && define.amd ? define(['webcharts'], factory) :
+    (global.hepexplorer = factory(global.webCharts));
+}(this, (function (webcharts) { 'use strict';
 
     if (typeof Object.assign != 'function') {
         Object.defineProperty(Object, 'assign', {
             value: function assign(target, varArgs) {
+
                 if (target == null) {
                     // TypeError if undefined or null
                     throw new TypeError('Cannot convert undefined or null to object');
@@ -127,14 +125,14 @@
     }
 
     // https://github.com/wbkd/d3-extended
-    d3.selection.prototype.moveToFront = function() {
-        return this.each(function() {
+    d3.selection.prototype.moveToFront = function () {
+        return this.each(function () {
             this.parentNode.appendChild(this);
         });
     };
 
-    d3.selection.prototype.moveToBack = function() {
-        return this.each(function() {
+    d3.selection.prototype.moveToBack = function () {
+        return this.each(function () {
             var firstChild = this.parentNode.firstChild;
             if (firstChild) {
                 this.parentNode.insertBefore(this, firstChild);
@@ -142,33 +140,25 @@
         });
     };
 
-    var _typeof =
-        typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
-            ? function(obj) {
-                  return typeof obj;
-              }
-            : function(obj) {
-                  return obj &&
-                      typeof Symbol === 'function' &&
-                      obj.constructor === Symbol &&
-                      obj !== Symbol.prototype
-                      ? 'symbol'
-                      : typeof obj;
-              };
+    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+      return typeof obj;
+    } : function (obj) {
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+    };
 
-    var defineProperty = function(obj, key, value) {
-        if (key in obj) {
-            Object.defineProperty(obj, key, {
-                value: value,
-                enumerable: true,
-                configurable: true,
-                writable: true
-            });
-        } else {
-            obj[key] = value;
-        }
+    var defineProperty = function (obj, key, value) {
+      if (key in obj) {
+        Object.defineProperty(obj, key, {
+          value: value,
+          enumerable: true,
+          configurable: true,
+          writable: true
+        });
+      } else {
+        obj[key] = value;
+      }
 
-        return obj;
+      return obj;
     };
 
     /*------------------------------------------------------------------------------------------------\
@@ -179,8 +169,7 @@
         var copy;
 
         //Handle the 3 simple types, and null or undefined
-        if (null == obj || 'object' != (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)))
-            return obj;
+        if (null == obj || 'object' != (typeof obj === "undefined" ? "undefined" : _typeof(obj))) return obj;
 
         //Handle Date
         if (obj instanceof Date) {
@@ -284,10 +273,7 @@
             display: 'relative_uln', //or "relative_baseline"
             plot_max_values: false,
             plot_day: null, //set in onLayout/initStudyDayControl
-            display_options: [
-                { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
-                { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' }
-            ],
+            display_options: [{ label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' }, { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' }],
             measureBounds: [0.01, 0.99],
             populationProfileURL: null,
             participantProfileURL: null,
@@ -297,43 +283,37 @@
             title: 'Hepatic Safety Explorer',
             downloadLink: true,
             filters_multiselect: true,
-            warningText:
-                "This graphic has been thoroughly tested, but is not validated. Any clinical recommendations based on this tool should be confirmed using your organization's standard operating procedures.",
+            warningText: "This graphic has been thoroughly tested, but is not validated. Any clinical recommendations based on this tool should be confirmed using your organization's standard operating procedures.",
             //all values set in onLayout/quadrants/*.js
-            quadrants: [
-                {
-                    label: "Possible Hy's Law Range",
-                    position: 'upper-right',
-                    dataValue: 'xHigh:yHigh',
-                    count: null,
-                    total: null,
-                    percent: null
-                },
-                {
-                    label: 'Hyperbilirubinemia',
-                    position: 'upper-left',
-                    dataValue: 'xNormal:yHigh',
-                    count: null,
-                    total: null,
-                    percent: null
-                },
-                {
-                    label: "Temple's Corollary",
-                    position: 'lower-right',
-                    dataValue: 'xHigh:yNormal',
-                    count: null,
-                    total: null,
-                    percent: null
-                },
-                {
-                    label: 'Normal Range',
-                    position: 'lower-left',
-                    dataValue: 'xNormal:yNormal',
-                    count: null,
-                    total: null,
-                    percent: null
-                }
-            ],
+            quadrants: [{
+                label: "Possible Hy's Law Range",
+                position: 'upper-right',
+                dataValue: 'xHigh:yHigh',
+                count: null,
+                total: null,
+                percent: null
+            }, {
+                label: 'Hyperbilirubinemia',
+                position: 'upper-left',
+                dataValue: 'xNormal:yHigh',
+                count: null,
+                total: null,
+                percent: null
+            }, {
+                label: "Temple's Corollary",
+                position: 'lower-right',
+                dataValue: 'xHigh:yNormal',
+                count: null,
+                total: null,
+                percent: null
+            }, {
+                label: 'Normal Range',
+                position: 'lower-left',
+                dataValue: 'xNormal:yNormal',
+                count: null,
+                total: null,
+                percent: null
+            }],
 
             //Standard webcharts settings
             x: {
@@ -352,15 +332,13 @@
                 format: '.2f'
                 //domain: [0, null]
             },
-            marks: [
-                {
-                    per: [], // set in syncSettings()
-                    type: 'circle',
-                    summarizeY: 'mean',
-                    summarizeX: 'mean',
-                    attributes: { 'fill-opacity': 0 }
-                }
-            ],
+            marks: [{
+                per: [], // set in syncSettings()
+                type: 'circle',
+                summarizeY: 'mean',
+                summarizeX: 'mean',
+                attributes: { 'fill-opacity': 0 }
+            }],
             gridlines: 'xy',
             color_by: null, //set in syncSettings
             max_width: 600,
@@ -382,28 +360,23 @@
         if (!(settings.group_cols instanceof Array && settings.group_cols.length)) {
             settings.group_cols = [{ value_col: 'NONE', label: 'None' }];
         } else {
-            settings.group_cols = settings.group_cols.map(function(group) {
+            settings.group_cols = settings.group_cols.map(function (group) {
                 return {
                     value_col: group.value_col || group,
                     label: group.label || group.value_col || group
                 };
             });
 
-            var hasNone =
-                settings.group_cols
-                    .map(function(m) {
-                        return m.value_col;
-                    })
-                    .indexOf('NONE') > -1;
+            var hasNone = settings.group_cols.map(function (m) {
+                return m.value_col;
+            }).indexOf('NONE') > -1;
             if (!hasNone) {
                 settings.group_cols.unshift({ value_col: 'NONE', label: 'None' });
             }
         }
 
         if (settings.group_cols.length > 1) {
-            settings.color_by = settings.group_cols[1].value_col
-                ? settings.group_cols[1].value_col
-                : settings.group_cols[1];
+            settings.color_by = settings.group_cols[1].value_col ? settings.group_cols[1].value_col : settings.group_cols[1];
         } else {
             settings.color_by = 'NONE';
         }
@@ -416,48 +389,34 @@
         //Define default details.
         var defaultDetails = [{ value_col: settings.id_col, label: 'Subject Identifier' }];
         if (settings.filters) {
-            settings.filters.forEach(function(filter) {
+            settings.filters.forEach(function (filter) {
                 var obj = {
                     value_col: filter.value_col ? filter.value_col : filter,
-                    label: filter.label
-                        ? filter.label
-                        : filter.value_col
-                        ? filter.value_col
-                        : filter
+                    label: filter.label ? filter.label : filter.value_col ? filter.value_col : filter
                 };
 
-                if (
-                    defaultDetails.find(function(f) {
-                        return f.value_col == obj.value_col;
-                    }) == undefined
-                ) {
+                if (defaultDetails.find(function (f) {
+                    return f.value_col == obj.value_col;
+                }) == undefined) {
                     defaultDetails.push(obj);
                 }
             });
         }
 
         if (settings.group_cols) {
-            settings.group_cols
-                .filter(function(f) {
-                    return f.value_col != 'NONE';
-                })
-                .forEach(function(group) {
-                    var obj = {
-                        value_col: group.value_col ? group.value_col : filter,
-                        label: group.label
-                            ? group.label
-                            : group.value_col
-                            ? group.value_col
-                            : filter
-                    };
-                    if (
-                        defaultDetails.find(function(f) {
-                            return f.value_col == obj.value_col;
-                        }) == undefined
-                    ) {
-                        defaultDetails.push(obj);
-                    }
-                });
+            settings.group_cols.filter(function (f) {
+                return f.value_col != 'NONE';
+            }).forEach(function (group) {
+                var obj = {
+                    value_col: group.value_col ? group.value_col : filter,
+                    label: group.label ? group.label : group.value_col ? group.value_col : filter
+                };
+                if (defaultDetails.find(function (f) {
+                    return f.value_col == obj.value_col;
+                }) == undefined) {
+                    defaultDetails.push(obj);
+                }
+            });
         }
 
         //parse details to array if needed
@@ -466,27 +425,17 @@
         }
 
         //If [settings.details] is not specified:
-        if (!settings.details) settings.details = defaultDetails;
-        else {
+        if (!settings.details) settings.details = defaultDetails;else {
             //If [settings.details] is specified:
             //Allow user to specify an array of columns or an array of objects with a column property
             //and optionally a column label.
-            settings.details.forEach(function(detail) {
-                if (
-                    defaultDetails
-                        .map(function(d) {
-                            return d.value_col;
-                        })
-                        .indexOf(detail.value_col ? detail.value_col : detail) === -1
-                )
-                    defaultDetails.push({
-                        value_col: detail.value_col ? detail.value_col : detail,
-                        label: detail.label
-                            ? detail.label
-                            : detail.value_col
-                            ? detail.value_col
-                            : detail
-                    });
+            settings.details.forEach(function (detail) {
+                if (defaultDetails.map(function (d) {
+                    return d.value_col;
+                }).indexOf(detail.value_col ? detail.value_col : detail) === -1) defaultDetails.push({
+                    value_col: detail.value_col ? detail.value_col : detail,
+                    label: detail.label ? detail.label : detail.value_col ? detail.value_col : detail
+                });
             });
             settings.details = defaultDetails;
         }
@@ -495,17 +444,13 @@
         if (!settings.analysisFlag) settings.analysisFlag = { value_col: null, values: [] };
         if (!settings.analysisFlag.value_col) settings.analysisFlag.value_col = null;
         if (!(settings.analysisFlag.values instanceof Array)) {
-            settings.analysisFlag.values =
-                typeof settings.analysisFlag.values == 'string'
-                    ? [settings.analysisFlag.values]
-                    : [];
+            settings.analysisFlag.values = typeof settings.analysisFlag.values == 'string' ? [settings.analysisFlag.values] : [];
         }
         //if it is null, set settings.baseline.value_col to settings.studyday_col.
         if (!settings.baseline) settings.baseline = { value_col: null, values: [] };
         if (!settings.baseline.value_col) settings.baseline.value_col = settings.studyday_col;
         if (!(settings.baseline.values instanceof Array)) {
-            settings.baseline.values =
-                typeof settings.baseline.values == 'string' ? [settings.baseline.values] : [];
+            settings.baseline.values = typeof settings.baseline.values == 'string' ? [settings.baseline.values] : [];
         }
 
         //parse x_ and y_options to array if needed
@@ -530,105 +475,91 @@
     }
 
     function controlInputs() {
-        return [
-            {
-                type: 'number',
-                label: 'R Ratio Range',
-                description: 'Filter points based on R ratio [(ALT/ULN) / (ALP/ULN)]',
-                option: 'r_ratio[0]'
-            },
-            {
-                type: 'number',
-                label: null, //combined with r_ratio[0] control in formatRRatioControl()
-                description: null,
-                option: 'r_ratio[1]'
-            },
-            {
-                type: 'dropdown',
-                label: 'Group',
-                description: 'Grouping variable',
-                options: ['color_by'],
-                start: null, // set in syncControlInputs()
-                values: ['NONE'], // set in syncControlInputs()
-                require: true
-            },
-            {
-                type: 'dropdown',
-                label: 'Display Type',
-                description: 'Relative or absolute axes',
-                options: ['displayLabel'],
-                start: null, // set in syncControlInputs()
-                values: null, // set in syncControlInputs()
-                require: true
-            },
-            {
-                type: 'radio',
-                option: 'plot_max_values',
-                label: 'Plot Style',
-                values: [true, false],
-                relabels: ['Max Values', 'By Study Day']
-            },
-            {
-                type: 'number',
-                label: 'Study Day',
-                description: null, //set in onDraw/updateStudyDaySlider
-                option: 'plot_day'
-            },
-            {
-                type: 'dropdown',
-                label: 'X-axis Measure',
-                description: null, // set in syncControlInputs()
-                option: 'x.column',
-                start: null, // set in syncControlInputs()
-                values: null, //set in syncControlInptus()
-                require: true
-            },
-            {
-                type: 'number',
-                label: null, // set in syncControlInputs
-                description: 'X-axis Reference Line',
-                option: null // set in syncControlInputs
-            },
-            {
-                type: 'dropdown',
-                label: 'Y-axis Measure',
-                description: null, // set in syncControlInputs()
-                option: 'y.column',
-                start: null, // set in syncControlInputs()
-                values: null, //set in syncControlInptus()
-                require: true
-            },
-            {
-                type: 'number',
-                label: null, // set in syncControlInputs
-                description: 'Y-axis Reference Line',
-                option: null // set in syncControlInputs
-            },
-            {
-                type: 'dropdown',
-                label: 'Point Size',
-                description: 'Parameter to set point radius',
-                options: ['point_size'],
-                start: null, // set in syncControlInputs()
-                values: ['Uniform'],
-                require: true
-            },
-            {
-                type: 'dropdown',
-                label: 'Axis Type',
-                description: 'Linear or Log Axes',
-                options: ['x.type', 'y.type'],
-                start: null, // set in syncControlInputs()
-                values: ['linear', 'log'],
-                require: true
-            },
-            {
-                type: 'number',
-                label: 'Highlight Points Based on Timing',
-                description: 'Fill points with max values less than X days apart',
-                option: 'visit_window'
-            }
-        ];
+        return [{
+            type: 'number',
+            label: 'R Ratio Range',
+            description: 'Filter points based on R ratio [(ALT/ULN) / (ALP/ULN)]',
+            option: 'r_ratio[0]'
+        }, {
+            type: 'number',
+            label: null, //combined with r_ratio[0] control in formatRRatioControl()
+            description: null,
+            option: 'r_ratio[1]'
+        }, {
+            type: 'dropdown',
+            label: 'Group',
+            description: 'Grouping variable',
+            options: ['color_by'],
+            start: null, // set in syncControlInputs()
+            values: ['NONE'], // set in syncControlInputs()
+            require: true
+        }, {
+            type: 'dropdown',
+            label: 'Display Type',
+            description: 'Relative or absolute axes',
+            options: ['displayLabel'],
+            start: null, // set in syncControlInputs()
+            values: null, // set in syncControlInputs()
+            require: true
+        }, {
+            type: 'radio',
+            option: 'plot_max_values',
+            label: 'Plot Style',
+            values: [true, false],
+            relabels: ['Max Values', 'By Study Day']
+        }, {
+            type: 'number',
+            label: 'Study Day',
+            description: null, //set in onDraw/updateStudyDaySlider
+            option: 'plot_day'
+        }, {
+            type: 'dropdown',
+            label: 'X-axis Measure',
+            description: null, // set in syncControlInputs()
+            option: 'x.column',
+            start: null, // set in syncControlInputs()
+            values: null, //set in syncControlInptus()
+            require: true
+        }, {
+            type: 'number',
+            label: null, // set in syncControlInputs
+            description: 'X-axis Reference Line',
+            option: null // set in syncControlInputs
+        }, {
+            type: 'dropdown',
+            label: 'Y-axis Measure',
+            description: null, // set in syncControlInputs()
+            option: 'y.column',
+            start: null, // set in syncControlInputs()
+            values: null, //set in syncControlInptus()
+            require: true
+        }, {
+            type: 'number',
+            label: null, // set in syncControlInputs
+            description: 'Y-axis Reference Line',
+            option: null // set in syncControlInputs
+        }, {
+            type: 'dropdown',
+            label: 'Point Size',
+            description: 'Parameter to set point radius',
+            options: ['point_size'],
+            start: null, // set in syncControlInputs()
+            values: ['Uniform'],
+            require: true
+        }, {
+            type: 'dropdown',
+            label: 'Axis Type',
+            description: 'Linear or Log Axes',
+            options: ['x.type', 'y.type'],
+            start: null, // set in syncControlInputs()
+            values: ['linear', 'log'],
+            require: true
+        }, {
+            type: 'number',
+            label: 'Highlight Points Based on Timing',
+            description: 'Fill points with max values less than X days apart',
+            option: 'visit_window'
+        }];
     }
 
     //Map values from settings to control inputs
@@ -637,7 +568,7 @@
         // Group control
         ///////////////////////
 
-        var groupControl = controlInputs.find(function(controlInput) {
+        var groupControl = controlInputs.find(function (controlInput) {
             return controlInput.label === 'Group';
         });
 
@@ -645,32 +576,27 @@
         groupControl.start = settings.color_by; //sync start value
 
         //sync values
-        settings.group_cols
-            .filter(function(group) {
-                return group.value_col !== 'NONE';
-            })
-            .forEach(function(group) {
-                groupControl.values.push(group.value_col);
-            });
+        settings.group_cols.filter(function (group) {
+            return group.value_col !== 'NONE';
+        }).forEach(function (group) {
+            groupControl.values.push(group.value_col);
+        });
 
         //drop the group control if NONE is the only option
-        if (settings.group_cols.length == 1)
-            controlInputs = controlInputs.filter(function(controlInput) {
-                return controlInput.label != 'Group';
-            });
+        if (settings.group_cols.length == 1) controlInputs = controlInputs.filter(function (controlInput) {
+            return controlInput.label != 'Group';
+        });
 
         //////////////////////////
         // x-axis measure control
         //////////////////////////
 
         // drop the control if there's only one option
-        if (settings.x_options.length === 1)
-            controlInputs = controlInputs.filter(function(controlInput) {
-                return controlInput.option !== 'x.column';
-            });
-        else {
+        if (settings.x_options.length === 1) controlInputs = controlInputs.filter(function (controlInput) {
+            return controlInput.option !== 'x.column';
+        });else {
             //otherwise sync the properties
-            var xAxisMeasureControl = controlInputs.find(function(controlInput) {
+            var xAxisMeasureControl = controlInputs.find(function (controlInput) {
                 return controlInput.option === 'x.column';
             });
 
@@ -683,7 +609,7 @@
         // x-axis reference line control
         //////////////////////////////////
 
-        var xRefControl = controlInputs.find(function(controlInput) {
+        var xRefControl = controlInputs.find(function (controlInput) {
             return controlInput.description === 'X-axis Reference Line';
         });
         xRefControl.label = settings.x_options[0] + ' Cutpoint';
@@ -694,13 +620,11 @@
         ////////////////////////////
 
         // drop the control if there's only one option
-        if (settings.y_options.length === 1)
-            controlInputs = controlInputs.filter(function(controlInput) {
-                return controlInput.option !== 'y.column';
-            });
-        else {
+        if (settings.y_options.length === 1) controlInputs = controlInputs.filter(function (controlInput) {
+            return controlInput.option !== 'y.column';
+        });else {
             //otherwise sync the properties
-            var yAxisMeasureControl = controlInputs.find(function(controlInput) {
+            var yAxisMeasureControl = controlInputs.find(function (controlInput) {
                 return controlInput.option === 'y.column';
             });
             yAxisMeasureControl.description = settings.y_options.join(', ');
@@ -712,7 +636,7 @@
         // y-axis reference line control
         //////////////////////////////////
 
-        var yRefControl = controlInputs.find(function(controlInput) {
+        var yRefControl = controlInputs.find(function (controlInput) {
             return controlInput.description === 'Y-axis Reference Line';
         });
         yRefControl.label = settings.y_options[0] + ' Cutpoint';
@@ -725,7 +649,7 @@
 
         //drop the R Ratio control if r_ratio_filter is false
         if (!settings.r_ratio_filter) {
-            controlInputs = controlInputs.filter(function(controlInput) {
+            controlInputs = controlInputs.filter(function (controlInput) {
                 return ['r_ratio[0]', 'r_ratio[1]'].indexOf(controlInput.option) == -1;
             });
         }
@@ -734,29 +658,28 @@
         // Point size control
         //////////////////////////////////
 
-        var pointSizeControl = controlInputs.find(function(ci) {
+        var pointSizeControl = controlInputs.find(function (ci) {
             return ci.label === 'Point Size';
         });
 
         pointSizeControl.start = settings.point_size || 'Uniform';
 
-        settings.point_size_options.forEach(function(d) {
+        settings.point_size_options.forEach(function (d) {
             pointSizeControl.values.push(d);
         });
 
         //drop the pointSize control if NONE is the only option
-        if (settings.point_size_options.length == 0)
-            controlInputs = controlInputs.filter(function(controlInput) {
-                return controlInput.label != 'Point Size';
-            });
+        if (settings.point_size_options.length == 0) controlInputs = controlInputs.filter(function (controlInput) {
+            return controlInput.label != 'Point Size';
+        });
 
         //////////////////////////////////
         // Display control
         //////////////////////////////////
 
-        controlInputs.find(function(controlInput) {
+        controlInputs.find(function (controlInput) {
             return controlInput.label === 'Display Type';
-        }).values = settings.display_options.map(function(m) {
+        }).values = settings.display_options.map(function (m) {
             return m.label;
         });
 
@@ -764,15 +687,11 @@
         // Add filters to inputs
         //////////////////////////////////
         if (settings.filters && settings.filters.length > 0) {
-            var otherFilters = settings.filters.map(function(filter) {
+            var otherFilters = settings.filters.map(function (filter) {
                 filter = {
                     type: 'subsetter',
                     value_col: filter.value_col ? filter.value_col : filter,
-                    label: filter.label
-                        ? filter.label
-                        : filter.value_col
-                        ? filter.value_col
-                        : filter,
+                    label: filter.label ? filter.label : filter.value_col ? filter.value_col : filter,
                     multiple: settings.filters_multiselect
                 };
                 return filter;
@@ -790,47 +709,30 @@
 
     function checkMeasureDetails() {
         var config = this.config;
-        var measures = d3
-            .set(
-                this.raw_data.map(function(d) {
-                    return d[config.measure_col];
-                })
-            )
-            .values()
-            .sort();
-        var specifiedMeasures = Object.keys(config.measure_values).map(function(e) {
+        var measures = d3.set(this.raw_data.map(function (d) {
+            return d[config.measure_col];
+        })).values().sort();
+        var specifiedMeasures = Object.keys(config.measure_values).map(function (e) {
             return config.measure_values[e];
         });
         var missingMeasures = [];
-        Object.keys(config.measure_values).forEach(function(d) {
+        Object.keys(config.measure_values).forEach(function (d) {
             if (measures.indexOf(config.measure_values[d]) == -1) {
                 missingMeasures.push(config.measure_values[d]);
                 delete config.measure_values[d];
             }
         });
         var nMeasuresRemoved = missingMeasures.length;
-        if (nMeasuresRemoved > 0)
-            console.warn(
-                'The data are missing ' +
-                    (nMeasuresRemoved === 1 ? 'this measure' : 'these measures') +
-                    ': ' +
-                    missingMeasures.join(', ') +
-                    '.'
-            );
+        if (nMeasuresRemoved > 0) console.warn('The data are missing ' + (nMeasuresRemoved === 1 ? 'this measure' : 'these measures') + ': ' + missingMeasures.join(', ') + '.');
 
         //check that x_options, y_options and size_options all have value keys/values in measure_values
         var valid_options = Object.keys(config.measure_values);
         var all_options = ['x_options', 'y_options', 'point_size_options'];
-        all_options.forEach(function(options) {
-            config[options].forEach(function(option) {
+        all_options.forEach(function (options) {
+            config[options].forEach(function (option) {
                 if (valid_options.indexOf(option) == -1) {
                     delete config[options][option];
-                    console.warn(
-                        option +
-                            " wasn't found in the measure_values index and has been removed from config." +
-                            options +
-                            '. This may cause problems with the chart.'
-                    );
+                    console.warn(option + " wasn't found in the measure_values index and has been removed from config." + options + '. This may cause problems with the chart.');
                 }
             });
         });
@@ -839,14 +741,13 @@
     function iterateOverData() {
         var _this = this;
 
-        this.raw_data.forEach(function(d) {
+        this.raw_data.forEach(function (d) {
             d[_this.config.x.column] = null; // placeholder variable for x-axis
             d[_this.config.y.column] = null; // placeholder variable for y-axis
             d.NONE = 'All Participants'; // placeholder variable for non-grouped comparisons
 
             //Remove space characters from result variable.
-            if (typeof d[_this.config.value_col] == 'string')
-                d[_this.config.value_col] = d[_this.config.value_col].replace(/\s/g, ''); // remove space characters
+            if (typeof d[_this.config.value_col] == 'string') d[_this.config.value_col] = d[_this.config.value_col].replace(/\s/g, ''); // remove space characters
         });
     }
 
@@ -873,43 +774,26 @@
 
         if (drop == undefined) drop = false;
         if (drop) {
-            return data.filter(function(f) {
+            return data.filter(function (f) {
                 dropFlag = d[measure_column] == measure && +d[value_column] <= 0;
                 return !dropFlag;
             });
         } else {
-            data.forEach(function(d) {
-                if (
-                    d[measure_column] == measure &&
-                    +d[value_column] < +llod &&
-                    d[value_column] >= 0
-                ) {
+            data.forEach(function (d) {
+                if (d[measure_column] == measure && +d[value_column] < +llod && d[value_column] >= 0) {
                     d.impute_flag = true;
                     d[value_column + '_original'] = d[value_column];
                     d[value_column] = imputed_value;
                 }
             });
 
-            var impute_count = d3.sum(
-                data.filter(function(d) {
-                    return d[measure_column] === measure;
-                }),
-                function(f) {
-                    return f.impute_flag;
-                }
-            );
+            var impute_count = d3.sum(data.filter(function (d) {
+                return d[measure_column] === measure;
+            }), function (f) {
+                return f.impute_flag;
+            });
 
-            if (impute_count > 0)
-                console.warn(
-                    '' +
-                        impute_count +
-                        ' value(s) less than ' +
-                        llod +
-                        ' were imputed to ' +
-                        imputed_value +
-                        ' for ' +
-                        measure
-                );
+            if (impute_count > 0) console.warn('' + impute_count + ' value(s) less than ' + llod + ' were imputed to ' + imputed_value + ' for ' + measure);
             return data;
         }
     }
@@ -918,24 +802,19 @@
         var chart = this;
         var config = this.config;
 
-        Object.keys(config.measure_values).forEach(function(measureKey) {
-            var values = chart.imputed_data
-                    .filter(function(f) {
-                        return f[config.measure_col] == config.measure_values[measureKey];
-                    })
-                    .map(function(m) {
-                        return +m[config.value_col];
-                    })
-                    .sort(function(a, b) {
-                        return a - b;
-                    }),
-                minValue = d3.min(
-                    values.filter(function(f) {
-                        return f > 0;
-                    })
-                ),
+        Object.keys(config.measure_values).forEach(function (measureKey) {
+            var values = chart.imputed_data.filter(function (f) {
+                return f[config.measure_col] == config.measure_values[measureKey];
+            }).map(function (m) {
+                return +m[config.value_col];
+            }).sort(function (a, b) {
+                return a - b;
+            }),
+                minValue = d3.min(values.filter(function (f) {
+                return f > 0;
+            })),
                 //minimum value > 0
-                llod = null,
+            llod = null,
                 imputed_value = null,
                 drop = null;
 
@@ -952,17 +831,9 @@
                 imputed_value = null;
                 drop = true;
             }
-            chart.imputed_data = imputeColumn(
-                chart.imputed_data,
-                config.measure_col,
-                config.value_col,
-                config.measure_values[measureKey],
-                llod,
-                imputed_value,
-                drop
-            );
+            chart.imputed_data = imputeColumn(chart.imputed_data, config.measure_col, config.value_col, config.measure_values[measureKey], llod, imputed_value, drop);
 
-            var total_imputed = d3.sum(chart.raw_data, function(f) {
+            var total_imputed = d3.sum(chart.raw_data, function (f) {
                 return f.impute_flag ? 1 : 0;
             });
         });
@@ -977,11 +848,11 @@
         // Remove invalid rows
         /////////////////////////
         var numerics = ['value_col', 'studyday_col', 'normal_col_high'];
-        chart.imputed_data = chart.initial_data.filter(function(f) {
+        chart.imputed_data = chart.initial_data.filter(function (f) {
             return true;
         });
-        numerics.forEach(function(setting) {
-            chart.imputed_data = chart.imputed_data.filter(function(d) {
+        numerics.forEach(function (setting) {
+            chart.imputed_data = chart.imputed_data.filter(function (d) {
                 //Remove non-numeric value_col
                 var numericCol = /^-?(\d*\.?\d+|\d+\.?\d*)(E-?\d+)?$/.test(d[config[setting]]);
                 if (!numericCol) {
@@ -997,48 +868,40 @@
         var config = this.config;
 
         //filter the lab data to only the required measures
-        var included_measures = Object.keys(config.measure_values).map(function(e) {
+        var included_measures = Object.keys(config.measure_values).map(function (e) {
             return config.measure_values[e];
         });
 
-        var sub = this.imputed_data.filter(function(f) {
+        var sub = this.imputed_data.filter(function (f) {
             return included_measures.indexOf(f[config.measure_col]) > -1;
         });
 
         var missingBaseline = 0;
 
         //coerce numeric values to number
-        this.imputed_data = this.imputed_data.map(function(d) {
+        this.imputed_data = this.imputed_data.map(function (d) {
             var numerics = ['value_col', 'studyday_col', 'normal_col_low', 'normal_col_high'];
-            numerics.forEach(function(col) {
+            numerics.forEach(function (col) {
                 d[config[col]] = parseFloat(d[config[col]]);
             });
             return d;
         });
 
         //create an object mapping baseline values for id/measure pairs
-        var baseline_records = sub.filter(function(f) {
-            var current =
-                typeof f[config.baseline.value_col] == 'string'
-                    ? f[config.baseline.value_col].trim()
-                    : parseFloat(f[config.baseline.value_col]);
+        var baseline_records = sub.filter(function (f) {
+            var current = typeof f[config.baseline.value_col] == 'string' ? f[config.baseline.value_col].trim() : parseFloat(f[config.baseline.value_col]);
             return config.baseline.values.indexOf(current) > -1;
         });
 
-        var baseline_values = d3
-            .nest()
-            .key(function(d) {
-                return d[config.id_col];
-            })
-            .key(function(d) {
-                return d[config.measure_col];
-            })
-            .rollup(function(d) {
-                return d[0][config.value_col];
-            })
-            .map(baseline_records);
+        var baseline_values = d3.nest().key(function (d) {
+            return d[config.id_col];
+        }).key(function (d) {
+            return d[config.measure_col];
+        }).rollup(function (d) {
+            return d[0][config.value_col];
+        }).map(baseline_records);
 
-        this.imputed_data = this.imputed_data.map(function(d) {
+        this.imputed_data = this.imputed_data.map(function (d) {
             //standardize key variables
             d.key_measure = false;
             if (included_measures.indexOf(d[config.measure_col]) > -1) {
@@ -1054,8 +917,7 @@
                 //get value relative to baseline
                 if (baseline_values[d[config.id_col]]) {
                     if (baseline_values[d[config.id_col]][d[config.measure_col]]) {
-                        d.baseline_absolute =
-                            baseline_values[d[config.id_col]][d[config.measure_col]];
+                        d.baseline_absolute = baseline_values[d[config.id_col]][d[config.measure_col]];
                         d.relative_baseline = d.absolute / d.baseline_absolute;
                     } else {
                         missingBaseline = missingBaseline + 1;
@@ -1071,20 +933,14 @@
             return d;
         });
 
-        if (missingBaseline > 0)
-            console.warn(
-                'No baseline value found for ' + missingBaseline + ' of ' + sub.length + ' records.'
-            );
+        if (missingBaseline > 0) console.warn('No baseline value found for ' + missingBaseline + ' of ' + sub.length + ' records.');
     }
 
     function makeAnalysisFlag() {
         var config = this.config;
-        this.imputed_data = this.imputed_data.map(function(d) {
-            var hasAnalysisSetting =
-                config.analysisFlag.value_col != null && config.analysisFlag.values.length > 0;
-            d.analysisFlag = hasAnalysisSetting
-                ? config.analysisFlag.values.indexOf(d[config.analysisFlag.value_col]) > -1
-                : true;
+        this.imputed_data = this.imputed_data.map(function (d) {
+            var hasAnalysisSetting = config.analysisFlag.value_col != null && config.analysisFlag.values.length > 0;
+            d.analysisFlag = hasAnalysisSetting ? config.analysisFlag.values.indexOf(d[config.analysisFlag.value_col]) > -1 : true;
             return d;
         });
     }
@@ -1095,7 +951,7 @@
         //drop rows with invalid data
         this.imputedData = dropRows.call(this);
 
-        this.imputed_data.forEach(function(d) {
+        this.imputed_data.forEach(function (d) {
             d.impute_flag = false;
         });
 
@@ -1115,12 +971,12 @@
         var chart = this;
         var config = this.config;
         if (this.config.r_ratio_filter) {
-            var min_r_ratio = this.controls.wrap.selectAll('.control-group').filter(function(d) {
+            var min_r_ratio = this.controls.wrap.selectAll('.control-group').filter(function (d) {
                 return d.option === 'r_ratio[0]';
             });
             var min_r_ratio_input = min_r_ratio.select('input');
 
-            var max_r_ratio = this.controls.wrap.selectAll('.control-group').filter(function(d) {
+            var max_r_ratio = this.controls.wrap.selectAll('.control-group').filter(function (d) {
                 return d.option === 'r_ratio[1]';
             });
             var max_r_ratio_input = max_r_ratio.select('input');
@@ -1130,26 +986,20 @@
 
             //move the max r ratio control next to the min control
             min_r_ratio.append('span').text(' - ');
-            min_r_ratio.append(function() {
+            min_r_ratio.append(function () {
                 return max_r_ratio_input.node();
             });
 
             max_r_ratio.remove();
 
             //add a reset button
-            min_r_ratio
-                .append('button')
-                .style('padding', '0.2em 0.5em 0.2em 0.4em')
-                .style('margin-left', '0.5em')
-                .style('border-radius', '0.4em')
-                .text('Reset')
-                .on('click', function() {
-                    config.r_ratio[0] = 0;
-                    min_r_ratio.select('input#r_ratio_min').property('value', config.r_ratio[0]);
-                    config.r_ratio[1] = config.max_r_ratio;
-                    min_r_ratio.select('input#r_ratio_max').property('value', config.r_ratio[1]);
-                    chart.draw();
-                });
+            min_r_ratio.append('button').style('padding', '0.2em 0.5em 0.2em 0.4em').style('margin-left', '0.5em').style('border-radius', '0.4em').text('Reset').on('click', function () {
+                config.r_ratio[0] = 0;
+                min_r_ratio.select('input#r_ratio_min').property('value', config.r_ratio[0]);
+                config.r_ratio[1] = config.max_r_ratio;
+                min_r_ratio.select('input#r_ratio_max').property('value', config.r_ratio[1]);
+                chart.draw();
+            });
         }
     }
 
@@ -1161,33 +1011,25 @@
         var cells = quadrants.table.cells;
 
         function updateCells(d) {
-            var cellData = cells.map(function(cell) {
+            var cellData = cells.map(function (cell) {
                 cell.value = d[cell.value_col];
                 return cell;
             });
-            var row_cells = d3
-                .select(this)
-                .selectAll('td')
-                .data(cellData, function(d) {
-                    return d.value_col;
-                });
+            var row_cells = d3.select(this).selectAll('td').data(cellData, function (d) {
+                return d.value_col;
+            });
 
-            row_cells
-                .enter()
-                .append('td')
-                .style('text-align', function(d, i) {
-                    return d.label != 'Quadrant' ? 'center' : null;
-                })
-                .style('font-size', '0.9em')
-                .style('padding', '0 0.5em 0 0.5em');
+            row_cells.enter().append('td').style('text-align', function (d, i) {
+                return d.label != 'Quadrant' ? 'center' : null;
+            }).style('font-size', '0.9em').style('padding', '0 0.5em 0 0.5em');
 
-            row_cells.html(function(d) {
+            row_cells.html(function (d) {
                 return d.value;
             });
         }
 
         //update the content of each row
-        rows.data(quadrants, function(d) {
+        rows.data(quadrants, function (d) {
             return d.label;
         });
         rows.each(updateCells);
@@ -1199,32 +1041,23 @@
         var quadrants = this.config.quadrants;
 
         quadrants.table = {};
-        quadrants.table.wrap = this.wrap
-            .append('div')
-            .attr('class', 'quadrantTable')
-            .style('padding-top', '1em');
-        quadrants.table.tab = quadrants.table.wrap
-            .append('table')
-            .style('border-collapse', 'collapse');
+        quadrants.table.wrap = this.wrap.append('div').attr('class', 'quadrantTable').style('padding-top', '1em');
+        quadrants.table.tab = quadrants.table.wrap.append('table').style('border-collapse', 'collapse');
 
         //table header
-        quadrants.table.cells = [
-            {
-                value_col: 'label',
-                label: 'Quadrant'
-            },
-            {
-                value_col: 'count',
-                label: '#'
-            },
-            {
-                value_col: 'percent',
-                label: '%'
-            }
-        ];
+        quadrants.table.cells = [{
+            value_col: 'label',
+            label: 'Quadrant'
+        }, {
+            value_col: 'count',
+            label: '#'
+        }, {
+            value_col: 'percent',
+            label: '%'
+        }];
 
         if (config.populationProfileURL) {
-            quadrants.forEach(function(d) {
+            quadrants.forEach(function (d) {
                 d.link = "<a href='" + config.populationProfileURL + "'>&#128279</a>";
             });
             quadrants.table.cells.push({
@@ -1232,34 +1065,17 @@
                 label: 'Population Profile'
             });
         }
-        quadrants.table.thead = quadrants.table.tab
-            .append('thead')
-            .style('border-top', '2px solid #999')
-            .style('border-bottom', '2px solid #999')
-            .append('tr')
-            .style('padding', '0.1em');
+        quadrants.table.thead = quadrants.table.tab.append('thead').style('border-top', '2px solid #999').style('border-bottom', '2px solid #999').append('tr').style('padding', '0.1em');
 
-        quadrants.table.thead
-            .selectAll('th')
-            .data(quadrants.table.cells)
-            .enter()
-            .append('th')
-            .html(function(d) {
-                return d.label;
-            });
+        quadrants.table.thead.selectAll('th').data(quadrants.table.cells).enter().append('th').html(function (d) {
+            return d.label;
+        });
 
         //table contents
-        quadrants.table.tbody = quadrants.table.tab
-            .append('tbody')
-            .style('border-bottom', '2px solid #999');
-        quadrants.table.rows = quadrants.table.tbody
-            .selectAll('tr')
-            .data(quadrants, function(d) {
-                return d.label;
-            })
-            .enter()
-            .append('tr')
-            .style('padding', '0.1em');
+        quadrants.table.tbody = quadrants.table.tab.append('tbody').style('border-bottom', '2px solid #999');
+        quadrants.table.rows = quadrants.table.tbody.selectAll('tr').data(quadrants, function (d) {
+            return d.label;
+        }).enter().append('tr').style('padding', '0.1em');
 
         //initial table update
         updateSummaryTable.call(this);
@@ -1270,19 +1086,13 @@
         var config = chart.config;
         var quadrants = this.config.quadrants;
 
-        var x_input = chart.controls.wrap
-            .selectAll('div.control-group')
-            .filter(function(f) {
-                return f.description == 'X-axis Reference Line';
-            })
-            .select('input');
+        var x_input = chart.controls.wrap.selectAll('div.control-group').filter(function (f) {
+            return f.description == 'X-axis Reference Line';
+        }).select('input');
 
-        var y_input = chart.controls.wrap
-            .selectAll('div.control-group')
-            .filter(function(f) {
-                return f.description == 'Y-axis Reference Line';
-            })
-            .select('input');
+        var y_input = chart.controls.wrap.selectAll('div.control-group').filter(function (f) {
+            return f.description == 'Y-axis Reference Line';
+        }).select('input');
 
         ///////////////////////////////////////////////////////////
         // set initial values
@@ -1314,27 +1124,17 @@
         chart.quadrant_labels = {};
         chart.quadrant_labels.g = this.svg.append('g').attr('class', 'quadrant-labels');
 
-        chart.quadrant_labels.text = chart.quadrant_labels.g
-            .selectAll('text.quadrant-label')
-            .data(quadrants)
-            .enter()
-            .append('text')
-            .attr('class', function(d) {
-                return 'quadrant-label ' + d.position;
-            })
-            .attr('dy', function(d) {
-                return d.position.search('lower') > -1 ? '-.2em' : '.5em';
-            })
-            .attr('dx', function(d) {
-                return d.position.search('right') > -1 ? '-.5em' : '.5em';
-            })
-            .attr('text-anchor', function(d) {
-                return d.position.search('right') > 0 ? 'end' : null;
-            })
-            .attr('fill', '#bbb')
-            .text(function(d) {
-                return d.label;
-            });
+        chart.quadrant_labels.text = chart.quadrant_labels.g.selectAll('text.quadrant-label').data(quadrants).enter().append('text').attr('class', function (d) {
+            return 'quadrant-label ' + d.position;
+        }).attr('dy', function (d) {
+            return d.position.search('lower') > -1 ? '-.2em' : '.5em';
+        }).attr('dx', function (d) {
+            return d.position.search('right') > -1 ? '-.5em' : '.5em';
+        }).attr('text-anchor', function (d) {
+            return d.position.search('right') > 0 ? 'end' : null;
+        }).attr('fill', '#bbb').text(function (d) {
+            return d.label;
+        });
     }
 
     function layoutCutLines() {
@@ -1352,31 +1152,17 @@
         //slight hack to make life easier on drag
         var cutLineData = [{ dimension: 'x' }, { dimension: 'y' }];
 
-        cutLineData.forEach(function(d) {
+        cutLineData.forEach(function (d) {
             d.chart = chart;
         });
 
-        chart.cut_lines.g = wrap
-            .selectAll('g.cut')
-            .data(cutLineData)
-            .enter()
-            .append('g')
-            .attr('class', function(d) {
-                return 'cut ' + d.dimension;
-            });
+        chart.cut_lines.g = wrap.selectAll('g.cut').data(cutLineData).enter().append('g').attr('class', function (d) {
+            return 'cut ' + d.dimension;
+        });
 
-        chart.cut_lines.lines = chart.cut_lines.g
-            .append('line')
-            .attr('class', 'cut-line')
-            .attr('stroke-dasharray', '5,5')
-            .attr('stroke', '#bbb');
+        chart.cut_lines.lines = chart.cut_lines.g.append('line').attr('class', 'cut-line').attr('stroke-dasharray', '5,5').attr('stroke', '#bbb');
 
-        chart.cut_lines.backing = chart.cut_lines.g
-            .append('line')
-            .attr('class', 'cut-line-backing')
-            .attr('stroke', 'transparent')
-            .attr('stroke-width', '10')
-            .attr('cursor', 'move');
+        chart.cut_lines.backing = chart.cut_lines.g.append('line').attr('class', 'cut-line-backing').attr('stroke', 'transparent').attr('stroke-width', '10').attr('cursor', 'move');
     }
 
     function initQuadrants() {
@@ -1401,28 +1187,14 @@
         this.participantDetails = {};
         this.participantDetails.wrap = this.wrap.append('div').attr('class', 'participantDetails');
 
-        this.participantDetails.header = this.participantDetails.wrap
-            .append('div')
-            .attr('class', 'participantHeader');
+        this.participantDetails.header = this.participantDetails.wrap.append('div').attr('class', 'participantHeader');
         var splot = this.participantDetails.wrap.append('div').attr('class', 'spaghettiPlot');
-        splot
-            .append('h3')
-            .attr('class', 'id')
-            .html('Standardized Lab Values by Visit')
-            .style('border-top', '2px solid black')
-            .style('border-bottom', '2px solid black')
-            .style('padding', '.2em');
+        splot.append('h3').attr('class', 'id').html('Standardized Lab Values by Visit').style('border-top', '2px solid black').style('border-bottom', '2px solid black').style('padding', '.2em');
 
         splot.append('div').attr('class', 'chart');
 
         var mtable = this.participantDetails.wrap.append('div').attr('class', 'measureTable');
-        mtable
-            .append('h3')
-            .attr('class', 'id')
-            .html('Raw Lab Values Summary Table')
-            .style('border-top', '2px solid black')
-            .style('border-bottom', '2px solid black')
-            .style('padding', '.2em');
+        mtable.append('h3').attr('class', 'id').html('Raw Lab Values Summary Table').style('border-top', '2px solid black').style('border-bottom', '2px solid black').style('padding', '.2em');
 
         //initialize the measureTable
         var settings = {
@@ -1434,10 +1206,7 @@
             exportable: false,
             applyCSS: true
         };
-        this.measureTable = webcharts.createTable(
-            this.element + ' .participantDetails .measureTable',
-            settings
-        );
+        this.measureTable = webcharts.createTable(this.element + ' .participantDetails .measureTable', settings);
         this.measureTable.init([]);
 
         //hide the section until needed
@@ -1450,60 +1219,44 @@
         this.controls.reset = {};
         var reset = this.controls.reset;
         reset.wrap = this.controls.wrap.append('div').attr('class', 'control-group');
-        reset.label = reset.wrap
-            .append('span')
-            .attr('class', 'wc-control-label')
-            .text('Reset Chart');
-        reset.button = reset.wrap
-            .append('button')
-            .text('Reset')
-            .on('click', function() {
-                var initial_container = chart.element;
-                var initial_settings = chart.initial_settings;
-                var initial_data = chart.initial_data;
-                chart.emptyChartWarning.remove();
+        reset.label = reset.wrap.append('span').attr('class', 'wc-control-label').text('Reset Chart');
+        reset.button = reset.wrap.append('button').text('Reset').on('click', function () {
+            var initial_container = chart.element;
+            var initial_settings = chart.initial_settings;
+            var initial_data = chart.initial_data;
+            chart.emptyChartWarning.remove();
 
-                chart.destroy();
-                chart = null;
+            chart.destroy();
+            chart = null;
 
-                var newChart = safetyedish(initial_container, initial_settings);
-                newChart.init(initial_data);
-            });
+            var newChart = hepexplorer(initial_container, initial_settings);
+            newChart.init(initial_data);
+        });
     }
 
     function initDisplayControl() {
         var chart = this;
         var config = this.config;
-        var displayControlWrap = this.controls.wrap.selectAll('div').filter(function(controlInput) {
+        var displayControlWrap = this.controls.wrap.selectAll('div').filter(function (controlInput) {
             return controlInput.label === 'Display Type';
         });
 
         var displayControl = displayControlWrap.select('select');
 
         //set the start value
-        var start_value = config.display_options.find(function(f) {
+        var start_value = config.display_options.find(function (f) {
             return f.value == config.display;
         }).label;
-        displayControl.selectAll('option').attr('selected', function(d) {
+        displayControl.selectAll('option').attr('selected', function (d) {
             return d == start_value ? 'selected' : null;
         });
 
         //annotation of baseline visit (only visible when mDish is selected)
-        displayControlWrap
-            .append('span')
-            .attr('class', 'displayControlAnnotation span-description')
-            .style('color', 'blue')
-            .text(
-                'Note: Baseline defined as ' +
-                    chart.config.baseline.value_col +
-                    ' = ' +
-                    chart.config.baseline.values.join(',')
-            )
-            .style('display', config.display == 'relative_baseline' ? null : 'none');
+        displayControlWrap.append('span').attr('class', 'displayControlAnnotation span-description').style('color', 'blue').text('Note: Baseline defined as ' + chart.config.baseline.value_col + ' = ' + chart.config.baseline.values.join(',')).style('display', config.display == 'relative_baseline' ? null : 'none');
 
-        displayControl.on('change', function(d) {
+        displayControl.on('change', function (d) {
             var currentLabel = this.value;
-            var currentValue = config.display_options.find(function(f) {
+            var currentValue = config.display_options.find(function (f) {
                 return f.label == currentLabel;
             }).value;
             config.display = currentValue;
@@ -1523,31 +1276,16 @@
     function layoutPanels() {
         this.wrap.style('display', 'inline-block').style('width', '75%');
 
-        this.controls.wrap
-            .style('display', 'inline-block')
-            .style('width', '25%')
-            .style('vertical-align', 'top');
+        this.controls.wrap.style('display', 'inline-block').style('width', '25%').style('vertical-align', 'top');
 
         this.controls.wrap.selectAll('div.control-group').style('display', 'block');
-        this.controls.wrap
-            .selectAll('div.control-group')
-            .select('select')
-            .style('width', '200px');
+        this.controls.wrap.selectAll('div.control-group').select('select').style('width', '200px');
     }
 
     function initTitle() {
-        this.titleDiv = this.controls.wrap
-            .insert('div', '*')
-            .attr('class', 'title')
-            .style('margin-right', '1em')
-            .style('margin-bottom', '1em');
+        this.titleDiv = this.controls.wrap.insert('div', '*').attr('class', 'title').style('margin-right', '1em').style('margin-bottom', '1em');
 
-        this.titleDiv
-            .append('span')
-            .text(this.config.title)
-            .style('font-size', '1.5em')
-            .style('font-weight', 'strong')
-            .style('display', 'block');
+        this.titleDiv.append('span').text(this.config.title).style('font-size', '1.5em').style('font-weight', 'strong').style('display', 'block');
     }
 
     function add(messageText, type, label, messages, callback) {
@@ -1566,15 +1304,15 @@
     function remove(id, label, messages) {
         // hide the the message(s) by id or label
         if (id) {
-            var matches = messages.list.filter(function(f) {
+            var matches = messages.list.filter(function (f) {
                 return +f.id == +id;
             });
         } else if (label.length) {
-            var matches = messages.list.filter(function(f) {
+            var matches = messages.list.filter(function (f) {
                 return label == 'all' ? true : f.label == label;
             });
         }
-        matches.forEach(function(d) {
+        matches.forEach(function (d) {
             d.hidden = true;
         });
         messages.update(messages);
@@ -1585,7 +1323,7 @@
             return string.charAt(0).toUpperCase() + string.slice(1);
         }
 
-        var visibleMessages = messages.list.filter(function(f) {
+        var visibleMessages = messages.list.filter(function (f) {
             return f.hidden == false;
         });
 
@@ -1593,67 +1331,36 @@
         messages.header.title.text('Messages (' + visibleMessages.length + ')');
 
         //
-        var messageDivs = messages.wrap.selectAll('div.message').data(visibleMessages, function(d) {
+        var messageDivs = messages.wrap.selectAll('div.message').data(visibleMessages, function (d) {
             return d.id;
         });
 
-        var newMessages = messageDivs
-            .enter()
-            .append('div')
-            .attr('class', function(d) {
-                return d.type + ' message ' + d.label;
-            })
-            .html(function(d) {
-                var messageText = '<strong>' + jsUcfirst(d.type) + '</strong>: ' + d.message;
-                return messageText.split('.')[0] + '.';
-            })
-            .style('border-radius', '.5em')
-            .style('margin-right', '1em')
-            .style('margin-bottom', '0.5em')
-            .style('padding', '0.2em')
-            .style('font-size', '0.9em');
+        var newMessages = messageDivs.enter().append('div').attr('class', function (d) {
+            return d.type + ' message ' + d.label;
+        }).html(function (d) {
+            var messageText = '<strong>' + jsUcfirst(d.type) + '</strong>: ' + d.message;
+            return messageText.split('.')[0] + '.';
+        }).style('border-radius', '.5em').style('margin-right', '1em').style('margin-bottom', '0.5em').style('padding', '0.2em').style('font-size', '0.9em');
 
-        newMessages
-            .append('div.expand')
-            .html('•••')
-            .style('background', 'white')
-            .style('display', 'inline-block')
-            .style('border', '1px solid #999')
-            .style('padding', '0 0.2em')
-            .style('margin-left', '0.3em')
-            .style('font-size', '0.4em')
-            .style('border-radius', '0.6em')
-            .style('cursor', 'pointer')
-            .on('click', function(d) {
-                d3.select(this.parentNode)
-                    .html(function(d) {
-                        return '<strong>' + jsUcfirst(d.type) + '</strong>: ' + d.message;
-                    })
-                    .each(function(d) {
-                        if (d.callback) {
-                            d.callback.call(this.parentNode);
-                        }
-                    });
+        newMessages.append('div.expand').html('•••').style('background', 'white').style('display', 'inline-block').style('border', '1px solid #999').style('padding', '0 0.2em').style('margin-left', '0.3em').style('font-size', '0.4em').style('border-radius', '0.6em').style('cursor', 'pointer').on('click', function (d) {
+            d3.select(this.parentNode).html(function (d) {
+                return '<strong>' + jsUcfirst(d.type) + '</strong>: ' + d.message;
+            }).each(function (d) {
+                if (d.callback) {
+                    d.callback.call(this.parentNode);
+                }
             });
+        });
 
-        messageDivs.each(function(d) {
+        messageDivs.each(function (d) {
             var type = d.type;
             var thisMessage = d3.select(this);
             if (type == 'caution') {
-                thisMessage
-                    .style('border', '1px solid #faebcc')
-                    .style('color', '#8a6d3b')
-                    .style('background-color', '#fcf8e3');
+                thisMessage.style('border', '1px solid #faebcc').style('color', '#8a6d3b').style('background-color', '#fcf8e3');
             } else if (type == 'warning') {
-                thisMessage
-                    .style('border', '1px solid #ebccd1')
-                    .style('color', '#a94442')
-                    .style('background-color', '#f2dede');
+                thisMessage.style('border', '1px solid #ebccd1').style('color', '#a94442').style('background-color', '#f2dede');
             } else {
-                thisMessage
-                    .style('border', '1px solid #999')
-                    .style('color', '#999')
-                    .style('background-color', null);
+                thisMessage.style('border', '1px solid #999').style('color', '#999').style('background-color', null);
             }
 
             if (d.callback) {
@@ -1675,42 +1382,18 @@
         //  this.messages.remove = removeMessage;
         this.messages.list = [];
         this.messages.wrap = this.controls.wrap.insert('div', '*').style('margin', '0 1em 1em 0');
-        this.messages.header = this.messages.wrap
-            .append('div')
-            .style('border-top', '1px solid black')
-            .style('border-bottom', '1px solid black')
-            .style('font-weight', 'strong')
-            .style('margin', '0 1em 1em 0');
+        this.messages.header = this.messages.wrap.append('div').style('border-top', '1px solid black').style('border-bottom', '1px solid black').style('font-weight', 'strong').style('margin', '0 1em 1em 0');
 
-        this.messages.header.title = this.messages.header
-            .append('div')
-            .attr('class', 'title')
-            .style('display', 'inline-block')
-            .text('Messages (0)');
+        this.messages.header.title = this.messages.header.append('div').attr('class', 'title').style('display', 'inline-block').text('Messages (0)');
 
-        this.messages.header.clear = this.messages.header
-            .append('div')
-            .text('Clear')
-            .style('font-size', '0.8em')
-            .style('vertical-align', 'center')
-            .style('display', 'inline-block')
-            .style('float', 'right')
-            .style('color', 'blue')
-            .style('cursor', 'pointer')
-            .style('text-decoration', 'underline')
-            .on('click', function() {
-                chart.messages.remove(null, 'all', chart.messages);
-            });
+        this.messages.header.clear = this.messages.header.append('div').text('Clear').style('font-size', '0.8em').style('vertical-align', 'center').style('display', 'inline-block').style('float', 'right').style('color', 'blue').style('cursor', 'pointer').style('text-decoration', 'underline').on('click', function () {
+            chart.messages.remove(null, 'all', chart.messages);
+        });
     }
 
     function initCustomWarning() {
         if (this.config.warningText) {
-            this.messages.add(
-                this.config.warningText,
-                'caution',
-                'validationCaution',
-                this.messages
-            );
+            this.messages.add(this.config.warningText, 'caution', 'validationCaution', this.messages);
         }
     }
 
@@ -1719,13 +1402,13 @@
 
         //add headers to CSV array
         var cols = cols ? cols : Object.keys(data[0]);
-        var headers = cols.map(function(header) {
+        var headers = cols.map(function (header) {
             return '"' + header.replace(/"/g, '""') + '"';
         });
         CSVarray.push(headers);
         //add rows to CSV array
-        data.forEach(function(d, i) {
-            var row = cols.map(function(col) {
+        data.forEach(function (d, i) {
+            var row = cols.map(function (col) {
                 var value = d[col];
 
                 if (typeof value === 'string') value = value.replace(/"/g, '""');
@@ -1746,8 +1429,7 @@
 
         if (navigator.msSaveBlob)
             //IE
-            navigator.msSaveBlob(blob, fileName);
-        else if (link.node().download !== undefined) {
+            navigator.msSaveBlob(blob, fileName);else if (link.node().download !== undefined) {
             //21st century browsers
             var url = URL.createObjectURL(blob);
             link.node().setAttribute('href', url);
@@ -1758,31 +1440,17 @@
     function initDroppedRowsWarning() {
         var chart = this;
         if (this.dropped_rows.length > 0) {
-            var warningText =
-                this.dropped_rows.length +
-                ' rows were removed. This is probably because of non-numeric or missing data provided for key variables. Click <a class="rowDownload">here</a> to download a csv with a brief explanation of why each row was removed.';
+            var warningText = this.dropped_rows.length + ' rows were removed. This is probably because of non-numeric or missing data provided for key variables. Click <a class="rowDownload">here</a> to download a csv with a brief explanation of why each row was removed.';
 
-            this.messages.add(warningText, 'caution', 'droppedRows', this.messages, function() {
+            this.messages.add(warningText, 'caution', 'droppedRows', this.messages, function () {
                 //custom callback to activate the droppedRows download
-                d3.select(this)
-                    .select('a.rowDownload')
-                    .style('color', 'blue')
-                    .style('text-decoration', 'underline')
-                    .style('cursor', 'pointer')
-                    .datum(chart.dropped_rows)
-                    .on('click', function(d) {
-                        var systemVars = d3.merge([
-                            ['dropReason', 'NONE'],
-                            Object.keys(chart.config.measure_values)
-                        ]);
-                        var cols = d3.merge([
-                            ['dropReason'],
-                            Object.keys(d[0]).filter(function(f) {
-                                return systemVars.indexOf(f) == -1;
-                            })
-                        ]);
-                        downloadCSV.call(this, d, cols, 'eDishDroppedRows');
-                    });
+                d3.select(this).select('a.rowDownload').style('color', 'blue').style('text-decoration', 'underline').style('cursor', 'pointer').datum(chart.dropped_rows).on('click', function (d) {
+                    var systemVars = d3.merge([['dropReason', 'NONE'], Object.keys(chart.config.measure_values)]);
+                    var cols = d3.merge([['dropReason'], Object.keys(d[0]).filter(function (f) {
+                        return systemVars.indexOf(f) == -1;
+                    })]);
+                    downloadCSV.call(this, d, cols, 'eDishDroppedRows');
+                });
             });
         }
     }
@@ -1791,92 +1459,39 @@
         var config = this.config;
 
         //Add settings label
-        var first_setting = this.controls.wrap
-            .selectAll('div.control-group')
-            .filter(function(f) {
-                return f.type != 'subsetter';
-            })
-            .filter(function(f) {
-                return f.option != 'r_ratio[0]';
-            })
-            .filter(function(f, i) {
-                return i == 0;
-            })
-            .attr('class', 'first-setting');
+        var first_setting = this.controls.wrap.selectAll('div.control-group').filter(function (f) {
+            return f.type != 'subsetter';
+        }).filter(function (f) {
+            return f.option != 'r_ratio[0]';
+        }).filter(function (f, i) {
+            return i == 0;
+        }).attr('class', 'first-setting');
 
-        this.controls.setting_header = this.controls.wrap
-            .insert('div', '.first-setting')
-            .attr('class', 'subtitle')
-            .style('border-top', '1px solid black')
-            .style('border-bottom', '1px solid black')
-            .style('margin-right', '1em')
-            .style('margin-bottom', '1em');
+        this.controls.setting_header = this.controls.wrap.insert('div', '.first-setting').attr('class', 'subtitle').style('border-top', '1px solid black').style('border-bottom', '1px solid black').style('margin-right', '1em').style('margin-bottom', '1em');
 
-        this.controls.setting_header
-            .append('span')
-            .text('Settings')
-            .style('font-weight', 'strong')
-            .style('display', 'block');
+        this.controls.setting_header.append('span').text('Settings').style('font-weight', 'strong').style('display', 'block');
 
         //Add filter label if at least 1 filter exists
         if (config.r_ratio_filter || config.filters.length > 0) {
             //insert a header before the first filter
-            var control_wraps = this.controls.wrap
-                .selectAll('div')
-                .filter(function(controlInput) {
-                    return (
-                        controlInput.label === 'R Ratio Range' || controlInput.type === 'subsetter'
-                    );
-                })
-                .classed('subsetter', true);
+            var control_wraps = this.controls.wrap.selectAll('div').filter(function (controlInput) {
+                return controlInput.label === 'R Ratio Range' || controlInput.type === 'subsetter';
+            }).classed('subsetter', true);
 
-            this.controls.filter_header = this.controls.wrap
-                .insert('div', 'div.subsetter')
-                .attr('class', 'subtitle')
-                .style('border-top', '1px solid black')
-                .style('border-bottom', '1px solid black')
-                .style('margin-right', '1em')
-                .style('margin-bottom', '1em');
-            this.controls.filter_header
-                .append('span')
-                .text('Filters')
-                .style('font-weight', 'strong')
-                .style('display', 'block');
-            var population = d3
-                .set(
-                    this.initial_data.map(function(m) {
-                        return m[config.id_col];
-                    })
-                )
-                .values().length;
-            this.controls.filter_header
-                .append('span')
-                .attr('class', 'popCount')
-                .html(
-                    '<span class="numerator">' +
-                        population +
-                        '</span> of <span class="denominator">' +
-                        population +
-                        '</span> participants shown.'
-                )
-                .style('font-size', '0.8em');
+            this.controls.filter_header = this.controls.wrap.insert('div', 'div.subsetter').attr('class', 'subtitle').style('border-top', '1px solid black').style('border-bottom', '1px solid black').style('margin-right', '1em').style('margin-bottom', '1em');
+            this.controls.filter_header.append('span').text('Filters').style('font-weight', 'strong').style('display', 'block');
+            var population = d3.set(this.initial_data.map(function (m) {
+                return m[config.id_col];
+            })).values().length;
+            this.controls.filter_header.append('span').attr('class', 'popCount').html('<span class="numerator">' + population + '</span> of <span class="denominator">' + population + '</span> participants shown.').style('font-size', '0.8em');
 
-            this.controls.filter_numerator = this.controls.filter_header
-                .select('span.popCount')
-                .select('span.numerator');
-            this.controls.filter_denominator = this.controls.filter_header
-                .select('span.popCount')
-                .select('span.denominator');
+            this.controls.filter_numerator = this.controls.filter_header.select('span.popCount').select('span.numerator');
+            this.controls.filter_denominator = this.controls.filter_header.select('span.popCount').select('span.denominator');
         }
     }
 
     function addFootnote() {
-        this.footnote = this.wrap
-            .append('div')
-            .attr('class', 'footnote')
-            .text('Use controls to update chart or click a point to see participant details.')
-            .style('font-size', '0.7em')
-            .style('padding-top', '0.1em');
+        this.footnote = this.wrap.append('div').attr('class', 'footnote').text('Use controls to update chart or click a point to see participant details.').style('font-size', '0.7em').style('padding-top', '0.1em');
         this.footnote.timing = this.footnote.append('p');
     }
 
@@ -1884,52 +1499,37 @@
         var chart = this;
         var config = this.config;
         if (config.downloadLink) {
-            this.titleDiv
-                .select('span')
-                .append('a')
-                .attr('class', 'downloadRaw')
-                .html('&#x2193; Raw Data')
-                .attr('title', 'Download Raw Data')
-                .style('font-size', '.5em')
-                .style('margin-left', '1em')
-                .style('border', '1px solid black')
-                .style('border-radius', '2px')
-                .style('padding', '2px 4px')
-                .style('text-align', 'center')
-                .style('display', 'inline-block')
-                .style('cursor', 'pointer')
-                .style('font-weight', 'bold')
-                .datum(chart.initial_data)
-                .on('click', function(d) {
-                    var systemVars = [
-                        'dropReason',
-                        'NONE',
-                        'ALT',
-                        'TB',
-                        'impute_flag',
-                        'key_measure',
-                        'analysisFlag'
-                    ];
-                    var cols = Object.keys(d[0]).filter(function(f) {
-                        return systemVars.indexOf(f) == -1;
-                    });
-                    downloadCSV.call(this, d, cols, 'eDishRawData');
+            this.titleDiv.select('span').append('a').attr('class', 'downloadRaw').html('&#x2193; Raw Data').attr('title', 'Download Raw Data').style('font-size', '.5em').style('margin-left', '1em').style('border', '1px solid black').style('border-radius', '2px').style('padding', '2px 4px').style('text-align', 'center').style('display', 'inline-block').style('cursor', 'pointer').style('font-weight', 'bold').datum(chart.initial_data).on('click', function (d) {
+                var systemVars = ['dropReason', 'NONE', 'ALT', 'TB', 'impute_flag', 'key_measure', 'analysisFlag'];
+                var cols = Object.keys(d[0]).filter(function (f) {
+                    return systemVars.indexOf(f) == -1;
                 });
+                downloadCSV.call(this, d, cols, 'eDishRawData');
+            });
         }
     }
 
     function initEmptyChartWarning() {
-        this.emptyChartWarning = d3
-            .select(this.element)
-            .append('span')
-            .text('No data selected. Try updating your settings or resetting the chart. ')
-            .style('display', 'none')
-            .style('color', '#a94442')
-            .style('background-color', '#f2dede')
-            .style('border', '1px solid #ebccd1')
-            .style('padding', '0.5em')
-            .style('margin', '0 2% 12px 2%')
-            .style('border-radius', '0.2em');
+        this.emptyChartWarning = d3.select(this.element).append('span').text('No data selected. Try updating your settings or resetting the chart. ').style('display', 'none').style('color', '#a94442').style('background-color', '#f2dede').style('border', '1px solid #ebccd1').style('padding', '0.5em').style('margin', '0 2% 12px 2%').style('border-radius', '0.2em');
+    }
+
+    function stopAnimation() {
+        var chart = this;
+        chart.svg.transition().duration(0).each('end', function () {
+            chart.controls.studyDayPlayButton.datum({ state: 'play' });
+            chart.controls.studyDayPlayButton.html('&#9658;');
+            chart.draw();
+        });
+    }
+
+    function customizePlotStyleToggle() {
+        var chart = this;
+        this.controls.wrap.selectAll('.control-group').filter(function (d) {
+            return d.option === 'plot_max_values';
+        }).selectAll('input').on('change', function (d) {
+            chart.config.plot_max_values = d;
+            stopAnimation.call(chart);
+        });
     }
 
     function startAnimation() {
@@ -1944,27 +1544,21 @@
         var small_size = base_size / 2;
 
         function reposition(point) {
-            point
-                .transition()
-                .duration(day_duration)
-                .attr('cx', function(d) {
-                    return chart.x(d[config.x.column]);
-                })
-                .attr('cy', function(d) {
-                    return chart.y(d[config.y.column]);
-                })
-                .attr('r', function(d) {
-                    if (d.outOfRange) {
-                        return small_size;
-                    } else if (config.point_size == 'Uniform') {
-                        return base_size;
-                    } else {
-                        return chart.sizeScale(d[config.point_size]);
-                    }
-                })
-                .attr('fill-opacity', function(d) {
-                    return config.plot_day < d.day_range[0] ? 0 : 1;
-                });
+            point.transition().duration(day_duration).attr('cx', function (d) {
+                return chart.x(d[config.x.column]);
+            }).attr('cy', function (d) {
+                return chart.y(d[config.y.column]);
+            }).attr('r', function (d) {
+                if (d.outOfRange) {
+                    return small_size;
+                } else if (config.point_size == 'Uniform') {
+                    return base_size;
+                } else {
+                    return chart.sizeScale(d[config.point_size]);
+                }
+            }).attr('fill-opacity', function (d) {
+                return config.plot_day < d.day_range[0] ? 0 : 1;
+            });
         }
 
         function updateDatum(d, currentDay) {
@@ -1978,11 +1572,12 @@
             var raw = d.values.raw[0];
             d.outOfRange = false;
             d.day_range = raw.day_range;
-            measures.forEach(function(m) {
+            measures.forEach(function (m) {
                 var vals = raw[m + '_raw'];
 
                 // Did currentDay occur while participant was enrolled?
-                if (vals.length) {
+                if (vals && vals.length) {
+                    // && [config.x.column, config.y.column].includes(m)) { // out-of-range should be calculated study day of with x- and y-axis measures
                     var first = vals[0];
                     var last = vals[vals.length - 1];
                     var before = currentDay < first.day;
@@ -1991,17 +1586,12 @@
                 }
 
                 //Get the most recent data point (or the first point if participant isn't enrolled yet)
-                var getLastMeasureIndex = d3.bisector(function(d) {
+                var getLastMeasureIndex = d3.bisector(function (d) {
                     return d.day;
                 }).left;
-                var lastMeasureIndexPlusOne = getLastMeasureIndex(vals, currentDay);
+                var lastMeasureIndexPlusOne = vals ? getLastMeasureIndex(vals, currentDay) : 0;
                 var lastMeasureIndex = lastMeasureIndexPlusOne - 1;
-                d[m] =
-                    lastMeasureIndex >= 0
-                        ? vals[lastMeasureIndex]['value']
-                        : vals.length
-                        ? vals[0].value
-                        : null;
+                d[m] = lastMeasureIndex >= 0 ? vals[lastMeasureIndex]['value'] : vals && vals.length ? vals[0].value : null;
             });
             return d;
         }
@@ -2012,18 +1602,12 @@
             chart.controls.studyDayInput.node().value = config.plot_day;
 
             //update the label
-            chart.controls.studyDayControlWrap
-                .select('span.span-description')
-                .html('Showing data from: <strong>Day ' + config.plot_day + '</strong>')
-                .select('strong')
-                .style('color', 'blue');
+            chart.controls.studyDayControlWrap.select('span.span-description').html('Showing data from: <strong>Day ' + config.plot_day + '</strong>').select('strong').style('color', 'blue');
 
             //reposition the points
-            var points = chart.marks[0].circles
-                .datum(function(d) {
-                    return updateDatum(d, config.plot_day);
-                })
-                .call(reposition);
+            var points = chart.marks[0].circles.datum(function (d) {
+                return updateDatum(d, config.plot_day);
+            }).call(reposition);
         }
 
         function tweenStudyDay() {
@@ -2031,7 +1615,7 @@
             var max = chart.controls.studyDayRange[1];
             var studyday = d3.interpolateNumber(min, max);
 
-            return function(t) {
+            return function (t) {
                 showDay(studyday(t));
             };
         }
@@ -2041,22 +1625,9 @@
         chart.controls.studyDayPlayButton.html('&#9632;');
 
         // Initialize the Transition
-        chart.myTransition = chart.svg
-            .transition()
-            .duration(duration)
-            .ease('linear')
-            .tween('studyday', tweenStudyDay)
-            .each('end', function() {
-                chart.draw();
-            });
-    }
-
-    function stopAnimation() {
-        var chart = this;
-        chart.svg
-            .transition()
-            .duration(0)
-            .each('end', chart.draw());
+        chart.myTransition = chart.svg.transition().duration(duration).ease('linear').tween('studyday', tweenStudyDay).each('end', function () {
+            chart.draw();
+        });
     }
 
     // &#9658; = play symbol
@@ -2066,39 +1637,31 @@
     function initPlayButton() {
         var chart = this;
         var config = this.config;
-        chart.controls.studyDayPlayButton = chart.controls.studyDayControlWrap
-            .append('button')
-            .datum({ state: 'play' })
-            .html('&#9658;') //play symbol
-            .style('padding', '0.2em 0.5em 0.2em 0.5em')
-            .style('margin-left', '0.5em')
-            .style('border-radius', '0.4em')
-            //.style('display', 'none')
-            .on('click', function(d) {
-                var button = d3.select(this);
-                if (d.state === 'play') {
-                    startAnimation.call(chart);
-                } else if (d.state === 'restart') {
-                    config.plot_day =
-                        chart.controls.studyDayRange[0] > 0 ? chart.controls.studyDayRange[0] : 0;
-                    chart.controls.studyDayInput.node().value = config.plot_day;
-                    chart.draw();
+        chart.controls.studyDayPlayButton = chart.controls.studyDayControlWrap.append('button').datum({ state: 'play' }).html('&#9658;') //play symbol
+        .style('padding', '0.2em 0.5em 0.2em 0.5em').style('margin-left', '0.5em').style('border-radius', '0.4em')
+        //.style('display', 'none')
+        .on('click', function (d) {
+            var button = d3.select(this);
+            if (d.state === 'play') {
+                startAnimation.call(chart);
+            } else if (d.state === 'restart') {
+                config.plot_day = chart.controls.studyDayRange[0] > 0 ? chart.controls.studyDayRange[0] : 0;
+                chart.controls.studyDayInput.node().value = config.plot_day;
+                chart.draw();
 
-                    startAnimation.call(chart);
-                } else {
-                    stopAnimation.call(chart);
-                }
-            });
+                startAnimation.call(chart);
+            } else {
+                stopAnimation.call(chart);
+            }
+        });
     }
 
     function initStudyDayControl() {
         var chart = this;
         var config = this.config;
-        chart.controls.studyDayControlWrap = chart.controls.wrap
-            .selectAll('div')
-            .filter(function(controlInput) {
-                return controlInput.label === 'Study Day';
-            });
+        chart.controls.studyDayControlWrap = chart.controls.wrap.selectAll('div').filter(function (controlInput) {
+            return controlInput.label === 'Study Day';
+        });
 
         chart.controls.studyDayInput = chart.controls.studyDayControlWrap.select('input');
 
@@ -2106,34 +1669,20 @@
         chart.controls.studyDayInput.attr('type', 'range');
 
         //set min and max values and add annotations
-        chart.controls.studyDayRange = d3$1.extent(
-            chart.imputed_data.filter(function(d) {
-                return d.analysisFlag;
-            }),
-            function(d) {
-                return d[config.studyday_col];
-            }
-        );
+        chart.controls.studyDayRange = d3.extent(chart.imputed_data.filter(function (d) {
+            return d.analysisFlag;
+        }), function (d) {
+            return d[config.studyday_col];
+        });
         chart.controls.studyDayInput.attr('min', chart.controls.studyDayRange[0]);
         chart.controls.studyDayInput.attr('max', chart.controls.studyDayRange[1]);
 
-        chart.controls.studyDayControlWrap
-            .insert('span', 'input')
-            .attr('class', 'span-description')
-            .style('display', 'inline-block')
-            .style('padding-right', '0.2em')
-            .text(chart.controls.studyDayRange[0]);
-        chart.controls.studyDayControlWrap
-            .append('span')
-            .attr('class', 'span-description')
-            .style('display', 'inline-block')
-            .style('padding-left', '0.2em')
-            .text(chart.controls.studyDayRange[1]);
+        chart.controls.studyDayControlWrap.insert('span', 'input').attr('class', 'span-description').style('display', 'inline-block').style('padding-right', '0.2em').text(chart.controls.studyDayRange[0]);
+        chart.controls.studyDayControlWrap.append('span').attr('class', 'span-description').style('display', 'inline-block').style('padding-left', '0.2em').text(chart.controls.studyDayRange[1]);
 
         //initialize plot_day to day 0 or the min value, whichever is greater
         if (config.plot_day === null) {
-            config.plot_day =
-                chart.controls.studyDayRange[0] > 0 ? chart.controls.studyDayRange[0] : 0;
+            config.plot_day = chart.controls.studyDayRange[0] > 0 ? chart.controls.studyDayRange[0] : 0;
             chart.controls.studyDayInput.node().value = config.plot_day;
         }
 
@@ -2158,6 +1707,7 @@
         initVisitPath.call(this);
         initParticipantDetails.call(this);
         initResetButton.call(this);
+        customizePlotStyleToggle.call(this);
         initDisplayControl.call(this);
         initControlLabels.call(this);
         initEmptyChartWarning.call(this);
@@ -2166,14 +1716,7 @@
 
     function updateAxisSettings() {
         var config = this.config;
-        var unit =
-            config.display == 'relative_uln'
-                ? ' [xULN]'
-                : config.display == 'relative_baseline'
-                ? ' [xBaseline]'
-                : config.display == 'absolute'
-                ? ' [raw values]'
-                : null;
+        var unit = config.display == 'relative_uln' ? ' [xULN]' : config.display == 'relative_baseline' ? ' [xBaseline]' : config.display == 'absolute' ? ' [raw values]' : null;
 
         //Update axis labels.
         config.x.label = config.measure_values[config.x.column] + unit;
@@ -2181,54 +1724,36 @@
     }
 
     function updateControlCutpointLabels() {
-        if (
-            this.controls.config.inputs.find(function(input) {
-                return input.description === 'X-axis Reference Line';
-            })
-        )
-            this.controls.wrap
-                .selectAll('.control-group')
-                .filter(function(d) {
-                    return d.description === 'X-axis Reference Line';
-                })
-                .select('.wc-control-label')
-                .text(this.config.x.column + ' Reference Line');
-        if (
-            this.controls.config.inputs.find(function(input) {
-                return input.description === 'Y-axis Reference Line';
-            })
-        )
-            this.controls.wrap
-                .selectAll('.control-group')
-                .filter(function(d) {
-                    return d.description === 'Y-axis Reference Line';
-                })
-                .select('.wc-control-label')
-                .text(this.config.y.column + ' Reference Line');
+        if (this.controls.config.inputs.find(function (input) {
+            return input.description === 'X-axis Reference Line';
+        })) this.controls.wrap.selectAll('.control-group').filter(function (d) {
+            return d.description === 'X-axis Reference Line';
+        }).select('.wc-control-label').text(this.config.x.column + ' Reference Line');
+        if (this.controls.config.inputs.find(function (input) {
+            return input.description === 'Y-axis Reference Line';
+        })) this.controls.wrap.selectAll('.control-group').filter(function (d) {
+            return d.description === 'Y-axis Reference Line';
+        }).select('.wc-control-label').text(this.config.y.column + ' Reference Line');
     }
 
     function setMaxRRatio() {
         var chart = this;
         var config = this.config;
-        var r_ratio_wrap = chart.controls.wrap.selectAll('.control-group').filter(function(d) {
+        var r_ratio_wrap = chart.controls.wrap.selectAll('.control-group').filter(function (d) {
             return d.option === 'r_ratio[0]';
         });
 
         //if no max value is defined, use the max value from the data
         if (this.config.r_ratio_filter) {
             if (!config.r_ratio[1]) {
-                var raw_max_r_ratio = d3.max(this.raw_data, function(d) {
+                var raw_max_r_ratio = d3.max(this.raw_data, function (d) {
                     return d.rRatio;
                 });
                 config.max_r_ratio = Math.ceil(raw_max_r_ratio * 10) / 10; //round up to the nearest 0.1
                 config.r_ratio[1] = config.max_r_ratio;
-                chart.controls.wrap
-                    .selectAll('.control-group')
-                    .filter(function(d) {
-                        return d.option === 'r_ratio[0]';
-                    })
-                    .select('input#r_ratio_max')
-                    .property('value', config.max_r_ratio);
+                chart.controls.wrap.selectAll('.control-group').filter(function (d) {
+                    return d.option === 'r_ratio[0]';
+                }).select('input#r_ratio_max').property('value', config.max_r_ratio);
             }
 
             //make sure r_ratio[0] <= r_ratio[1]
@@ -2239,7 +1764,7 @@
             }
 
             //Define flag given r-ratio minimum.
-            this.raw_data.forEach(function(participant_obj) {
+            this.raw_data.forEach(function (participant_obj) {
                 var aboveMin = participant_obj.rRatio >= config.r_ratio[0];
                 var belowMax = participant_obj.rRatio <= config.r_ratio[1];
                 participant_obj.rRatioFlag = aboveMin & belowMax ? 'Y' : 'N';
@@ -2250,25 +1775,25 @@
     function addParticipantLevelMetadata(d, participant_obj) {
         var varList = [];
         if (this.config.filters) {
-            var filterVars = this.config.filters.map(function(d) {
+            var filterVars = this.config.filters.map(function (d) {
                 return d.hasOwnProperty('value_col') ? d.value_col : d;
             });
             varList = d3.merge([varList, filterVars]);
         }
         if (this.config.group_cols) {
-            var groupVars = this.config.group_cols.map(function(d) {
+            var groupVars = this.config.group_cols.map(function (d) {
                 return d.hasOwnProperty('value_col') ? d.value_col : d;
             });
             varList = d3.merge([varList, groupVars]);
         }
         if (this.config.details) {
-            var detailVars = this.config.details.map(function(d) {
+            var detailVars = this.config.details.map(function (d) {
                 return d.hasOwnProperty('value_col') ? d.value_col : d;
             });
             varList = d3.merge([varList, detailVars]);
         }
 
-        varList.forEach(function(v) {
+        varList.forEach(function (v) {
             participant_obj[v] = '' + d[0][v];
         });
     }
@@ -2276,8 +1801,7 @@
     function calculateRRatios(d, participant_obj) {
         if (this.config.r_ratio_filter) {
             //R-ratio should be the ratio of ALT to ALP, i.e. the x-axis to the z-axis.
-            participant_obj.rRatio =
-                participant_obj['ALT_relative_uln'] / participant_obj['ALP_relative_uln'];
+            participant_obj.rRatio = participant_obj['ALT_relative_uln'] / participant_obj['ALP_relative_uln'];
         }
     }
 
@@ -2289,56 +1813,54 @@
         participant_obj.days_x = null;
         participant_obj.days_y = null;
         participant_obj.outOfRange = false;
-        Object.keys(config.measure_values).forEach(function(mKey) {
+        Object.keys(config.measure_values).forEach(function (mKey) {
             //get all raw data for the current measure
-            var matches = d
-                .filter(function(f) {
-                    return config.measure_values[mKey] == f[config.measure_col];
-                }) //get matching measures
-                .filter(function(f) {
-                    return f.analysisFlag;
-                });
+            var matches = d.filter(function (f) {
+                return config.measure_values[mKey] == f[config.measure_col];
+            }) //get matching measures
+            .filter(function (f) {
+                return f.analysisFlag;
+            });
 
             participant_obj.drop_participant = matches.length === 0;
 
             if (participant_obj.drop_participant) {
                 if (config.debug) {
-                    console.warn(
-                        'No analysis records found for ' + d[0][config.id_col] + ' for ' + mKey
-                    );
+                    console.warn('No analysis records found for ' + d[0][config.id_col] + ' for ' + mKey);
                 }
 
-                participant_obj.drop_reason =
-                    'No analysis results found for 1+ key measure, including ' + mKey + '.';
+                participant_obj.drop_reason = 'No analysis results found for 1+ key measure, including ' + mKey + '.';
             } else {
                 //keep an array of all [value, studyday] pairs for the measure
-                participant_obj[mKey + '_raw'] = matches
-                    .map(function(m, i) {
-                        return {
-                            value: m[config.display],
-                            day: m[config.studyday_col]
-                        };
-                    })
-                    .sort(function(a, b) {
-                        return a.day - b.day;
-                    });
+                participant_obj[mKey + '_raw'] = matches.map(function (m, i) {
+                    return {
+                        value: m[config.display],
+                        day: m[config.studyday_col]
+                    };
+                }).sort(function (a, b) {
+                    return a.day - b.day;
+                });
 
                 //get the current record for each participant
                 if (config.plot_max_values) {
                     //get record with maximum value for the current display type
-                    participant_obj[mKey] = d3.max(matches, function(d) {
+                    participant_obj[mKey] = d3.max(matches, function (d) {
                         return +d[config.display];
                     });
                 } else {
                     //see if all selected config.plot_day was while participant was enrolled
                     var first = participant_obj[mKey + '_raw'][0];
-                    var last = participant_obj[mKey + '_raw'].pop();
-                    var before = config.plot_day < first.day;
-                    var after = config.plot_day > last.day;
-                    participant_obj.outOfRange = participant_obj.outOfRange || before || after;
+                    var last = participant_obj[mKey + '_raw'].slice().pop(); // Array.pop() alters the original array, but not if you slice and dice it!
+
+                    if ([config.x.column, config.y.column].includes(mKey)) {
+                        // out-of-range should be calculated study day of with x- and y-axis measures
+                        var before = config.plot_day < first.day;
+                        var after = config.plot_day > last.day;
+                        participant_obj.outOfRange = participant_obj.outOfRange || before || after;
+                    }
 
                     //get the most recent measure on or before config.plot_day
-                    var onOrBefore = participant_obj[mKey + '_raw'].filter(function(di) {
+                    var onOrBefore = participant_obj[mKey + '_raw'].filter(function (di) {
                         return di.day <= config.plot_day;
                     });
                     var latest = onOrBefore.pop();
@@ -2346,12 +1868,12 @@
                     participant_obj[mKey] = latest ? latest.value : first.value;
                 }
 
-                var maxRecord = matches.find(function(d) {
+                var maxRecord = matches.find(function (d) {
                     return participant_obj[mKey] == +d[config.display];
                 });
 
                 //map all measure specific values
-                config.flat_cols.forEach(function(col) {
+                config.flat_cols.forEach(function (col) {
                     participant_obj[mKey + '_' + col] = maxRecord ? maxRecord[col] : null;
                 });
 
@@ -2359,8 +1881,7 @@
                 if (config.cuts[mKey][config.display]) {
                     config.show_quadrants = true;
                     participant_obj[mKey + '_cut'] = config.cuts[mKey][config.display];
-                    participant_obj[mKey + '_flagged'] =
-                        participant_obj[mKey] >= participant_obj[mKey + '_cut'];
+                    participant_obj[mKey + '_flagged'] = participant_obj[mKey] >= participant_obj[mKey + '_cut'];
                 } else {
                     config.show_quadrants = false;
                     participant_obj[mKey + '_cut'] = null;
@@ -2369,10 +1890,8 @@
 
                 //save study days for each axis;
                 if (maxRecord) {
-                    if (mKey == config.x.column)
-                        participant_obj.days_x = maxRecord[config.studyday_col];
-                    if (mKey == config.y.column)
-                        participant_obj.days_y = maxRecord[config.studyday_col];
+                    if (mKey == config.x.column) participant_obj.days_x = maxRecord[config.studyday_col];
+                    if (mKey == config.y.column) participant_obj.days_y = maxRecord[config.studyday_col];
                 }
             }
         });
@@ -2386,19 +1905,17 @@
         //calculate the day difference between x and y
         participant_obj.day_diff = Math.abs(participant_obj.days_x - participant_obj.days_y);
 
-        var vals = d
-            .filter(function(f) {
-                return f.analysisFlag;
-            })
-            .filter(function(f) {
-                return f.key_measure;
-            });
-        participant_obj.day_range = d3$1.extent(vals, function(d) {
+        var vals = d.filter(function (f) {
+            return f.analysisFlag;
+        }).filter(function (f) {
+            return f.key_measure;
+        });
+        participant_obj.day_range = d3.extent(vals, function (d) {
             return d[config.studyday_col];
         });
 
         //check if both x and y are in range
-        if (!config.plot_max_values);
+        if (!config.plot_max_values) ;
 
         return participant_obj;
     }
@@ -2408,28 +1925,14 @@
 
         //get list of columns to flatten
         var flat_cols = [];
-        var user_cols = [
-            'measure_col',
-            'value_col',
-            'studyday_col',
-            'normal_col_low',
-            'normal_col_high'
-        ];
-        var derived_cols = [
-            'absolute',
-            'relative_uln',
-            'relative_baseline',
-            'baseline_absolute',
-            'analysisFlag'
-        ];
+        var user_cols = ['measure_col', 'value_col', 'studyday_col', 'normal_col_low', 'normal_col_high'];
+        var derived_cols = ['absolute', 'relative_uln', 'relative_baseline', 'baseline_absolute', 'analysisFlag'];
 
         // populate the full list of columns to flatten labels
-        user_cols.forEach(function(d) {
+        user_cols.forEach(function (d) {
             if (Array.isArray(d)) {
-                d.forEach(function(di) {
-                    flat_cols.push(
-                        di.hasOwnProperty('value_col') ? config[di.value_col] : config[di]
-                    );
+                d.forEach(function (di) {
+                    flat_cols.push(di.hasOwnProperty('value_col') ? config[di.value_col] : config[di]);
                 });
             } else {
                 flat_cols.push(d.hasOwnProperty('value_col') ? config[d.value_col] : config[d]);
@@ -2453,64 +1956,47 @@
         config.flat_cols = getFlatCols.call(this);
 
         //get maximum values for each measure type
-        var flat_data = d3
-            .nest()
-            .key(function(f) {
-                return f[config.id_col];
-            })
-            .rollup(function(d) {
-                return getMaxValues.call(chart, d);
-            })
-            .entries(
-                this.imputed_data.filter(function(f) {
-                    return f.key_measure;
+        var flat_data = d3.nest().key(function (f) {
+            return f[config.id_col];
+        }).rollup(function (d) {
+            return getMaxValues.call(chart, d);
+        }).entries(this.imputed_data.filter(function (f) {
+            return f.key_measure;
+        }));
+
+        chart.dropped_participants = flat_data.filter(function (f) {
+            return f.values.drop_participant;
+        }).map(function (d) {
+            return {
+                id: d.key,
+                drop_reason: d.values.drop_reason,
+                allrecords: chart.initial_data.filter(function (f) {
+                    return f[config.id_col] == d.key;
                 })
-            );
+            };
+        });
+        var flat_data = flat_data.filter(function (f) {
+            return !f.values.drop_participant;
+        }).map(function (m) {
+            m.values[config.id_col] = m.key;
 
-        chart.dropped_participants = flat_data
-            .filter(function(f) {
-                return f.values.drop_participant;
-            })
-            .map(function(d) {
-                return {
-                    id: d.key,
-                    drop_reason: d.values.drop_reason,
-                    allrecords: chart.initial_data.filter(function(f) {
-                        return f[config.id_col] == d.key;
-                    })
-                };
+            //link the raw data to the flattened object
+            var allMatches = chart.imputed_data.filter(function (f) {
+                return f[config.id_col] == m.key;
             });
-        var flat_data = flat_data
-            .filter(function(f) {
-                return !f.values.drop_participant;
-            })
-            .map(function(m) {
-                m.values[config.id_col] = m.key;
+            m.values.raw = allMatches;
 
-                //link the raw data to the flattened object
-                var allMatches = chart.imputed_data.filter(function(f) {
-                    return f[config.id_col] == m.key;
-                });
-                m.values.raw = allMatches;
-
-                return m.values;
-            });
+            return m.values;
+        });
         return flat_data;
     }
 
     function setLegendLabel() {
         //change the legend label to match the group variable
         //or hide legend if group = NONE
-        this.config.legend.label =
-            this.config.color_by !== 'NONE'
-                ? this.config.group_cols[
-                      this.config.group_cols
-                          .map(function(group) {
-                              return group.value_col;
-                          })
-                          .indexOf(this.config.color_by)
-                  ].label
-                : '';
+        this.config.legend.label = this.config.color_by !== 'NONE' ? this.config.group_cols[this.config.group_cols.map(function (group) {
+            return group.value_col;
+        }).indexOf(this.config.color_by)].label : '';
     }
 
     function showMissingDataWarning() {
@@ -2519,41 +2005,23 @@
 
         if (config.debug) {
             //confirm participants are only dropped once (?!)
-            var unique_dropped_participants = d3
-                .set(
-                    this.dropped_participants.map(function(m) {
-                        return m.id;
-                    })
-                )
-                .values().length;
-            console.log(
-                'Of ' +
-                    this.dropped_participants.length +
-                    ' dropped participants, ' +
-                    unique_dropped_participants +
-                    ' are unique.'
-            );
+            var unique_dropped_participants = d3.set(this.dropped_participants.map(function (m) {
+                return m.id;
+            })).values().length;
+            console.log('Of ' + this.dropped_participants.length + ' dropped participants, ' + unique_dropped_participants + ' are unique.');
             console.log(this.dropped_participants);
         }
 
         chart.messages.remove(null, 'droppedPts', chart.messages); //remove message from previous render
         if (this.dropped_participants.length > 0) {
-            var warningText =
-                this.dropped_participants.length +
-                ' participants are not plotted. They likely have invalid or missing data for key variables in the current chart. Click <a class="ptDownload">here</a> to download a csv with a brief explanation of why each participant was not plotted.';
+            var warningText = this.dropped_participants.length + ' participants are not plotted. They likely have invalid or missing data for key variables in the current chart. Click <a class="ptDownload">here</a> to download a csv with a brief explanation of why each participant was not plotted.';
 
-            this.messages.add(warningText, 'caution', 'droppedPts', this.messages, function() {
+            this.messages.add(warningText, 'caution', 'droppedPts', this.messages, function () {
                 //custom callback to activate the droppedRows download
-                d3.select(this)
-                    .select('a.ptDownload')
-                    .style('color', 'blue')
-                    .style('text-decoration', 'underline')
-                    .style('cursor', 'pointer')
-                    .datum(chart.dropped_participants)
-                    .on('click', function(d) {
-                        var cols = ['id', 'drop_reason'];
-                        downloadCSV.call(this, d, cols, 'eDishDroppedParticipants');
-                    });
+                d3.select(this).select('a.ptDownload').style('color', 'blue').style('text-decoration', 'underline').style('cursor', 'pointer').datum(chart.dropped_participants).on('click', function (d) {
+                    var cols = ['id', 'drop_reason'];
+                    downloadCSV.call(this, d, cols, 'eDishDroppedParticipants');
+                });
             });
         }
     }
@@ -2562,30 +2030,24 @@
         var chart = this;
         var config = this.config;
         //drop records with missing or invalid (negative) values
-        var missing_count = d3.sum(this.raw_data, function(f) {
+        var missing_count = d3.sum(this.raw_data, function (f) {
             return f[config.x.column] <= 0 || f[config.y.column] <= 0;
         });
 
         if (missing_count > 0) {
-            this.raw_data = this.raw_data.map(function(d) {
+            this.raw_data = this.raw_data.map(function (d) {
                 d.nonPositiveFlag = d[config.x.column] <= 0 || d[config.y.column] <= 0;
                 var type = config.display == 'relative_uln' ? 'eDish' : 'mDish';
                 // generate an informative reason the participant was dropped
-                var dropText =
-                    type +
-                    ' values could not be generated for ' +
-                    config.x.column +
-                    ' or ' +
-                    config.y.column +
-                    '. ';
+                var dropText = type + ' values could not be generated for ' + config.x.column + ' or ' + config.y.column + '. ';
 
                 // x type is mdish and baseline is missing
-                if ((type == 'mDish') & !d[config.x.column + '_baseline_absolute']) {
+                if (type == 'mDish' & !d[config.x.column + '_baseline_absolute']) {
                     dropText = dropText + 'Baseline for ' + config.x.column + ' is missing. ';
                 }
 
                 // y type is mdish and baseline is missing
-                if ((type == 'mDish') & !d[config.y.column + '_baseline_absolute']) {
+                if (type == 'mDish' & !d[config.y.column + '_baseline_absolute']) {
                     dropText = dropText + 'Baseline for ' + config.y.column + ' is missing. ';
                 }
 
@@ -2593,25 +2055,20 @@
                 return d;
             });
 
-            this.dropped_participants = d3.merge([
-                this.dropped_participants,
-                this.raw_data
-                    .filter(function(f) {
-                        return f.nonPositiveFlag;
-                    })
-                    .map(function(m) {
-                        return { id: m[config.id_col], drop_reason: m.drop_reason };
-                    })
-            ]);
+            this.dropped_participants = d3.merge([this.dropped_participants, this.raw_data.filter(function (f) {
+                return f.nonPositiveFlag;
+            }).map(function (m) {
+                return { id: m[config.id_col], drop_reason: m.drop_reason };
+            })]);
 
-            this.dropped_participants.map(function(m) {
-                m.raw = chart.initial_data.filter(function(f) {
+            this.dropped_participants.map(function (m) {
+                m.raw = chart.initial_data.filter(function (f) {
                     return f[config.id_col] == m.id;
                 });
             });
         }
 
-        this.raw_data = this.raw_data.filter(function(f) {
+        this.raw_data = this.raw_data.filter(function (f) {
             return !f.nonPositiveFlag;
         });
         showMissingDataWarning.call(this);
@@ -2639,15 +2096,15 @@
         var x_cut = this.config.cuts[x_var][config.display];
         var y_cut = this.config.cuts[y_var][config.display];
 
-        this.filtered_data.forEach(function(d) {
+        this.filtered_data.forEach(function (d) {
             var x_cat = d[x_var] >= x_cut ? 'xHigh' : 'xNormal';
             var y_cat = d[y_var] >= y_cut ? 'yHigh' : 'yNormal';
             d['eDISH_quadrant'] = x_cat + ':' + y_cat;
         });
 
         //update Quadrant data
-        config.quadrants.forEach(function(quad) {
-            quad.count = chart.filtered_data.filter(function(d) {
+        config.quadrants.forEach(function (quad) {
+            quad.count = chart.filtered_data.filter(function (d) {
                 return d.eDISH_quadrant == quad.dataValue;
             }).length;
             quad.total = chart.filtered_data.length;
@@ -2661,23 +2118,19 @@
         var measure = config[dimension].column;
         var measure_long = config.measure_values[measure];
         var cut = config.cuts[measure][config.display];
-        var values = this.imputed_data
-            .filter(function(f) {
-                return f[config.measure_col] == measure_long;
-            })
-            .map(function(m) {
-                return +m[config.display];
-            })
-            .filter(function(m) {
-                return m > 0;
-            })
-            .sort(function(a, b) {
-                return a - b;
-            });
-        var val_extent = d3$1.extent(values);
+        var values = this.imputed_data.filter(function (f) {
+            return f[config.measure_col] == measure_long;
+        }).map(function (m) {
+            return +m[config.display];
+        }).filter(function (m) {
+            return m > 0;
+        }).sort(function (a, b) {
+            return a - b;
+        });
+        var val_extent = d3.extent(values);
 
         //make sure the domain contains the cut point and the max possible value for the measure
-        domain[1] = d3$1.max([domain[1], cut * 1.01, val_extent[1]]);
+        domain[1] = d3.max([domain[1], cut * 1.01, val_extent[1]]);
 
         // make sure the domain lower limit captures all of the raw Values
         if (this.config[dimension].type == 'linear') {
@@ -2694,9 +2147,7 @@
 
             //throw a warning if the domain is > 0 if using log scale
             if (this[dimension].type == 'log' && domain[0] <= 0) {
-                console.warn(
-                    "Can't draw a log " + dimension + '-axis because there are values <= 0.'
-                );
+                console.warn("Can't draw a log " + dimension + '-axis because there are values <= 0.');
             }
         }
         this[dimension + '_dom'] = domain;
@@ -2722,34 +2173,24 @@
     function formatPoints() {
         var chart = this;
         var config = this.config;
-        var points = this.svg
-            .select('g.point-supergroup.mark1')
-            .selectAll('g.point')
-            .select('circle');
+        var points = this.svg.select('g.point-supergroup.mark1').selectAll('g.point').select('circle');
 
-        points
-            .attr('stroke', function(d) {
-                var disabled = d3.select(this).classed('disabled');
-                var raw = d.values.raw[0],
-                    pointColor = chart.colorScale(raw[config.color_by]);
-                return disabled ? '#ccc' : pointColor;
-            })
-            .attr('fill', function(d) {
-                var disabled = d3.select(this).classed('disabled');
-                var raw = d.values.raw[0],
-                    pointColor = chart.colorScale(raw[config.color_by]);
-                return disabled ? 'white' : pointColor;
-            })
-            .attr('stroke-width', 1)
-            .style('clip-path', null);
+        points.attr('stroke', function (d) {
+            var disabled = d3.select(this).classed('disabled');
+            var raw = d.values.raw[0],
+                pointColor = chart.colorScale(raw[config.color_by]);
+            return disabled ? '#ccc' : pointColor;
+        }).attr('fill', function (d) {
+            var disabled = d3.select(this).classed('disabled');
+            var raw = d.values.raw[0],
+                pointColor = chart.colorScale(raw[config.color_by]);
+            return disabled ? 'white' : pointColor;
+        }).attr('stroke-width', 1).style('clip-path', null);
     }
 
     function clearParticipantDetails() {
         var config = this.config;
-        var points = this.svg
-            .select('g.point-supergroup.mark1')
-            .selectAll('g.point')
-            .select('circle');
+        var points = this.svg.select('g.point-supergroup.mark1').selectAll('g.point').select('circle');
 
         points.classed('disabled', false);
 
@@ -2779,35 +2220,27 @@
         };
 
         //Make sure cutpoint isn't below lower domain - Comes in to play when changing from log to linear axes
-        Object.keys(lower_limits).forEach(function(dimension) {
+        Object.keys(lower_limits).forEach(function (dimension) {
             var measure = config[dimension].column;
             var current_cut = config.cuts[measure][config.display];
             var min = lower_limits[dimension];
             if (current_cut < min) {
                 config.cuts[measure][config.display] = min;
-                chart.controls.wrap
-                    .selectAll('div.control-group')
-                    .filter(function(f) {
-                        return f.description
-                            ? f.description.toLowerCase() == dimension + '-axis reference line'
-                            : false;
-                    })
-                    .select('input')
-                    .node().value = min;
+                chart.controls.wrap.selectAll('div.control-group').filter(function (f) {
+                    return f.description ? f.description.toLowerCase() == dimension + '-axis reference line' : false;
+                }).select('input').node().value = min;
             }
         });
 
         //Update cut point controls
-        var controlWraps = this.controls.wrap
-            .selectAll('.control-group')
-            .filter(function(d) {
-                return /.-axis Reference Line/i.test(d.description);
-            })
-            .attr('min', function(d) {
-                return lower_limits[d.description.split('-')[0]];
-            });
+        var controlWraps = this.controls.wrap.selectAll('.control-group').filter(function (d) {
+            return (/.-axis Reference Line/i.test(d.description)
+            );
+        }).attr('min', function (d) {
+            return lower_limits[d.description.split('-')[0]];
+        });
 
-        controlWraps.select('input').on('change', function(d) {
+        controlWraps.select('input').on('change', function (d) {
             var dimension = d.description.split('-')[0].toLowerCase();
             var min = chart[dimension + '_dom'][0];
             var input = d3.select(this);
@@ -2827,11 +2260,7 @@
         var config = this.config;
 
         //check to see if the cutpoint used is current
-        if (
-            config.cuts.x != config.x.column ||
-            config.cuts.y != config.y.column ||
-            config.cuts.display != config.display
-        ) {
+        if (config.cuts.x != config.x.column || config.cuts.y != config.y.column || config.cuts.display != config.display) {
             // if not, update it!
 
             // track the current cut point variables
@@ -2842,22 +2271,16 @@
             // update the cutpoint shown in the control
             config.cuts.display_change = false; //reset the change flag;
             var dimensions = ['x', 'y'];
-            dimensions.forEach(function(dimension) {
+            dimensions.forEach(function (dimension) {
                 //change the control to point at the correct cut point
-                var dimInput = chart.controls.wrap
-                    .selectAll('div.control-group')
-                    .filter(function(f) {
-                        return f.description
-                            ? f.description.toLowerCase() == dimension + '-axis reference line'
-                            : false;
-                    })
-                    .select('input');
+                var dimInput = chart.controls.wrap.selectAll('div.control-group').filter(function (f) {
+                    return f.description ? f.description.toLowerCase() == dimension + '-axis reference line' : false;
+                }).select('input');
 
                 dimInput.node().value = config.cuts[config[dimension].column][config.display];
 
                 //don't think this actually changes functionality, but nice to have it accurate just in case
-                dimInput.option =
-                    'settings.cuts.' + [config[dimension].column] + '.' + [config.display];
+                dimInput.option = 'settings.cuts.' + [config[dimension].column] + '.' + [config.display];
             });
         }
     }
@@ -2892,11 +2315,7 @@
 
         //update the study day control label with the currently selected values
         var currentValue = chart.controls.studyDayControlWrap.select('input').property('value');
-        chart.controls.studyDayControlWrap
-            .select('span.span-description')
-            .html('Showing data from: <strong>Day ' + currentValue + '</strong>')
-            .select('strong')
-            .style('color', 'blue');
+        chart.controls.studyDayControlWrap.select('span.span-description').html('Showing data from: <strong>Day ' + currentValue + '</strong>').select('strong').style('color', 'blue');
     }
 
     function onDraw() {
@@ -2926,59 +2345,44 @@
 
     //draw marginal rug for visit-level measures
     function drawRugs(d, axis) {
-        var _this = this;
-
         var chart = this;
         var config = this.config;
 
         //get matching measures
         var allMatches = d.values.raw[0].raw;
         var measure = config.measure_values[config[axis].column];
-        var matches = allMatches.filter(function(f) {
+        var matches = allMatches.filter(function (f) {
             return f[config.measure_col] == measure;
         });
 
         //draw the rug
         var min_value = axis == 'x' ? chart.y.domain()[0] : chart.x.domain()[0];
-        chart[axis + '_rug']
-            .selectAll('text')
-            .data(matches)
-            .enter()
-            .append('text')
-            .attr('class', 'rug-tick')
-            .attr('x', function(d) {
-                return axis == 'x' ? chart.x(d[config.display]) : chart.x(min_value);
-            })
-            .attr('y', function(d) {
-                return axis == 'y' ? chart.y(d[config.display]) : chart.y(min_value);
-            })
-            //        .attr('dy', axis == 'x' ? '-0.2em' : null)
-            .attr('text-anchor', axis == 'y' ? 'end' : null)
-            .attr('alignment-baseline', axis == 'x' ? 'hanging' : null)
-            .attr('font-size', axis == 'x' ? '6px' : null)
-            .attr('stroke', function(d) {
-                return chart.colorScale(d[config.color_by]);
-            })
-            .attr('stroke-width', function(d) {
-                return d[_this.config.studyday_col] <= _this.config.plot_day ? '5px' : '1px';
-            })
-            .text(function(d) {
-                return axis == 'x' ? '|' : '–';
-            })
-            .append('svg:title')
-            .text(function(d) {
-                return (
-                    d[config.measure_col] +
-                    '=' +
-                    d3.format('.2f')(d.absolute) +
-                    ' (' +
-                    d3.format('.2f')(d.relative_uln) +
-                    ' xULN) @ ' +
-                    d[config.visit_col] +
-                    '/Study Day ' +
-                    d[config.studyday_col]
-                );
-            });
+        var rugs = chart[axis + '_rug'].selectAll('text').data(matches).enter().append('text').attr({
+            class: 'rug-tick',
+            x: function x(di) {
+                return axis === 'x' ? chart.x(di[config.display]) : chart.x(min_value);
+            },
+            y: function y(di) {
+                return axis === 'y' ? chart.y(di[config.display]) : chart.y(min_value);
+            },
+            dy: axis === 'y' ? 4 : 0,
+            'text-anchor': axis === 'y' ? 'end' : null,
+            'alignment-baseline': axis === 'x' ? 'hanging' : null,
+            'font-size': axis === 'x' ? '6px' : null,
+            stroke: function stroke(di) {
+                return chart.colorScale(di[config.color_by]);
+            },
+            'stroke-width': function strokeWidth(di) {
+                return di[config.display] === d.values[axis] ? '3px' : '1px';
+            }
+        }).text(function (d) {
+            return axis === 'x' ? '|' : '–';
+        });
+
+        //Add tooltips to rugs.
+        rugs.append('svg:title').text(function (d) {
+            return d[config.measure_col] + '=' + d3.format('.2f')(d.absolute) + ' (' + d3.format('.2f')(d.relative_uln) + ' xULN) @ ' + d[config.visit_col] + '/Study Day ' + d[config.studyday_col];
+        });
     }
 
     function addPointMouseover() {
@@ -2987,26 +2391,24 @@
         var points = this.marks[0].circles;
 
         //add event listener to all participant level points
-        points
-            .filter(function(d) {
-                var disabled = d3.select(this).classed('disabled');
-                return !disabled;
-            })
-            .on('mouseover', function(d) {
-                //disable mouseover when highlights (onClick) are visible
-                var disabled = d3.select(this).classed('disabled');
-                if (!disabled) {
-                    //clear previous mouseover if any
-                    points.attr('stroke-width', 1);
-                    clearRugs.call(chart, 'x');
-                    clearRugs.call(chart, 'y');
+        points.filter(function (d) {
+            var disabled = d3.select(this).classed('disabled');
+            return !disabled;
+        }).on('mouseover', function (d) {
+            //disable mouseover when highlights (onClick) are visible
+            var disabled = d3.select(this).classed('disabled');
+            if (!disabled) {
+                //clear previous mouseover if any
+                points.attr('stroke-width', 1);
+                clearRugs.call(chart, 'x');
+                clearRugs.call(chart, 'y');
 
-                    //draw the rugs
-                    d3.select(this).attr('stroke-width', 3);
-                    drawRugs.call(chart, d, 'x');
-                    drawRugs.call(chart, d, 'y');
-                }
-            });
+                //draw the rugs
+                d3.select(this).attr('stroke-width', 3);
+                drawRugs.call(chart, d, 'x');
+                drawRugs.call(chart, d, 'y');
+            }
+        });
     }
 
     function drawVisitPath(d) {
@@ -3016,142 +2418,94 @@
         var allMatches = d.values.raw[0].raw;
         var x_measure = config.measure_values[config.x.column];
         var y_measure = config.measure_values[config.y.column];
-        var matches = allMatches.filter(function(f) {
+        var matches = allMatches.filter(function (f) {
             return f[config.measure_col] == x_measure || f[config.measure_col] == y_measure;
         });
 
         //get coordinates by visit
-        var visits = d3
-            .set(
-                matches.map(function(m) {
-                    return m[config.studyday_col];
-                })
-            )
-            .values();
-        var visit_data = visits
-            .map(function(m) {
-                var visitObj = {};
-                visitObj.studyday = +m;
-                visitObj.visit = config.visit_col
-                    ? matches.filter(function(f) {
-                          return f[config.studyday_col] == m;
-                      })[0][config.visit_col]
-                    : null;
-                visitObj.visitn = config.visitn_col
-                    ? matches.filter(function(f) {
-                          return f[config.studyday_col] == m;
-                      })[0][config.visitn_col]
-                    : null;
-                visitObj[config.color_by] = matches[0][config.color_by];
+        var visits = d3.set(matches.map(function (m) {
+            return m[config.studyday_col];
+        })).values();
+        var visit_data = visits.map(function (m) {
+            var visitObj = {};
+            visitObj.studyday = +m;
+            visitObj.visit = config.visit_col ? matches.filter(function (f) {
+                return f[config.studyday_col] == m;
+            })[0][config.visit_col] : null;
+            visitObj.visitn = config.visitn_col ? matches.filter(function (f) {
+                return f[config.studyday_col] == m;
+            })[0][config.visitn_col] : null;
+            visitObj[config.color_by] = matches[0][config.color_by];
 
-                //get x coordinate
-                var x_match = matches
-                    .filter(function(f) {
-                        return f[config.studyday_col] == m;
-                    })
-                    .filter(function(f) {
-                        return f[config.measure_col] == x_measure;
-                    });
-
-                if (x_match.length) {
-                    visitObj.x = x_match[0][config.display];
-                    visitObj.xMatch = x_match[0];
-                } else {
-                    visitObj.x = null;
-                    visitObj.xMatch = null;
-                }
-
-                //get y coordinate
-                var y_match = matches
-                    .filter(function(f) {
-                        return f[config.studyday_col] == m;
-                    })
-                    .filter(function(f) {
-                        return f[config.measure_col] == y_measure;
-                    });
-                if (y_match.length) {
-                    visitObj.y = y_match[0][config.display];
-                    visitObj.yMatch = y_match[0];
-                } else {
-                    visitObj.y = null;
-                    visitObj.yMatch = null;
-                }
-
-                return visitObj;
-            })
-            .sort(function(a, b) {
-                return a.studyday - b.studyday;
-            })
-            .filter(function(f) {
-                return (f.x > 0) & (f.y > 0);
+            //get x coordinate
+            var x_match = matches.filter(function (f) {
+                return f[config.studyday_col] == m;
+            }).filter(function (f) {
+                return f[config.measure_col] == x_measure;
             });
+
+            if (x_match.length) {
+                visitObj.x = x_match[0][config.display];
+                visitObj.xMatch = x_match[0];
+            } else {
+                visitObj.x = null;
+                visitObj.xMatch = null;
+            }
+
+            //get y coordinate
+            var y_match = matches.filter(function (f) {
+                return f[config.studyday_col] == m;
+            }).filter(function (f) {
+                return f[config.measure_col] == y_measure;
+            });
+            if (y_match.length) {
+                visitObj.y = y_match[0][config.display];
+                visitObj.yMatch = y_match[0];
+            } else {
+                visitObj.y = null;
+                visitObj.yMatch = null;
+            }
+
+            return visitObj;
+        }).sort(function (a, b) {
+            return a.studyday - b.studyday;
+        }).filter(function (f) {
+            return f.x > 0 & f.y > 0;
+        });
 
         //draw the path
-        var myLine = d3.svg
-            .line()
-            .x(function(d) {
-                return chart.x(d.x);
-            })
-            .y(function(d) {
-                return chart.y(d.y);
-            });
+        var myLine = d3.svg.line().x(function (d) {
+            return chart.x(d.x);
+        }).y(function (d) {
+            return chart.y(d.y);
+        });
 
         chart.visitPath.selectAll('*').remove();
         chart.visitPath.moveToFront();
 
-        var path = chart.visitPath
-            .append('path')
-            .attr('class', 'participant-visits')
-            .datum(visit_data)
-            .attr('d', myLine)
-            .attr('stroke', function(d) {
-                return chart.colorScale(matches[0][config.color_by]);
-            })
-            .attr('stroke-width', '2px')
-            .attr('fill', 'none');
+        var path = chart.visitPath.append('path').attr('class', 'participant-visits').datum(visit_data).attr('d', myLine).attr('stroke', function (d) {
+            return chart.colorScale(matches[0][config.color_by]);
+        }).attr('stroke-width', '2px').attr('fill', 'none');
 
         //Little trick for animating line drawing
         var totalLength = path.node().getTotalLength();
-        path.attr('stroke-dasharray', totalLength + ' ' + totalLength)
-            .attr('stroke-dashoffset', totalLength)
-            .transition()
-            .duration(2000)
-            .ease('linear')
-            .attr('stroke-dashoffset', 0);
+        path.attr('stroke-dasharray', totalLength + ' ' + totalLength).attr('stroke-dashoffset', totalLength).transition().duration(2000).ease('linear').attr('stroke-dashoffset', 0);
 
         //draw visit points
-        var visitPoints = chart.visitPath
-            .selectAll('g.visit-point')
-            .data(visit_data)
-            .enter()
-            .append('g')
-            .attr('class', 'visit-point');
+        var visitPoints = chart.visitPath.selectAll('g.visit-point').data(visit_data).enter().append('g').attr('class', 'visit-point');
 
-        visitPoints
-            .append('circle')
-            .attr('class', 'participant-visits')
-            .attr('r', 0)
-            .attr('stroke', function(d) {
-                return chart.colorScale(d[config.color_by]);
-            })
-            .attr('stroke-width', 1)
-            .attr('cx', function(d) {
-                return chart.x(d.x);
-            })
-            .attr('cy', function(d) {
-                return chart.y(d.y);
-            })
-            .attr('fill', function(d) {
-                return chart.colorScale(d[config.color_by]);
-            })
-            .attr('fill-opacity', 0.5)
-            .transition()
-            .delay(2000)
-            .duration(200)
-            .attr('r', 4);
+        visitPoints.append('circle').attr('class', 'participant-visits').attr('r', 0).attr('stroke', function (d) {
+            return chart.colorScale(d[config.color_by]);
+        }).attr('stroke-width', 1).attr('cx', function (d) {
+            return chart.x(d.x);
+        }).attr('cy', function (d) {
+            return chart.y(d.y);
+        }).attr('fill', function (d) {
+            return chart.colorScale(d[config.color_by]);
+        }).attr('fill-opacity', 0.5).transition().delay(2000).duration(200).attr('r', 4);
 
         //custom titles for points on mouseover
-        visitPoints.append('title').text(function(d) {
+        visitPoints.append('title').text(function (d) {
             var xvar = config.x.column;
             var yvar = config.y.column;
             var studyday_label = 'Study day: ' + d.studyday + '\n',
@@ -3169,238 +2523,158 @@
         var config = chart.config;
         var allMatches = d.values.raw[0].raw;
 
-        var ranges = d3
-            .nest()
-            .key(function(d) {
-                return d[config.measure_col];
-            })
-            .rollup(function(d) {
-                var vals = d
-                    .map(function(m) {
-                        return m[config.value_col];
-                    })
-                    .sort(function(a, b) {
-                        return a - b;
-                    });
-                var lower_extent = d3.quantile(vals, config.measureBounds[0]),
-                    upper_extent = d3.quantile(vals, config.measureBounds[1]);
-                return [lower_extent, upper_extent];
-            })
-            .entries(chart.initial_data);
+        var ranges = d3.nest().key(function (d) {
+            return d[config.measure_col];
+        }).rollup(function (d) {
+            var vals = d.map(function (m) {
+                return m[config.value_col];
+            }).sort(function (a, b) {
+                return a - b;
+            });
+            var lower_extent = d3.quantile(vals, config.measureBounds[0]),
+                upper_extent = d3.quantile(vals, config.measureBounds[1]);
+            return [lower_extent, upper_extent];
+        }).entries(chart.initial_data);
 
         //make nest by measure
-        var nested = d3
-            .nest()
-            .key(function(d) {
-                return d[config.measure_col];
-            })
-            .rollup(function(d) {
-                var measureObj = {};
-                measureObj.eDish = chart;
-                measureObj.key = d[0][config.measure_col];
-                measureObj.raw = d;
-                measureObj.values = d.map(function(d) {
-                    return +d[config.value_col];
-                });
-                measureObj.max = +d3.format('0.2f')(d3.max(measureObj.values));
-                measureObj.min = +d3.format('0.2f')(d3.min(measureObj.values));
-                measureObj.median = +d3.format('0.2f')(d3.median(measureObj.values));
-                measureObj.n = measureObj.values.length;
-                measureObj.spark = 'spark!';
-                measureObj.population_extent = ranges.find(function(f) {
-                    return measureObj.key == f.key;
-                }).values;
-                var hasColor =
-                    chart.spaghetti.colorScale.domain().indexOf(d[0][config.measure_col]) > -1;
-                measureObj.color = hasColor
-                    ? chart.spaghetti.colorScale(d[0][config.measure_col])
-                    : 'black';
-                measureObj.spark_data = d.map(function(m) {
-                    var obj = {
-                        id: m[config.id_col],
-                        lab: m[config.measure_col],
-                        visit: config.visit_col ? m[config.visit_col] : null,
-                        visitn: config.visitn_col ? +m[config.visitn_col] : null,
-                        studyday: +m[config.studyday_col],
-                        value: +m[config.value_col],
-                        lln: config.normal_col_low ? +m[config.normal_col_low] : null,
-                        uln: +m[config.normal_col_high],
-                        population_extent: measureObj.population_extent,
-                        outlier_low: config.normal_col_low
-                            ? +m[config.value_col] < +m[config.normal_col_low]
-                            : null,
-                        outlier_high: +m[config.value_col] > +m[config.normal_col_high]
-                    };
-                    obj.outlier = obj.outlier_low || obj.outlier_high;
-                    return obj;
-                });
-                return measureObj;
-            })
-            .entries(allMatches);
-
-        var nested = nested
-            .map(function(m) {
-                return m.values;
-            })
-            .sort(function(a, b) {
-                var a_order = Object.keys(config.measure_values)
-                    .map(function(e) {
-                        return config.measure_values[e];
-                    })
-                    .indexOf(a.key);
-                var b_order = Object.keys(config.measure_values)
-                    .map(function(e) {
-                        return config.measure_values[e];
-                    })
-                    .indexOf(b.key);
-                return b_order - a_order;
+        var nested = d3.nest().key(function (d) {
+            return d[config.measure_col];
+        }).rollup(function (d) {
+            var measureObj = {};
+            measureObj.eDish = chart;
+            measureObj.key = d[0][config.measure_col];
+            measureObj.raw = d;
+            measureObj.values = d.map(function (d) {
+                return +d[config.value_col];
             });
+            measureObj.max = +d3.format('0.2f')(d3.max(measureObj.values));
+            measureObj.min = +d3.format('0.2f')(d3.min(measureObj.values));
+            measureObj.median = +d3.format('0.2f')(d3.median(measureObj.values));
+            measureObj.n = measureObj.values.length;
+            measureObj.spark = 'spark!';
+            measureObj.population_extent = ranges.find(function (f) {
+                return measureObj.key == f.key;
+            }).values;
+            var hasColor = chart.spaghetti.colorScale.domain().indexOf(d[0][config.measure_col]) > -1;
+            measureObj.color = hasColor ? chart.spaghetti.colorScale(d[0][config.measure_col]) : 'black';
+            measureObj.spark_data = d.map(function (m) {
+                var obj = {
+                    id: m[config.id_col],
+                    lab: m[config.measure_col],
+                    visit: config.visit_col ? m[config.visit_col] : null,
+                    visitn: config.visitn_col ? +m[config.visitn_col] : null,
+                    studyday: +m[config.studyday_col],
+                    value: +m[config.value_col],
+                    lln: config.normal_col_low ? +m[config.normal_col_low] : null,
+                    uln: +m[config.normal_col_high],
+                    population_extent: measureObj.population_extent,
+                    outlier_low: config.normal_col_low ? +m[config.value_col] < +m[config.normal_col_low] : null,
+                    outlier_high: +m[config.value_col] > +m[config.normal_col_high]
+                };
+                obj.outlier = obj.outlier_low || obj.outlier_high;
+                return obj;
+            });
+            return measureObj;
+        }).entries(allMatches);
+
+        var nested = nested.map(function (m) {
+            return m.values;
+        }).sort(function (a, b) {
+            var a_order = Object.keys(config.measure_values).map(function (e) {
+                return config.measure_values[e];
+            }).indexOf(a.key);
+            var b_order = Object.keys(config.measure_values).map(function (e) {
+                return config.measure_values[e];
+            }).indexOf(b.key);
+            return b_order - a_order;
+        });
         return nested;
     }
 
     function addSparkLines(d) {
         if (this.data.raw.length > 0) {
             //don't try to draw sparklines if the table is empty
-            this.tbody
-                .selectAll('tr')
-                .style('background', 'none')
-                .style('border-bottom', '.5px solid black')
-                .each(function(row_d) {
-                    //Spark line cell
-                    var cell = d3
-                            .select(this)
-                            .select('td.spark')
-                            .classed('minimized', true)
-                            .text(''),
-                        toggle = cell
-                            .append('span')
-                            .html('&#x25BD;')
-                            .style('cursor', 'pointer')
-                            .style('color', '#999')
-                            .style('vertical-align', 'middle'),
-                        width = 100,
-                        height = 25,
-                        offset = 4,
-                        overTime = row_d.spark_data.sort(function(a, b) {
-                            return +a.studyday - +b.studyday;
-                        }),
-                        color = row_d.color;
+            this.tbody.selectAll('tr').style('background', 'none').style('border-bottom', '.5px solid black').each(function (row_d) {
+                //Spark line cell
+                var cell = d3.select(this).select('td.spark').classed('minimized', true).text(''),
+                    toggle = cell.append('span').html('&#x25BD;').style('cursor', 'pointer').style('color', '#999').style('vertical-align', 'middle'),
+                    width = 100,
+                    height = 25,
+                    offset = 4,
+                    overTime = row_d.spark_data.sort(function (a, b) {
+                    return +a.studyday - +b.studyday;
+                }),
+                    color = row_d.color;
 
-                    var x = d3.scale
-                        .linear()
-                        .domain(
-                            d3.extent(overTime, function(m) {
-                                return m.studyday;
-                            })
-                        )
-                        .range([offset, width - offset]);
+                var x = d3.scale.linear().domain(d3.extent(overTime, function (m) {
+                    return m.studyday;
+                })).range([offset, width - offset]);
 
-                    //y-domain includes 99th population percentile + any participant outliers
-                    var y_min = d3.min(d3.merge([row_d.values, row_d.population_extent])) * 0.99;
-                    var y_max = d3.max(d3.merge([row_d.values, row_d.population_extent])) * 1.01;
-                    var y = d3.scale
-                        .linear()
-                        .domain([y_min, y_max])
-                        .range([height - offset, offset]);
+                //y-domain includes 99th population percentile + any participant outliers
+                var y_min = d3.min(d3.merge([row_d.values, row_d.population_extent])) * 0.99;
+                var y_max = d3.max(d3.merge([row_d.values, row_d.population_extent])) * 1.01;
+                var y = d3.scale.linear().domain([y_min, y_max]).range([height - offset, offset]);
 
-                    //render the svg
-                    var svg = cell
-                        .append('svg')
-                        .attr({
-                            width: width,
-                            height: height
-                        })
-                        .append('g');
+                //render the svg
+                var svg = cell.append('svg').attr({
+                    width: width,
+                    height: height
+                }).append('g');
 
-                    //draw the normal range polygon ULN and LLN
-                    var upper = overTime.map(function(m) {
-                        return { studyday: m.studyday, value: m.uln };
-                    });
-                    var lower = overTime
-                        .map(function(m) {
-                            return { studyday: m.studyday, value: m.lln };
-                        })
-                        .reverse();
-                    var normal_data = d3.merge([upper, lower]).filter(function(m) {
-                        return m.value;
-                    });
-
-                    var drawnormal = d3.svg
-                        .line()
-                        .x(function(d) {
-                            return x(d.studyday);
-                        })
-                        .y(function(d) {
-                            return y(d.value);
-                        });
-
-                    var normalpath = svg
-                        .append('path')
-                        .datum(normal_data)
-                        .attr({
-                            class: 'normalrange',
-                            d: drawnormal,
-                            fill: '#eee',
-                            stroke: 'none'
-                        });
-
-                    //draw lines at the population guidelines
-                    svg.selectAll('lines.guidelines')
-                        .data(row_d.population_extent)
-                        .enter()
-                        .append('line')
-                        .attr('class', 'guidelines')
-                        .attr('x1', 0)
-                        .attr('x2', width)
-                        .attr('y1', function(d) {
-                            return y(d);
-                        })
-                        .attr('y2', function(d) {
-                            return y(d);
-                        })
-                        .attr('stroke', '#ccc')
-                        .attr('stroke-dasharray', '2 2');
-
-                    //draw the sparkline
-                    var draw_sparkline = d3.svg
-                        .line()
-                        .interpolate('cardinal')
-                        .x(function(d) {
-                            return x(d.studyday);
-                        })
-                        .y(function(d) {
-                            return y(d.value);
-                        });
-                    var sparkline = svg
-                        .append('path')
-                        .datum(overTime)
-                        .attr({
-                            class: 'sparkLine',
-                            d: draw_sparkline,
-                            fill: 'none',
-                            stroke: color
-                        });
-
-                    //draw outliers
-                    var outliers = overTime.filter(function(f) {
-                        return f.outlier;
-                    });
-                    var outlier_circles = svg
-                        .selectAll('circle.outlier')
-                        .data(outliers)
-                        .enter()
-                        .append('circle')
-                        .attr('class', 'circle outlier')
-                        .attr('cx', function(d) {
-                            return x(d.studyday);
-                        })
-                        .attr('cy', function(d) {
-                            return y(d.value);
-                        })
-                        .attr('r', '2px')
-                        .attr('stroke', color)
-                        .attr('fill', color);
+                //draw the normal range polygon ULN and LLN
+                var upper = overTime.map(function (m) {
+                    return { studyday: m.studyday, value: m.uln };
                 });
+                var lower = overTime.map(function (m) {
+                    return { studyday: m.studyday, value: m.lln };
+                }).reverse();
+                var normal_data = d3.merge([upper, lower]).filter(function (m) {
+                    return m.value;
+                });
+
+                var drawnormal = d3.svg.line().x(function (d) {
+                    return x(d.studyday);
+                }).y(function (d) {
+                    return y(d.value);
+                });
+
+                var normalpath = svg.append('path').datum(normal_data).attr({
+                    class: 'normalrange',
+                    d: drawnormal,
+                    fill: '#eee',
+                    stroke: 'none'
+                });
+
+                //draw lines at the population guidelines
+                svg.selectAll('lines.guidelines').data(row_d.population_extent).enter().append('line').attr('class', 'guidelines').attr('x1', 0).attr('x2', width).attr('y1', function (d) {
+                    return y(d);
+                }).attr('y2', function (d) {
+                    return y(d);
+                }).attr('stroke', '#ccc').attr('stroke-dasharray', '2 2');
+
+                //draw the sparkline
+                var draw_sparkline = d3.svg.line().interpolate('cardinal').x(function (d) {
+                    return x(d.studyday);
+                }).y(function (d) {
+                    return y(d.value);
+                });
+                var sparkline = svg.append('path').datum(overTime).attr({
+                    class: 'sparkLine',
+                    d: draw_sparkline,
+                    fill: 'none',
+                    stroke: color
+                });
+
+                //draw outliers
+                var outliers = overTime.filter(function (f) {
+                    return f.outlier;
+                });
+                var outlier_circles = svg.selectAll('circle.outlier').data(outliers).enter().append('circle').attr('class', 'circle outlier').attr('cx', function (d) {
+                    return x(d.studyday);
+                }).attr('cy', function (d) {
+                    return y(d.value);
+                }).attr('r', '2px').attr('stroke', color).attr('fill', color);
+            });
         }
     }
 
@@ -3422,21 +2696,18 @@
             label: '',
             format: '.1f'
         },
-        marks: [
-            {
-                type: 'line',
-                per: ['lab']
-            },
-            {
-                type: 'circle',
-                radius: 4,
-                per: ['lab', 'studyday'] //,
-                //  values: { outlier: [true] },
-                //  attributes: {
-                //      'fill-opacity': 1
-                //  }
-            }
-        ],
+        marks: [{
+            type: 'line',
+            per: ['lab']
+        }, {
+            type: 'circle',
+            radius: 4,
+            per: ['lab', 'studyday'] //,
+            //  values: { outlier: [true] },
+            //  attributes: {
+            //      'fill-opacity': 1
+            //  }
+        }],
         margin: { top: 20 },
         gridlines: 'x',
         colors: []
@@ -3444,7 +2715,7 @@
 
     function setDomain$1(d) {
         //y-domain includes 99th population percentile + any participant outliers
-        var raw_values = this.raw_data.map(function(m) {
+        var raw_values = this.raw_data.map(function (m) {
             return m.value;
         });
         var population_extent = this.raw_data[0].population_extent;
@@ -3456,54 +2727,35 @@
 
     function drawPopulationExtent() {
         var lineChart = this;
-        this.svg
-            .selectAll('line.guidelines')
-            .data(lineChart.raw_data[0].population_extent)
-            .enter()
-            .append('line')
-            .attr('class', 'guidelines')
-            .attr('x1', 0)
-            .attr('x2', lineChart.plot_width)
-            .attr('y1', function(d) {
-                return lineChart.y(d);
-            })
-            .attr('y2', function(d) {
-                return lineChart.y(d);
-            })
-            .attr('stroke', '#ccc')
-            .attr('stroke-dasharray', '2 2');
+        this.svg.selectAll('line.guidelines').data(lineChart.raw_data[0].population_extent).enter().append('line').attr('class', 'guidelines').attr('x1', 0).attr('x2', lineChart.plot_width).attr('y1', function (d) {
+            return lineChart.y(d);
+        }).attr('y2', function (d) {
+            return lineChart.y(d);
+        }).attr('stroke', '#ccc').attr('stroke-dasharray', '2 2');
     }
 
     function drawNormalRange() {
         var lineChart = this;
-        var upper = this.raw_data.map(function(m) {
+        var upper = this.raw_data.map(function (m) {
             return { studyday: m.studyday, value: m.uln };
         });
-        var lower = this.raw_data
-            .map(function(m) {
-                return { studyday: m.studyday, value: m.lln };
-            })
-            .reverse();
-        var normal_data = d3.merge([upper, lower]).filter(function(f) {
+        var lower = this.raw_data.map(function (m) {
+            return { studyday: m.studyday, value: m.lln };
+        }).reverse();
+        var normal_data = d3.merge([upper, lower]).filter(function (f) {
             return f.value || f.value == 0;
         });
-        var drawnormal = d3.svg
-            .line()
-            .x(function(d) {
-                return lineChart.x(d.studyday);
-            })
-            .y(function(d) {
-                return lineChart.y(d.value);
-            });
-        var normalpath = this.svg
-            .append('path')
-            .datum(normal_data)
-            .attr({
-                class: 'normalrange',
-                d: drawnormal,
-                fill: '#eee',
-                stroke: 'none'
-            });
+        var drawnormal = d3.svg.line().x(function (d) {
+            return lineChart.x(d.studyday);
+        }).y(function (d) {
+            return lineChart.y(d.value);
+        });
+        var normalpath = this.svg.append('path').datum(normal_data).attr({
+            class: 'normalrange',
+            d: drawnormal,
+            fill: '#eee',
+            stroke: 'none'
+        });
         normalpath.moveToBack();
     }
 
@@ -3511,7 +2763,7 @@
         var config = this.edish.config;
         var points = this.marks[1].circles;
         points.select('title').remove();
-        points.append('title').text(function(d) {
+        points.append('title').text(function (d) {
             var raw = d.values.raw[0];
             var xvar = config.x.column;
             var yvar = config.y.column;
@@ -3525,7 +2777,7 @@
 
     function updatePointFill() {
         var points = this.marks[1].circles;
-        points.attr('fill-opacity', function(d) {
+        points.attr('fill-opacity', function (d) {
             var outlier = d.values.raw[0].outlier;
             return outlier ? 1 : 0;
         });
@@ -3540,9 +2792,7 @@
         chartRow_node.appendChild(chartCell_node);
 
         //update the row styles
-        d3.select(chartRow_node)
-            .style('background', 'none')
-            .style('border-bottom', '0.5px solid black');
+        d3.select(chartRow_node).style('background', 'none').style('border-bottom', '0.5px solid black');
 
         //layout the svg with D3
         var cellCount = d3.select(summaryRow_node).selectAll('td')[0].length;
@@ -3551,11 +2801,11 @@
         //draw the chart
         defaultSettings.colors = [d.color];
         var lineChart = webcharts.createChart(chartCell_node, defaultSettings);
-        lineChart.on('draw', function() {
+        lineChart.on('draw', function () {
             setDomain$1.call(this);
         });
         lineChart.edish = edish;
-        lineChart.on('resize', function() {
+        lineChart.on('resize', function () {
             drawPopulationExtent.call(this);
             drawNormalRange.call(this);
             addPointTitles.call(this);
@@ -3569,78 +2819,45 @@
     function addSparkClick() {
         var edish = this.edish;
         if (this.data.raw.length > 0) {
-            this.tbody
-                .selectAll('tr')
-                .select('td.spark')
-                .on('click', function(d) {
-                    if (d3.select(this).classed('minimized')) {
-                        d3.select(this).classed('minimized', false);
-                        d3.select(this.parentNode).style('border-bottom', 'none');
+            this.tbody.selectAll('tr').select('td.spark').on('click', function (d) {
+                if (d3.select(this).classed('minimized')) {
+                    d3.select(this).classed('minimized', false);
+                    d3.select(this.parentNode).style('border-bottom', 'none');
 
-                        this.lineChart = init$2.call(this, d, edish);
-                        d3.select(this)
-                            .select('svg')
-                            .style('display', 'none');
+                    this.lineChart = init$2.call(this, d, edish);
+                    d3.select(this).select('svg').style('display', 'none');
 
-                        d3.select(this)
-                            .select('span')
-                            .html('&#x25B3; Minimize Chart');
-                    } else {
-                        d3.select(this).classed('minimized', true);
+                    d3.select(this).select('span').html('&#x25B3; Minimize Chart');
+                } else {
+                    d3.select(this).classed('minimized', true);
 
-                        d3.select(this.parentNode).style('border-bottom', '0.5px solid black');
+                    d3.select(this.parentNode).style('border-bottom', '0.5px solid black');
 
-                        d3.select(this)
-                            .select('span')
-                            .html('&#x25BD;');
+                    d3.select(this).select('span').html('&#x25BD;');
 
-                        d3.select(this)
-                            .select('svg')
-                            .style('display', null);
+                    d3.select(this).select('svg').style('display', null);
 
-                        d3.select(this.lineChart.row).remove();
-                        this.lineChart.destroy();
-                    }
-                });
+                    d3.select(this.lineChart.row).remove();
+                    this.lineChart.destroy();
+                }
+            });
         }
     }
 
     function addFootnote$1() {
-        var footnoteText = [
-            'The y-axis for each chart is set to the ' +
-                this.edish.config.measureBounds
-                    .map(function(bound) {
-                        var percentile = '' + Math.round(bound * 100);
-                        var lastDigit = +percentile.substring(percentile.length - 1);
-                        var text =
-                            percentile +
-                            ([0, 4, 5, 6, 7, 8, 9].indexOf(lastDigit) > -1
-                                ? 'th'
-                                : lastDigit === 3
-                                ? 'rd'
-                                : lastDigit === 2
-                                ? 'nd'
-                                : 'st');
-                        return text;
-                    })
-                    .join(' and ') +
-                " percentiles of the entire population's results for that measure. " +
-                'Values outside the normal range are plotted as individual points. ' +
-                'Click a sparkline to view a more detailed version of the chart.'
-        ];
-        var footnotes = this.wrap.selectAll('span.footnote').data(footnoteText, function(d) {
+        var footnoteText = ['The y-axis for each chart is set to the ' + this.edish.config.measureBounds.map(function (bound) {
+            var percentile = '' + Math.round(bound * 100);
+            var lastDigit = +percentile.substring(percentile.length - 1);
+            var text = percentile + ([0, 4, 5, 6, 7, 8, 9].indexOf(lastDigit) > -1 ? 'th' : lastDigit === 3 ? 'rd' : lastDigit === 2 ? 'nd' : 'st');
+            return text;
+        }).join(' and ') + ' percentiles of the entire population\'s results for that measure. ' + 'Values outside the normal range are plotted as individual points. ' + 'Click a sparkline to view a more detailed version of the chart.'];
+        var footnotes = this.wrap.selectAll('span.footnote').data(footnoteText, function (d) {
             return d;
         });
 
-        footnotes
-            .enter()
-            .append('span')
-            .attr('class', 'footnote')
-            .style('font-size', '0.7em')
-            .style('padding-top', '0.1em')
-            .text(function(d) {
-                return d;
-            });
+        footnotes.enter().append('span').attr('class', 'footnote').style('font-size', '0.7em').style('padding-top', '0.1em').text(function (d) {
+            return d;
+        });
 
         footnotes.exit().remove();
     }
@@ -3653,46 +2870,28 @@
         measureTable.wrap.selectAll('div.wc-controls').remove();
 
         //check to see if there are extra measures in the MeasureTable
-        var specifiedMeasures = Object.keys(config.measure_values).map(function(e) {
+        var specifiedMeasures = Object.keys(config.measure_values).map(function (e) {
             return config.measure_values[e];
         });
-        var tableMeasures = measureTable.data.raw.map(function(f) {
+        var tableMeasures = measureTable.data.raw.map(function (f) {
             return f.key;
         });
 
         //if extra measure exist...
         if (tableMeasures.length > specifiedMeasures.length) {
-            var extraRows = measureTable.table
-                .select('tbody')
-                .selectAll('tr')
-                .filter(function(f) {
-                    return specifiedMeasures.indexOf(f.key) == -1;
-                });
+            var extraRows = measureTable.table.select('tbody').selectAll('tr').filter(function (f) {
+                return specifiedMeasures.indexOf(f.key) == -1;
+            });
 
             //hide extra rows by default
             extraRows.style('display', 'none');
 
             //add a toggle
-            var toggleDiv = measureTable.wrap
-                .insert('div', '*')
-                .attr('class', 'wc-controls')
-                .append('div')
-                .attr('class', 'control-group');
+            var toggleDiv = measureTable.wrap.insert('div', '*').attr('class', 'wc-controls').append('div').attr('class', 'control-group');
             var extraCount = tableMeasures.length - specifiedMeasures.length;
-            toggleDiv
-                .append('span')
-                .attr('class', 'wc-control-label')
-                .style('display', 'inline-block')
-                .style('padding-right', '.3em')
-                .text(
-                    'Show ' +
-                        extraCount +
-                        ' additional measure' +
-                        (extraCount == 1 ? '' : 's') +
-                        ':'
-                );
+            toggleDiv.append('span').attr('class', 'wc-control-label').style('display', 'inline-block').style('padding-right', '.3em').text('Show ' + extraCount + ' additional measure' + (extraCount == 1 ? '' : 's') + ':');
             var toggle = toggleDiv.append('input').property('type', 'checkbox');
-            toggle.on('change', function() {
+            toggle.on('change', function () {
                 var showRows = this.checked;
                 extraRows.style('display', showRows ? null : 'none');
             });
@@ -3704,7 +2903,7 @@
 
         //draw the measure table
         this.measureTable.edish = this;
-        this.measureTable.on('draw', function() {
+        this.measureTable.on('draw', function () {
             addSparkLines.call(this);
             addSparkClick.call(this);
             addExtraMeasureToggle.call(this);
@@ -3718,60 +2917,28 @@
         var wrap = this.participantDetails.header;
         var raw = d.values.raw[0];
 
-        var title = this.participantDetails.header
-            .append('h3')
-            .attr('class', 'id')
-            .html('Participant Details')
-            .style('border-top', '2px solid black')
-            .style('border-bottom', '2px solid black')
-            .style('padding', '.2em');
+        var title = this.participantDetails.header.append('h3').attr('class', 'id').html('Participant Details').style('border-top', '2px solid black').style('border-bottom', '2px solid black').style('padding', '.2em');
 
         if (chart.config.participantProfileURL) {
-            title
-                .append('a')
-                .html('Full Participant Profile')
-                .attr('href', chart.config.participantProfileURL)
-                .style('font-size', '0.8em')
-                .style('padding-left', '1em');
+            title.append('a').html('Full Participant Profile').attr('href', chart.config.participantProfileURL).style('font-size', '0.8em').style('padding-left', '1em');
         }
 
-        title
-            .append('Button')
-            .text('Clear')
-            .style('margin-left', '1em')
-            .style('float', 'right')
-            .on('click', function() {
-                clearParticipantDetails.call(chart);
-            });
+        title.append('Button').text('Clear').style('margin-left', '1em').style('float', 'right').on('click', function () {
+            clearParticipantDetails.call(chart);
+        });
 
         //show detail variables in a ul
-        var ul = this.participantDetails.header
-            .append('ul')
-            .style('list-style', 'none')
-            .style('padding', '0');
+        var ul = this.participantDetails.header.append('ul').style('list-style', 'none').style('padding', '0');
 
-        var lis = ul
-            .selectAll('li')
-            .data(chart.config.details)
-            .enter()
-            .append('li')
-            .style('', 'block')
-            .style('display', 'inline-block')
-            .style('text-align', 'center')
-            .style('padding', '0.5em');
+        var lis = ul.selectAll('li').data(chart.config.details).enter().append('li').style('', 'block').style('display', 'inline-block').style('text-align', 'center').style('padding', '0.5em');
 
-        lis.append('div')
-            .text(function(d) {
-                return d.label;
-            })
-            .attr('div', 'label')
-            .style('font-size', '0.8em');
+        lis.append('div').text(function (d) {
+            return d.label;
+        }).attr('div', 'label').style('font-size', '0.8em');
 
-        lis.append('div')
-            .text(function(d) {
-                return raw[d.value_col];
-            })
-            .attr('div', 'value');
+        lis.append('div').text(function (d) {
+            return raw[d.value_col];
+        }).attr('div', 'value');
     }
 
     var defaultSettings$1 = {
@@ -3781,28 +2948,21 @@
             type: 'linear',
             label: 'Study Day'
         },
-        y: defineProperty(
-            {
-                column: 'relative_uln',
-                type: 'linear',
-                label: null, // set in ../callbacks/onPreprocess
-                domain: null,
-                format: '.1f'
-            },
-            'domain',
-            [0, null]
-        ),
-        marks: [
-            {
-                type: 'line',
-                per: []
-            },
-            {
-                type: 'circle',
-                radius: 4,
-                per: []
-            }
-        ],
+        y: defineProperty({
+            column: 'relative_uln',
+            type: 'linear',
+            label: null, // set in ../callbacks/onPreprocess
+            domain: null,
+            format: '.1f'
+        }, 'domain', [0, null]),
+        marks: [{
+            type: 'line',
+            per: []
+        }, {
+            type: 'circle',
+            radius: 4,
+            per: []
+        }],
         margin: { top: 20, bottom: 70 }, // bottom margin provides space for exposure plot
         gridlines: 'xy',
         color_by: null,
@@ -3810,49 +2970,44 @@
         aspect: 2
     };
 
-    var controlInputs$1 = [
-        {
-            type: 'subsetter',
-            label: 'Select Labs',
-            value_col: null,
-            multiple: true
-        },
-        {
-            type: 'dropdown',
-            label: 'Y-axis Display Type',
-            description: null,
-            option: 'displayLabel',
-            start: null,
-            values: null,
-            require: true
-        }
-    ];
+    var controlInputs$1 = [{
+        type: 'subsetter',
+        label: 'Select Labs',
+        value_col: null,
+        multiple: true
+    }, {
+        type: 'dropdown',
+        label: 'Y-axis Display Type',
+        description: null,
+        option: 'displayLabel',
+        start: null,
+        values: null,
+        require: true
+    }];
 
     function onLayout$1() {
         var spaghetti = this;
         var eDish = this.edish;
 
         //customize the display control
-        var displayControlWrap = spaghetti.controls.wrap
-            .selectAll('div')
-            .filter(function(controlInput) {
-                return controlInput.label === 'Y-axis Display Type';
-            });
+        var displayControlWrap = spaghetti.controls.wrap.selectAll('div').filter(function (controlInput) {
+            return controlInput.label === 'Y-axis Display Type';
+        });
 
         var displayControl = displayControlWrap.select('select');
 
         //set the start value
-        var start_value = eDish.config.display_options.find(function(f) {
+        var start_value = eDish.config.display_options.find(function (f) {
             return f.value == eDish.config.display;
         }).label;
 
-        displayControl.selectAll('option').attr('selected', function(d) {
+        displayControl.selectAll('option').attr('selected', function (d) {
             return d == start_value ? 'selected' : null;
         });
 
-        displayControl.on('change', function(d) {
+        displayControl.on('change', function (d) {
             var currentLabel = this.value;
-            var currentValue = eDish.config.display_options.find(function(f) {
+            var currentValue = eDish.config.display_options.find(function (f) {
                 return f.label == currentLabel;
             }).value;
             spaghetti.config.y.column = currentValue;
@@ -3873,23 +3028,8 @@
         var raw = d.values.raw ? d.values.raw[0] : d.values[0].values.raw[0];
         var cut = raw[config.y.column + '_cut'];
         var param = raw[config.color_by];
-        spaghetti.cutLine = spaghetti.svg
-            .append('line')
-            .attr('y1', spaghetti.y(cut))
-            .attr('y2', spaghetti.y(cut))
-            .attr('x1', 0)
-            .attr('x2', spaghetti.plot_width)
-            .attr('stroke', spaghetti.colorScale(param))
-            .attr('stroke-dasharray', '3 3');
-        spaghetti.cutLabel = spaghetti.svg
-            .append('text')
-            .attr('y', spaghetti.y(cut))
-            .attr('dy', '-0.2em')
-            .attr('x', spaghetti.plot_width)
-            .attr('text-anchor', 'end')
-            .attr('alignment-baseline', 'baseline')
-            .attr('fill', spaghetti.colorScale(param))
-            .text(d3.format('0.1f')(cut));
+        spaghetti.cutLine = spaghetti.svg.append('line').attr('y1', spaghetti.y(cut)).attr('y2', spaghetti.y(cut)).attr('x1', 0).attr('x2', spaghetti.plot_width).attr('stroke', spaghetti.colorScale(param)).attr('stroke-dasharray', '3 3');
+        spaghetti.cutLabel = spaghetti.svg.append('text').attr('y', spaghetti.y(cut)).attr('dy', '-0.2em').attr('x', spaghetti.plot_width).attr('text-anchor', 'end').attr('alignment-baseline', 'baseline').attr('fill', spaghetti.colorScale(param)).text(d3.format('0.1f')(cut));
     }
 
     function addPointTitles$1() {
@@ -3897,23 +3037,15 @@
         var config = this.edish.config;
         var points = this.marks[1].circles;
         points.select('title').remove();
-        points.append('title').text(function(d) {
+        points.append('title').text(function (d) {
             var raw = d.values.raw[0];
             var ylabel = spaghetti.config.displayLabel;
             var yvar = spaghetti.config.y.column;
             var studyday_label = 'Study day: ' + raw[config.studyday_col] + '\n',
-                visitn_label = config.visitn_col
-                    ? 'Visit Number: ' + raw[config.visitn_col] + '\n'
-                    : '',
+                visitn_label = config.visitn_col ? 'Visit Number: ' + raw[config.visitn_col] + '\n' : '',
                 visit_label = config.visit_col ? 'Visit: ' + raw[config.visit_col] + '\n' : '',
-                raw_label =
-                    'Raw ' +
-                    raw[config.measure_col] +
-                    ': ' +
-                    d3.format('0.3f')(raw[config.value_col]) +
-                    '\n',
-                adj_label =
-                    'Adjusted ' + raw[config.measure_col] + ': ' + d3.format('0.3f')(raw[yvar]);
+                raw_label = 'Raw ' + raw[config.measure_col] + ': ' + d3.format('0.3f')(raw[config.value_col]) + '\n',
+                adj_label = 'Adjusted ' + raw[config.measure_col] + ': ' + d3.format('0.3f')(raw[yvar]);
             return studyday_label + visit_label + visitn_label + raw_label + adj_label;
         });
     }
@@ -3924,9 +3056,7 @@
 
         //If exposure data exists, annotate exposures beneath x-axis.
         if (this.edish.exposure.include) {
-            var supergroup = this.svg
-                .insert('g', '.supergroup')
-                .classed('se-exposure-supergroup', true);
+            var supergroup = this.svg.insert('g', '.supergroup').classed('se-exposure-supergroup', true);
             var dy = 20; // offset from chart
             var strokeWidth = 5; // width/diameter of marks
             this.svg.selectAll('.x.axis .tick text').attr('dy', dy + strokeWidth * 3 + 'px'); // offset x-axis tick labels
@@ -3942,15 +3072,12 @@
             });
 
             //Exposure text
-            supergroup
-                .append('text')
-                .attr({
-                    x: -3,
-                    y: this.plot_height + dy + strokeWidth,
-                    'text-anchor': 'end',
-                    textLength: this.margin.left - 3
-                })
-                .text('Exposure');
+            supergroup.append('text').attr({
+                x: -3,
+                y: this.plot_height + dy + strokeWidth,
+                'text-anchor': 'end',
+                textLength: this.margin.left - 3
+            }).text('Exposure');
 
             //bottom boundary line
             supergroup.append('line').attr({
@@ -3963,92 +3090,50 @@
             });
 
             //Exposures
-            var groups = supergroup
-                .selectAll('g.se-exposure-group')
-                .data(this.exposure_data)
-                .enter()
-                .append('g')
-                .classed('se-exposure-group', true);
-            groups.each(function(d) {
+            var groups = supergroup.selectAll('g.se-exposure-group').data(this.exposure_data).enter().append('g').classed('se-exposure-group', true);
+            groups.each(function (d) {
                 var group = d3.select(this);
 
                 //draw a line if exposure start and end dates are unequal
-                if (
-                    d[context.edish.config.exposure_stdy_col] !==
-                    d[context.edish.config.exposure_endy_col]
-                ) {
-                    group
-                        .append('line')
-                        .classed('se-exposure-line', true)
-                        .attr({
-                            x1: function x1(d) {
+                if (d[context.edish.config.exposure_stdy_col] !== d[context.edish.config.exposure_endy_col]) {
+                    group.append('line').classed('se-exposure-line', true).attr({
+                        x1: function x1(d) {
+                            return context.x(+d[context.edish.config.exposure_stdy_col]);
+                        },
+                        y1: context.plot_height + dy,
+                        x2: function x2(d) {
+                            return context.x(+d[context.edish.config.exposure_endy_col]);
+                        },
+                        y2: context.plot_height + dy,
+                        stroke: 'black',
+                        'stroke-width': strokeWidth,
+                        'stroke-opacity': 0.25
+                    }).on('mouseover', function (d) {
+                        this.setAttribute('stroke-width', strokeWidth * 2);
+
+                        //annotate a rectangle in the chart
+                        group.append('rect').classed('se-exposure-highlight', true).attr({
+                            x: function x(d) {
                                 return context.x(+d[context.edish.config.exposure_stdy_col]);
                             },
-                            y1: context.plot_height + dy,
-                            x2: function x2(d) {
-                                return context.x(+d[context.edish.config.exposure_endy_col]);
+                            y: 0,
+                            width: function width(d) {
+                                return context.x(+d[context.edish.config.exposure_endy_col]) - context.x(+d[context.edish.config.exposure_stdy_col]);
                             },
-                            y2: context.plot_height + dy,
-                            stroke: 'black',
-                            'stroke-width': strokeWidth,
-                            'stroke-opacity': 0.25
-                        })
-                        .on('mouseover', function(d) {
-                            this.setAttribute('stroke-width', strokeWidth * 2);
+                            height: context.plot_height,
+                            fill: 'black',
+                            'fill-opacity': 0.25
+                        });
+                    }).on('mouseout', function (d) {
+                        this.setAttribute('stroke-width', strokeWidth);
 
-                            //annotate a rectangle in the chart
-                            group
-                                .append('rect')
-                                .classed('se-exposure-highlight', true)
-                                .attr({
-                                    x: function x(d) {
-                                        return context.x(
-                                            +d[context.edish.config.exposure_stdy_col]
-                                        );
-                                    },
-                                    y: 0,
-                                    width: function width(d) {
-                                        return (
-                                            context.x(+d[context.edish.config.exposure_endy_col]) -
-                                            context.x(+d[context.edish.config.exposure_stdy_col])
-                                        );
-                                    },
-                                    height: context.plot_height,
-                                    fill: 'black',
-                                    'fill-opacity': 0.25
-                                });
-                        })
-                        .on('mouseout', function(d) {
-                            this.setAttribute('stroke-width', strokeWidth);
-
-                            //remove rectangle from the chart
-                            group.select('.se-exposure-highlight').remove();
-                        })
-                        .append('title')
-                        .text(
-                            'Study Day: ' +
-                                d[context.edish.config.exposure_stdy_col] +
-                                '-' +
-                                d[context.edish.config.exposure_endy_col] +
-                                ' (' +
-                                (+d[context.edish.config.exposure_endy_col] -
-                                    +d[context.edish.config.exposure_stdy_col] +
-                                    (+d[context.edish.config.exposure_endy_col] >=
-                                        +d[context.edish.config.exposure_stdy_col])) +
-                                ' days)\nTreatment: ' +
-                                d[context.edish.config.exposure_trt_col] +
-                                '\nDose: ' +
-                                d[context.edish.config.exposure_dose_col] +
-                                ' ' +
-                                d[context.edish.config.exposure_dosu_col]
-                        );
+                        //remove rectangle from the chart
+                        group.select('.se-exposure-highlight').remove();
+                    }).append('title').text('Study Day: ' + d[context.edish.config.exposure_stdy_col] + '-' + d[context.edish.config.exposure_endy_col] + ' (' + (+d[context.edish.config.exposure_endy_col] - +d[context.edish.config.exposure_stdy_col] + (+d[context.edish.config.exposure_endy_col] >= +d[context.edish.config.exposure_stdy_col])) + ' days)\nTreatment: ' + d[context.edish.config.exposure_trt_col] + '\nDose: ' + d[context.edish.config.exposure_dose_col] + ' ' + d[context.edish.config.exposure_dosu_col]);
                 }
                 //draw a circle if exposure start and end dates are equal
                 else {
-                    group
-                        .append('circle')
-                        .classed('se-exposure-circle', true)
-                        .attr({
+                        group.append('circle').classed('se-exposure-circle', true).attr({
                             cx: function cx(d) {
                                 return context.x(+d[context.edish.config.exposure_stdy_col]);
                             },
@@ -4058,43 +3143,27 @@
                             'fill-opacity': 0.25,
                             stroke: 'black',
                             'stroke-opacity': 1
-                        })
-                        .on('mouseover', function(d) {
+                        }).on('mouseover', function (d) {
                             this.setAttribute('r', strokeWidth);
 
                             //annotate a vertical line in the chart
-                            group
-                                .append('line')
-                                .classed('se-exposure-highlight', true)
-                                .attr({
-                                    x1: context.x(+d[context.edish.config.exposure_stdy_col]),
-                                    y1: 0,
-                                    x2: context.x(+d[context.edish.config.exposure_stdy_col]),
-                                    y2: context.plot_height,
-                                    stroke: 'black',
-                                    'stroke-width': 1,
-                                    'stroke-opacity': 0.5,
-                                    'stroke-dasharray': '3 1'
-                                });
-                        })
-                        .on('mouseout', function(d) {
+                            group.append('line').classed('se-exposure-highlight', true).attr({
+                                x1: context.x(+d[context.edish.config.exposure_stdy_col]),
+                                y1: 0,
+                                x2: context.x(+d[context.edish.config.exposure_stdy_col]),
+                                y2: context.plot_height,
+                                stroke: 'black',
+                                'stroke-width': 1,
+                                'stroke-opacity': 0.5,
+                                'stroke-dasharray': '3 1'
+                            });
+                        }).on('mouseout', function (d) {
                             this.setAttribute('r', strokeWidth / 2);
 
                             //remove vertical line from the chart
                             group.select('.se-exposure-highlight').remove();
-                        })
-                        .append('title')
-                        .text(
-                            'Study Day: ' +
-                                d[context.edish.config.exposure_stdy_col] +
-                                '\nTreatment: ' +
-                                d[context.edish.config.exposure_trt_col] +
-                                '\nDose: ' +
-                                d[context.edish.config.exposure_dose_col] +
-                                ' ' +
-                                d[context.edish.config.exposure_dosu_col]
-                        );
-                }
+                        }).append('title').text('Study Day: ' + d[context.edish.config.exposure_stdy_col] + '\nTreatment: ' + d[context.edish.config.exposure_trt_col] + '\nDose: ' + d[context.edish.config.exposure_dose_col] + ' ' + d[context.edish.config.exposure_dosu_col]);
+                    }
             });
         }
     }
@@ -4107,52 +3176,39 @@
 
         //fill circles above the cut point
         var y_col = this.config.y.column;
-        this.marks[1].circles
-            .attr('fill-opacity', function(d) {
-                return d.values.raw[0][y_col + '_flagged'] ? 1 : 0;
-            })
-            .attr('fill-opacity', function(d) {
-                return d.values.raw[0][y_col + '_flagged'] ? 1 : 0;
-            });
+        this.marks[1].circles.attr('fill-opacity', function (d) {
+            return d.values.raw[0][y_col + '_flagged'] ? 1 : 0;
+        }).attr('fill-opacity', function (d) {
+            return d.values.raw[0][y_col + '_flagged'] ? 1 : 0;
+        });
 
         //Show  cut lines on mouseover
-        this.marks[1].circles
-            .on('mouseover', function(d) {
-                drawCutLine.call(spaghetti, d);
-            })
-            .on('mouseout', function() {
-                spaghetti.cutLine.remove();
-                spaghetti.cutLabel.remove();
-            });
+        this.marks[1].circles.on('mouseover', function (d) {
+            drawCutLine.call(spaghetti, d);
+        }).on('mouseout', function () {
+            spaghetti.cutLine.remove();
+            spaghetti.cutLabel.remove();
+        });
 
-        this.marks[0].paths
-            .on('mouseover', function(d) {
-                drawCutLine.call(spaghetti, d);
-            })
-            .on('mouseout', function() {
-                spaghetti.cutLine.remove();
-                spaghetti.cutLabel.remove();
-            });
+        this.marks[0].paths.on('mouseover', function (d) {
+            drawCutLine.call(spaghetti, d);
+        }).on('mouseout', function () {
+            spaghetti.cutLine.remove();
+            spaghetti.cutLabel.remove();
+        });
 
         //annotate treatment exposure
         addExposure.call(this);
 
         //embiggen clip-path so points aren't clipped
-        var radius = this.config.marks.find(function(mark) {
+        var radius = this.config.marks.find(function (mark) {
             return mark.type === 'circle';
         }).radius;
-        this.svg
-            .select('.plotting-area')
-            .attr('width', this.plot_width + radius * 2 + 2) // plot width + circle radius * 2 + circle stroke width * 2
-            .attr('height', this.plot_height + radius * 2 + 2) // plot height + circle radius * 2 + circle stroke width * 2
-            .attr(
-                'transform',
-                'translate(-' +
-                    (radius + 1) + // translate left circle radius + circle stroke width
-                    ',-' +
-                    (radius + 1) + // translate up circle radius + circle stroke width
-                    ')'
-            );
+        this.svg.select('.plotting-area').attr('width', this.plot_width + radius * 2 + 2) // plot width + circle radius * 2 + circle stroke width * 2
+        .attr('height', this.plot_height + radius * 2 + 2) // plot height + circle radius * 2 + circle stroke width * 2
+        .attr('transform', 'translate(-' + (radius + 1 // translate left circle radius + circle stroke width
+        ) + ',-' + (radius + 1 // translate up circle radius + circle stroke width
+        ) + ')');
     }
 
     function onDraw$1() {
@@ -4163,26 +3219,23 @@
 
         //make sure x-domain includes the extent of the exposure data
         if (this.edish.exposure.include) {
-            this.exposure_data = this.edish.exposure.data.filter(function(d) {
+            this.exposure_data = this.edish.exposure.data.filter(function (d) {
                 return d[_this.edish.config.id_col] === _this.edish.clicked_id;
             });
-            var extent = [
-                d3.min(this.exposure_data, function(d) {
-                    return +d[_this.edish.config.exposure_stdy_col];
-                }),
-                d3.max(this.exposure_data, function(d) {
-                    return +d[_this.edish.config.exposure_endy_col];
-                })
-            ];
+            var extent = [d3.min(this.exposure_data, function (d) {
+                return +d[_this.edish.config.exposure_stdy_col];
+            }), d3.max(this.exposure_data, function (d) {
+                return +d[_this.edish.config.exposure_endy_col];
+            })];
             if (extent[0] < this.x_dom[0]) this.x_dom[0] = extent[0];
             if (extent[1] > this.x_dom[1]) this.x_dom[1] = extent[1];
         }
 
         //make sure y domain includes the current cut point for all measures
-        var max_value = d3.max(spaghetti.filtered_data, function(f) {
+        var max_value = d3.max(spaghetti.filtered_data, function (f) {
             return f[spaghetti.config.y.column];
         });
-        var max_cut = d3.max(spaghetti.filtered_data, function(f) {
+        var max_cut = d3.max(spaghetti.filtered_data, function (f) {
             return f[spaghetti.config.y.column + '_cut'];
         });
         var y_max = d3.max([max_value, max_cut]);
@@ -4199,7 +3252,7 @@
     function init$3(d) {
         var chart = this; //the full eDish object
         var config = this.config; //the eDish config
-        var matches = d.values.raw[0].raw.filter(function(f) {
+        var matches = d.values.raw[0].raw.filter(function (f) {
             return f.key_measure;
         });
 
@@ -4215,9 +3268,9 @@
         defaultSettings$1.firstDraw = true; //only initailize the measure table on first draw
 
         //flag variables above the cut-off
-        matches.forEach(function(d) {
+        matches.forEach(function (d) {
             var measure = d[config['measure_col']];
-            var label = Object.keys(config.measure_values).find(function(key) {
+            var label = Object.keys(config.measure_values).find(function (key) {
                 return config.measure_values[key] == measure;
             });
 
@@ -4232,14 +3285,14 @@
         var spaghettiElement = this.element + ' .participantDetails .spaghettiPlot .chart';
 
         //Add y axis type options
-        controlInputs$1.find(function(f) {
+        controlInputs$1.find(function (f) {
             return f.label == 'Y-axis Display Type';
-        }).values = config.display_options.map(function(m) {
+        }).values = config.display_options.map(function (m) {
             return m.label;
         });
 
         //sync parameter filter
-        controlInputs$1.find(function(f) {
+        controlInputs$1.find(function (f) {
             return f.label == 'Select Labs';
         }).value_col = config.measure_col;
 
@@ -4250,11 +3303,7 @@
 
         //draw that chart
         if (!this.exposure.include) delete defaultSettings$1.margin.bottom; // use default bottom margin when not plotting exposure
-        chart.spaghetti = webcharts.createChart(
-            spaghettiElement,
-            defaultSettings$1,
-            spaghettiControls
-        );
+        chart.spaghetti = webcharts.createChart(spaghettiElement, defaultSettings$1, spaghettiControls);
 
         chart.spaghetti.edish = chart; //link the full eDish object
         chart.spaghetti.participant_data = d; //include the passed data (used to initialize the measure table)
@@ -4265,14 +3314,7 @@
         chart.spaghetti.init(matches);
 
         //add a footnote
-        chart.spaghetti.wrap
-            .append('div')
-            .attr('class', 'footnote')
-            .style('font-size', '0.7em')
-            .style('padding-top', '0.1em')
-            .text(
-                'Points are filled for values above the current reference value. Mouseover a line to see the reference line for that lab.'
-            );
+        chart.spaghetti.wrap.append('div').attr('class', 'footnote').style('font-size', '0.7em').style('padding-top', '0.1em').text('Points are filled for values above the current reference value. Mouseover a line to see the reference line for that lab.');
     }
 
     function addPointClick() {
@@ -4281,22 +3323,25 @@
         var points = this.marks[0].circles;
 
         //add event listener to all participant level points
-        points.on('click', function(d) {
+        points.on('click', function (d) {
+            //Stop animation.
+            chart.svg.transition().duration(0);
+            chart.controls.studyDayPlayButton.datum({ state: 'play' });
+            chart.controls.studyDayPlayButton.html('&#9658;');
+
+            //Update chart object.
             chart.clicked_id = d.key;
             clearParticipantDetails.call(chart, d); //clear the previous participant
             chart.config.quadrants.table.wrap.style('display', 'none'); //hide the quadrant summary
 
             //format the eDish chart
-            points
-                .attr('stroke', '#ccc') //set all points to gray
-                .attr('fill', 'white')
-                .classed('disabled', true); //disable mouseover while viewing participant details
+            points.attr('stroke', '#ccc') //set all points to gray
+            .attr('fill', 'white').classed('disabled', true); //disable mouseover while viewing participant details
 
-            d3.select(this)
-                .attr('stroke', function(d) {
-                    return chart.colorScale(d.values.raw[0][config.color_by]);
-                }) //highlight selected point
-                .attr('stroke-width', 3);
+            d3.select(this).attr('stroke', function (d) {
+                return chart.colorScale(d.values.raw[0][config.color_by]);
+            }) //highlight selected point
+            .attr('stroke-width', 3);
 
             //Add elements to the eDish chart
             drawVisitPath.call(chart, d); //draw the path showing participant's pattern over time
@@ -4314,27 +3359,15 @@
         var config = this.config;
         var points = this.marks[0].circles;
         points.select('title').remove();
-        points.append('title').text(function(d) {
+        points.append('title').text(function (d) {
             var xvar = config.x.column;
             var yvar = config.y.column;
             var raw = d.values.raw[0],
-                xLabel =
-                    config.x.label +
-                    ': ' +
-                    d3.format('0.2f')(raw[xvar]) +
-                    ' @  Day ' +
-                    raw[xvar + '_' + config.studyday_col],
-                yLabel =
-                    config.y.label +
-                    ': ' +
-                    d3.format('0.2f')(raw[yvar]) +
-                    ' @ Day ' +
-                    raw[yvar + '_' + config.studyday_col],
+                xLabel = config.x.label + ': ' + d3.format('0.2f')(raw[xvar]) + ' @  Day ' + raw[xvar + '_' + config.studyday_col],
+                yLabel = config.y.label + ': ' + d3.format('0.2f')(raw[yvar]) + ' @ Day ' + raw[yvar + '_' + config.studyday_col],
                 dayDiff = raw['day_diff'] + ' days apart',
                 idLabel = 'Participant ID: ' + raw[config.id_col],
-                rRatioLabel = config.r_ratio_filter
-                    ? '\n' + 'Overall R Ratio: ' + d3.format('0.2f')(raw.rRatio)
-                    : '';
+                rRatioLabel = config.r_ratio_filter ? '\n' + 'Overall R Ratio: ' + d3.format('0.2f')(raw.rRatio) : '';
             return idLabel + rRatioLabel + '\n' + xLabel + '\n' + yLabel + '\n' + dayDiff;
         });
     }
@@ -4352,38 +3385,27 @@
         var small_size = base_size / 2;
 
         //TODO: use all possible point sizes for size scale when viewing by study-day
-        chart.sizeScale = d3.scale
-            .linear()
-            .range([base_size, max_size])
-            .domain(
-                d3.extent(
-                    chart.raw_data.map(function(m) {
-                        return m[config.point_size];
-                    })
-                )
-            );
+        chart.sizeScale = d3.scale.linear().range([base_size, max_size]).domain(d3.extent(chart.raw_data.map(function (m) {
+            return m[config.point_size];
+        })));
 
         //draw a legend (coming later?)
 
         //set the point radius
-        points
-            .transition()
-            .attr('r', function(d) {
-                var raw = d.values.raw[0];
-                if (raw.outOfRange) {
-                    return small_size;
-                } else if (config.point_size == 'Uniform') {
-                    return base_size;
-                } else {
-                    return chart.sizeScale(raw[config.point_size]);
-                }
-            })
-            .attr('cx', function(d) {
-                return _this.x(d.values.x);
-            })
-            .attr('cy', function(d) {
-                return _this.y(d.values.y);
-            });
+        points.transition().attr('r', function (d) {
+            var raw = d.values.raw[0];
+            if (raw.outOfRange) {
+                return small_size;
+            } else if (config.point_size == 'Uniform') {
+                return base_size;
+            } else {
+                return chart.sizeScale(raw[config.point_size]);
+            }
+        }).attr('cx', function (d) {
+            return _this.x(d.values.x);
+        }).attr('cy', function (d) {
+            return _this.y(d.values.y);
+        });
     }
 
     function setPointOpacity() {
@@ -4391,7 +3413,7 @@
         var config = this.config;
         var points = this.marks[0].circles;
 
-        points.attr('fill-opacity', function(d) {
+        points.attr('fill-opacity', function (d) {
             var raw = d.values.raw[0];
             if (chart.plot_max_values) {
                 // if viewing max values, fill based on time window
@@ -4409,63 +3431,39 @@
         var config = this.config;
 
         //reposition participant visit path
-        var myNewLine = d3.svg
-            .line()
-            .x(function(d) {
-                return chart.x(d.x);
-            })
-            .y(function(d) {
-                return chart.y(d.y);
-            });
+        var myNewLine = d3.svg.line().x(function (d) {
+            return chart.x(d.x);
+        }).y(function (d) {
+            return chart.y(d.y);
+        });
 
-        chart.visitPath
-            .select('path')
-            .transition()
-            .attr('d', myNewLine);
+        chart.visitPath.select('path').transition().attr('d', myNewLine);
 
         //reposition participant visit circles and labels
-        chart.visitPath
-            .selectAll('g.visit-point')
-            .select('circle')
-            .transition()
-            .attr('cx', function(d) {
-                return chart.x(d.x);
-            })
-            .attr('cy', function(d) {
-                return chart.y(d.y);
-            });
+        chart.visitPath.selectAll('g.visit-point').select('circle').transition().attr('cx', function (d) {
+            return chart.x(d.x);
+        }).attr('cy', function (d) {
+            return chart.y(d.y);
+        });
 
-        chart.visitPath
-            .selectAll('g.visit-point')
-            .select('text.participant-visits')
-            .transition()
-            .attr('x', function(d) {
-                return chart.x(d.x);
-            })
-            .attr('y', function(d) {
-                return chart.y(d.y);
-            });
+        chart.visitPath.selectAll('g.visit-point').select('text.participant-visits').transition().attr('x', function (d) {
+            return chart.x(d.x);
+        }).attr('y', function (d) {
+            return chart.y(d.y);
+        });
 
         //reposition axis rugs
-        chart.x_rug
-            .selectAll('text')
-            .transition()
-            .attr('x', function(d) {
-                return chart.x(d[config.display]);
-            })
-            .attr('y', function(d) {
-                return chart.y(chart.y.domain()[0]);
-            });
+        chart.x_rug.selectAll('text').transition().attr('x', function (d) {
+            return chart.x(d[config.display]);
+        }).attr('y', function (d) {
+            return chart.y(chart.y.domain()[0]);
+        });
 
-        chart.y_rug
-            .selectAll('text')
-            .transition()
-            .attr('x', function(d) {
-                return chart.x(chart.x.domain()[0]);
-            })
-            .attr('y', function(d) {
-                return chart.y(d[config.display]);
-            });
+        chart.y_rug.selectAll('text').transition().attr('x', function (d) {
+            return chart.x(chart.x.domain()[0]);
+        }).attr('y', function (d) {
+            return chart.y(d[config.display]);
+        });
     }
 
     function customizePoints() {
@@ -4489,72 +3487,40 @@
         var y_cut = this.config.cuts[y_var][config.display];
 
         //position for cut-point lines
-        this.cut_lines.lines
-            .filter(function(d) {
-                return d.dimension == 'x';
-            })
-            .attr('x1', this.x(x_cut))
-            .attr('x2', this.x(x_cut))
-            .attr('y1', this.plot_height)
-            .attr('y2', 0);
+        this.cut_lines.lines.filter(function (d) {
+            return d.dimension == 'x';
+        }).attr('x1', this.x(x_cut)).attr('x2', this.x(x_cut)).attr('y1', this.plot_height).attr('y2', 0);
 
-        this.cut_lines.lines
-            .filter(function(d) {
-                return d.dimension == 'y';
-            })
-            .attr('x1', 0)
-            .attr('x2', this.plot_width)
-            .attr('y1', function(d) {
-                return _this.y(y_cut);
-            })
-            .attr('y2', function(d) {
-                return _this.y(y_cut);
-            });
+        this.cut_lines.lines.filter(function (d) {
+            return d.dimension == 'y';
+        }).attr('x1', 0).attr('x2', this.plot_width).attr('y1', function (d) {
+            return _this.y(y_cut);
+        }).attr('y2', function (d) {
+            return _this.y(y_cut);
+        });
 
-        this.cut_lines.backing
-            .filter(function(d) {
-                return d.dimension == 'x';
-            })
-            .attr('x1', this.x(x_cut))
-            .attr('x2', this.x(x_cut))
-            .attr('y1', this.plot_height)
-            .attr('y2', 0);
+        this.cut_lines.backing.filter(function (d) {
+            return d.dimension == 'x';
+        }).attr('x1', this.x(x_cut)).attr('x2', this.x(x_cut)).attr('y1', this.plot_height).attr('y2', 0);
 
-        this.cut_lines.backing
-            .filter(function(d) {
-                return d.dimension == 'y';
-            })
-            .attr('x1', 0)
-            .attr('x2', this.plot_width)
-            .attr('y1', function(d) {
-                return _this.y(y_cut);
-            })
-            .attr('y2', function(d) {
-                return _this.y(y_cut);
-            });
+        this.cut_lines.backing.filter(function (d) {
+            return d.dimension == 'y';
+        }).attr('x1', 0).attr('x2', this.plot_width).attr('y1', function (d) {
+            return _this.y(y_cut);
+        }).attr('y2', function (d) {
+            return _this.y(y_cut);
+        });
 
         //position labels
-        this.quadrant_labels.g
-            .select('text.upper-right')
-            .attr('x', this.plot_width)
-            .attr('y', 0);
+        this.quadrant_labels.g.select('text.upper-right').attr('x', this.plot_width).attr('y', 0);
 
-        this.quadrant_labels.g
-            .select('text.upper-left')
-            .attr('x', 0)
-            .attr('y', 0);
+        this.quadrant_labels.g.select('text.upper-left').attr('x', 0).attr('y', 0);
 
-        this.quadrant_labels.g
-            .select('text.lower-right')
-            .attr('x', this.plot_width)
-            .attr('y', this.plot_height);
+        this.quadrant_labels.g.select('text.lower-right').attr('x', this.plot_width).attr('y', this.plot_height);
 
-        this.quadrant_labels.g
-            .select('text.lower-left')
-            .attr('x', 0)
-            .attr('y', this.plot_height);
+        this.quadrant_labels.g.select('text.lower-left').attr('x', 0).attr('y', this.plot_height);
 
-        this.quadrant_labels.text.text(function(d) {
+        this.quadrant_labels.text.text(function (d) {
             return d.label + ' (' + d.percent + ')';
         });
     }
@@ -4563,33 +3529,14 @@
         var chart = this;
         var config = this.config;
 
-        var details =
-            config.display == 'relative_uln'
-                ? 'Values are plotted as multiples of the upper limit of normal for the measure.'
-                : config.display == 'relative_baseline'
-                ? "Values are plotted as multiples of the partipant's baseline value for the measure."
-                : config.display == 'absolute'
-                ? ' Values are plotted using the raw units for the measure.'
-                : null;
+        var details = config.display == 'relative_uln' ? 'Values are plotted as multiples of the upper limit of normal for the measure.' : config.display == 'relative_baseline' ? "Values are plotted as multiples of the partipant's baseline value for the measure." : config.display == 'absolute' ? ' Values are plotted using the raw units for the measure.' : null;
 
-        var axisLabels = chart.svg
-            .selectAll('.axis')
-            .select('.axis-title')
-            .select('tspan')
-            .remove();
+        var axisLabels = chart.svg.selectAll('.axis').select('.axis-title').select('tspan').remove();
 
-        var axisLabels = chart.svg
-            .selectAll('.axis')
-            .select('.axis-title')
-            .append('tspan')
-            .html(function(d) {
-                //var current = d3.select(this).text();
-                return ' &#9432;';
-            })
-            .attr('font-size', '0.8em')
-            .style('cursor', 'help')
-            .append('title')
-            .text(details);
+        var axisLabels = chart.svg.selectAll('.axis').select('.axis-title').append('tspan').html(function (d) {
+            //var current = d3.select(this).text();
+            return ' &#9432;';
+        }).attr('font-size', '0.8em').style('cursor', 'help').append('title').text(details);
     }
 
     function toggleLegend() {
@@ -4601,10 +3548,7 @@
         var dimension = d3.select(this).classed('x') ? 'x' : 'y';
         var chart = d3.select(this).datum().chart;
 
-        d3.select(this)
-            .select('line.cut-line')
-            .attr('stroke-width', '2')
-            .attr('stroke-dasharray', '2,2');
+        d3.select(this).select('line.cut-line').attr('stroke-width', '2').attr('stroke-dasharray', '2,2');
 
         chart.quadrant_labels.g.style('display', 'none');
     }
@@ -4635,15 +3579,9 @@
         var current_cut = +d3.format('0.1f')(chart[dimension].invert(rawCut));
 
         //update the cut control in real time
-        chart.controls.wrap
-            .selectAll('div.control-group')
-            .filter(function(f) {
-                return f.description
-                    ? f.description.toLowerCase() == dimension + '-axis reference line'
-                    : false;
-            })
-            .select('input')
-            .node().value = current_cut;
+        chart.controls.wrap.selectAll('div.control-group').filter(function (f) {
+            return f.description ? f.description.toLowerCase() == dimension + '-axis reference line' : false;
+        }).select('input').node().value = current_cut;
         var measure = chart.config[dimension].column;
         chart.config.cuts[measure][chart.config.display] = current_cut;
     }
@@ -4651,10 +3589,7 @@
     function dragEnded() {
         var chart = d3.select(this).datum().chart;
 
-        d3.select(this)
-            .select('line.cut-line')
-            .attr('stroke-width', '1')
-            .attr('stroke-dasharray', '5,5');
+        d3.select(this).select('line.cut-line').attr('stroke-width', '1').attr('stroke-dasharray', '5,5');
         chart.quadrant_labels.g.style('display', null);
 
         //redraw the chart (updates the needed cutpoint settings and quadrant annotations)
@@ -4664,41 +3599,22 @@
     // credit to https://bl.ocks.org/dimitardanailov/99950eee511375b97de749b597147d19
 
     function init$4() {
-        var drag = d3.behavior
-            .drag()
-            .origin(function(d) {
-                return d;
-            })
-            .on('dragstart', dragStarted)
-            .on('drag', dragged)
-            .on('dragend', dragEnded);
+        var drag = d3.behavior.drag().origin(function (d) {
+            return d;
+        }).on('dragstart', dragStarted).on('drag', dragged).on('dragend', dragEnded);
 
         this.cut_lines.wrap.moveToFront();
         this.cut_lines.g.call(drag);
     }
 
-    function addBoxPlot(
-        svg,
-        results,
-        height,
-        width,
-        domain,
-        boxPlotWidth,
-        boxColor,
-        boxInsideColor,
-        fmt,
-        horizontal,
-        log
-    ) {
+    function addBoxPlot(svg, results, height, width, domain, boxPlotWidth, boxColor, boxInsideColor, fmt, horizontal, log) {
         //set default orientation to "horizontal"
         var horizontal = horizontal == undefined ? true : horizontal;
 
         //make the results numeric and sort
-        var results = results
-            .map(function(d) {
-                return +d;
-            })
-            .sort(d3.ascending);
+        var results = results.map(function (d) {
+            return +d;
+        }).sort(d3.ascending);
 
         //set up d3.scales
         if (horizontal) {
@@ -4716,115 +3632,39 @@
             probs[i] = d3.quantile(results, probs[i]);
         }
 
-        var boxplot = svg
-            .append('g')
-            .attr('class', 'boxplot')
-            .datum({ values: results, probs: probs });
+        var boxplot = svg.append('g').attr('class', 'boxplot').datum({ values: results, probs: probs });
 
         //draw rectangle from q1 to q3
         var box_x = horizontal ? x(0.5 - boxPlotWidth / 2) : x(probs[1]);
-        var box_width = horizontal
-            ? x(0.5 + boxPlotWidth / 2) - x(0.5 - boxPlotWidth / 2)
-            : x(probs[3]) - x(probs[1]);
+        var box_width = horizontal ? x(0.5 + boxPlotWidth / 2) - x(0.5 - boxPlotWidth / 2) : x(probs[3]) - x(probs[1]);
         var box_y = horizontal ? y(probs[3]) : y(0.5 + boxPlotWidth / 2);
-        var box_height = horizontal
-            ? -y(probs[3]) + y(probs[1])
-            : y(0.5 - boxPlotWidth / 2) - y(0.5 + boxPlotWidth / 2);
+        var box_height = horizontal ? -y(probs[3]) + y(probs[1]) : y(0.5 - boxPlotWidth / 2) - y(0.5 + boxPlotWidth / 2);
 
-        boxplot
-            .append('rect')
-            .attr('class', 'boxplot fill')
-            .attr('x', box_x)
-            .attr('width', box_width)
-            .attr('y', box_y)
-            .attr('height', box_height)
-            .style('fill', boxColor);
+        boxplot.append('rect').attr('class', 'boxplot fill').attr('x', box_x).attr('width', box_width).attr('y', box_y).attr('height', box_height).style('fill', boxColor);
 
         //draw dividing lines at d3.median, 95% and 5%
         var iS = [0, 2, 4];
         var iSclass = ['', 'd3.median', ''];
         var iSColor = [boxColor, boxInsideColor, boxColor];
         for (var i = 0; i < iS.length; i++) {
-            boxplot
-                .append('line')
-                .attr('class', 'boxplot ' + iSclass[i])
-                .attr('x1', horizontal ? x(0.5 - boxPlotWidth / 2) : x(probs[iS[i]]))
-                .attr('x2', horizontal ? x(0.5 + boxPlotWidth / 2) : x(probs[iS[i]]))
-                .attr('y1', horizontal ? y(probs[iS[i]]) : y(0.5 - boxPlotWidth / 2))
-                .attr('y2', horizontal ? y(probs[iS[i]]) : y(0.5 + boxPlotWidth / 2))
-                .style('fill', iSColor[i])
-                .style('stroke', iSColor[i]);
+            boxplot.append('line').attr('class', 'boxplot ' + iSclass[i]).attr('x1', horizontal ? x(0.5 - boxPlotWidth / 2) : x(probs[iS[i]])).attr('x2', horizontal ? x(0.5 + boxPlotWidth / 2) : x(probs[iS[i]])).attr('y1', horizontal ? y(probs[iS[i]]) : y(0.5 - boxPlotWidth / 2)).attr('y2', horizontal ? y(probs[iS[i]]) : y(0.5 + boxPlotWidth / 2)).style('fill', iSColor[i]).style('stroke', iSColor[i]);
         }
 
         //draw lines from 5% to 25% and from 75% to 95%
         var iS = [[0, 1], [3, 4]];
         for (var i = 0; i < iS.length; i++) {
-            boxplot
-                .append('line')
-                .attr('class', 'boxplot')
-                .attr('x1', horizontal ? x(0.5) : x(probs[iS[i][0]]))
-                .attr('x2', horizontal ? x(0.5) : x(probs[iS[i][1]]))
-                .attr('y1', horizontal ? y(probs[iS[i][0]]) : y(0.5))
-                .attr('y2', horizontal ? y(probs[iS[i][1]]) : y(0.5))
-                .style('stroke', boxColor);
+            boxplot.append('line').attr('class', 'boxplot').attr('x1', horizontal ? x(0.5) : x(probs[iS[i][0]])).attr('x2', horizontal ? x(0.5) : x(probs[iS[i][1]])).attr('y1', horizontal ? y(probs[iS[i][0]]) : y(0.5)).attr('y2', horizontal ? y(probs[iS[i][1]]) : y(0.5)).style('stroke', boxColor);
         }
 
-        boxplot
-            .append('circle')
-            .attr('class', 'boxplot d3.mean')
-            .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
-            .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
-            .attr('r', horizontal ? x(boxPlotWidth / 3) : y(1 - boxPlotWidth / 3))
-            .style('fill', boxInsideColor)
-            .style('stroke', boxColor);
+        boxplot.append('circle').attr('class', 'boxplot d3.mean').attr('cx', horizontal ? x(0.5) : x(d3.mean(results))).attr('cy', horizontal ? y(d3.mean(results)) : y(0.5)).attr('r', horizontal ? x(boxPlotWidth / 3) : y(1 - boxPlotWidth / 3)).style('fill', boxInsideColor).style('stroke', boxColor);
 
-        boxplot
-            .append('circle')
-            .attr('class', 'boxplot d3.mean')
-            .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
-            .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
-            .attr('r', horizontal ? x(boxPlotWidth / 6) : y(1 - boxPlotWidth / 6))
-            .style('fill', boxColor)
-            .style('stroke', 'None');
+        boxplot.append('circle').attr('class', 'boxplot d3.mean').attr('cx', horizontal ? x(0.5) : x(d3.mean(results))).attr('cy', horizontal ? y(d3.mean(results)) : y(0.5)).attr('r', horizontal ? x(boxPlotWidth / 6) : y(1 - boxPlotWidth / 6)).style('fill', boxColor).style('stroke', 'None');
 
         var formatx = fmt ? d3.format(fmt) : d3.format('.2f');
 
-        boxplot
-            .selectAll('.boxplot')
-            .append('title')
-            .text(function(d) {
-                return (
-                    'N = ' +
-                    d.values.length +
-                    '\n' +
-                    'Min = ' +
-                    d3.min(d.values) +
-                    '\n' +
-                    '5th % = ' +
-                    formatx(d3.quantile(d.values, 0.05)) +
-                    '\n' +
-                    'Q1 = ' +
-                    formatx(d3.quantile(d.values, 0.25)) +
-                    '\n' +
-                    'Median = ' +
-                    formatx(d3.median(d.values)) +
-                    '\n' +
-                    'Q3 = ' +
-                    formatx(d3.quantile(d.values, 0.75)) +
-                    '\n' +
-                    '95th % = ' +
-                    formatx(d3.quantile(d.values, 0.95)) +
-                    '\n' +
-                    'Max = ' +
-                    d3.max(d.values) +
-                    '\n' +
-                    'Mean = ' +
-                    formatx(d3.mean(d.values)) +
-                    '\n' +
-                    'StDev = ' +
-                    formatx(d3.deviation(d.values))
-                );
-            });
+        boxplot.selectAll('.boxplot').append('title').text(function (d) {
+            return 'N = ' + d.values.length + '\n' + 'Min = ' + d3.min(d.values) + '\n' + '5th % = ' + formatx(d3.quantile(d.values, 0.05)) + '\n' + 'Q1 = ' + formatx(d3.quantile(d.values, 0.25)) + '\n' + 'Median = ' + formatx(d3.median(d.values)) + '\n' + 'Q3 = ' + formatx(d3.quantile(d.values, 0.75)) + '\n' + '95th % = ' + formatx(d3.quantile(d.values, 0.95)) + '\n' + 'Max = ' + d3.max(d.values) + '\n' + 'Mean = ' + formatx(d3.mean(d.values)) + '\n' + 'StDev = ' + formatx(d3.deviation(d.values));
+        });
     }
 
     function init$5() {
@@ -4833,61 +3673,39 @@
         this.svg.selectAll('g.xMargin').remove();
 
         // Y-axis box plot
-        var yValues = this.current_data.map(function(d) {
+        var yValues = this.current_data.map(function (d) {
             return d.values.y;
         });
         var ybox = this.svg.append('g').attr('class', 'yMargin');
-        addBoxPlot(
-            ybox,
-            yValues,
-            this.plot_height,
-            1,
-            this.y_dom,
-            10,
-            '#bbb',
-            'white',
-            '0.2f',
-            true,
-            this.config.y.type == 'log'
-        );
-        ybox.select('g.boxplot').attr(
-            'transform',
-            'translate(' + (this.plot_width + this.config.margin.right / 2) + ',0)'
-        );
+        addBoxPlot(ybox, yValues, this.plot_height, 1, this.y_dom, 10, '#bbb', 'white', '0.2f', true, this.config.y.type == 'log');
+        ybox.select('g.boxplot').attr('transform', 'translate(' + (this.plot_width + this.config.margin.right / 2) + ',0)');
 
         //X-axis box plot
-        var xValues = this.current_data.map(function(d) {
+        var xValues = this.current_data.map(function (d) {
             return d.values.x;
         });
         var xbox = this.svg.append('g').attr('class', 'xMargin');
-        addBoxPlot(
-            xbox, //svg element
-            xValues, //values
-            1, //height
-            this.plot_width, //width
-            this.x_dom, //domain
-            10, //box plot width
-            '#bbb', //box color
-            'white', //detail color
-            '0.2f', //format
-            false, // horizontal?
-            this.config.y.type == 'log' // log?
+        addBoxPlot(xbox, //svg element
+        xValues, //values
+        1, //height
+        this.plot_width, //width
+        this.x_dom, //domain
+        10, //box plot width
+        '#bbb', //box color
+        'white', //detail color
+        '0.2f', //format
+        false, // horizontal?
+        this.config.y.type == 'log' // log?
         );
-        xbox.select('g.boxplot').attr(
-            'transform',
-            'translate(0,' + -(this.config.margin.top / 2) + ')'
-        );
+        xbox.select('g.boxplot').attr('transform', 'translate(0,' + -(this.config.margin.top / 2) + ')');
     }
 
     function adjustTicks() {
-        this.svg
-            .selectAll('.x.axis .tick text')
-            .attr({
-                transform: 'rotate(-45)',
-                dx: -10,
-                dy: 10
-            })
-            .style('text-anchor', 'end');
+        this.svg.selectAll('.x.axis .tick text').attr({
+            transform: 'rotate(-45)',
+            dx: -10,
+            dy: 10
+        }).style('text-anchor', 'end');
     }
 
     function updateTimingFootnote() {
@@ -4895,25 +3713,12 @@
         var config = this.config;
 
         if (chart.plot_max_values) {
-            var windowText =
-                config.visit_window == 0
-                    ? 'on the same day'
-                    : config.visit_window == 1
-                    ? 'within 1 day'
-                    : 'within ' + config.visit_window + ' days';
-            var timingFootnote =
-                ' Points where maximum ' +
-                config.measure_values[config.x.column] +
-                ' and ' +
-                config.measure_values[config.y.column] +
-                ' values were collected ' +
-                windowText +
-                ' are filled, others are empty.';
+            var windowText = config.visit_window == 0 ? 'on the same day' : config.visit_window == 1 ? 'within 1 day' : 'within ' + config.visit_window + ' days';
+            var timingFootnote = ' Points where maximum ' + config.measure_values[config.x.column] + ' and ' + config.measure_values[config.y.column] + ' values were collected ' + windowText + ' are filled, others are empty.';
 
             this.footnote.timing.text(timingFootnote);
         } else {
-            var timingFootnote =
-                "Small points are drawn when the selected day occurs outside of the participant's study enrollment; either the first collected measures (empty circle) or last collected measures (filled circle) for the participant are plotted for these points.";
+            var timingFootnote = "Small points are drawn when the selected day occurs outside of the participant's study enrollment; either the first collected measures (empty circle) or last collected measures (filled circle) for the participant are plotted for these points.";
             this.footnote.timing.text(timingFootnote);
         }
     }
@@ -4941,13 +3746,18 @@
         updateTimingFootnote.call(this);
     }
 
+    function onDestroy() {
+        this.emptyChartWarning.remove();
+    }
+
     var callbacks = {
         onInit: onInit,
         onLayout: onLayout,
         onPreprocess: onPreprocess,
         onDataTransform: onDataTransform,
         onDraw: onDraw,
-        onResize: onResize$1
+        onResize: onResize$1,
+        onDestroy: onDestroy
     };
 
     function init$6() {
@@ -4966,17 +3776,18 @@
         this.chart.init(lb);
     }
 
-    function safetyedish(element, settings) {
+    function destroy() {
+        this.chart.destroy();
+    }
+
+    function hepexplorer(element, settings) {
         var initial_settings = clone(settings);
         var defaultSettings = configuration.settings();
         var controlInputs = configuration.controlInputs();
         var mergedSettings = Object.assign({}, defaultSettings, settings);
         var syncedSettings = configuration.syncSettings(mergedSettings);
         var syncedControlInputs = configuration.syncControlInputs(controlInputs, syncedSettings);
-        var controls = webcharts.createControls(element, {
-            location: 'top',
-            inputs: syncedControlInputs
-        });
+        var controls = webcharts.createControls(element, { location: 'top', inputs: syncedControlInputs });
         var chart = webcharts.createChart(element, syncedSettings, controls);
 
         chart.element = element;
@@ -4985,16 +3796,17 @@
         //Define callbacks.
         for (var callback in callbacks) {
             chart.on(callback.substring(2).toLowerCase(), callbacks[callback]);
-        }
-        var se = {
+        }var hepexplorer = {
             element: element,
             settings: settings,
             chart: chart,
-            init: init$6
+            init: init$6,
+            destroy: destroy
         };
 
-        return se;
+        return hepexplorer;
     }
 
-    return safetyedish;
-});
+    return hepexplorer;
+
+})));

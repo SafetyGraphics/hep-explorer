@@ -48,7 +48,8 @@ export default function startAnimation() {
             var vals = raw[m + '_raw'];
 
             // Did currentDay occur while participant was enrolled?
-            if (vals.length) {
+            if (vals && vals.length) {
+                // && [config.x.column, config.y.column].includes(m)) { // out-of-range should be calculated study day of with x- and y-axis measures
                 var first = vals[0];
                 var last = vals[vals.length - 1];
                 var before = currentDay < first.day;
@@ -58,12 +59,12 @@ export default function startAnimation() {
 
             //Get the most recent data point (or the first point if participant isn't enrolled yet)
             var getLastMeasureIndex = d3.bisector(d => d.day).left;
-            var lastMeasureIndexPlusOne = getLastMeasureIndex(vals, currentDay);
+            var lastMeasureIndexPlusOne = vals ? getLastMeasureIndex(vals, currentDay) : 0;
             var lastMeasureIndex = lastMeasureIndexPlusOne - 1;
             d[m] =
                 lastMeasureIndex >= 0
                     ? vals[lastMeasureIndex]['value']
-                    : vals.length
+                    : vals && vals.length
                     ? vals[0].value
                     : null;
         });

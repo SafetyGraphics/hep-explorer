@@ -4,6 +4,7 @@ import onPreprocess from './onPreprocess';
 import onDataTransform from './onDataTransform';
 import onDraw from './onDraw';
 import onResize from './onResize';
+import onDestroy from './onDestroy';
 
 export default {
     onInit,
@@ -11,5 +12,6 @@ export default {
     onPreprocess,
     onDataTransform,
     onDraw,
-    onResize
+    onResize,
+    onDestroy
 };
