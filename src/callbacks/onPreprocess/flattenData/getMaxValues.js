@@ -77,6 +77,7 @@ export default function getMaxValues(d) {
                     return di[config.studyday_col] <= config.plot_day;
                 });
                 var latest = onOrBefore[onOrBefore.length - 1];
+
                 currentRecord = latest ? latest : first;
                 participant_obj[mKey] = currentRecord[config.display];
             }
@@ -118,11 +119,6 @@ export default function getMaxValues(d) {
     //calculate the day difference between x and y and total day range for all measure values
     participant_obj.day_diff = Math.abs(participant_obj.days_x - participant_obj.days_y);
     participant_obj.day_range = d3.extent(d, d => d[config.studyday_col]);
-
-    //check if both x and y are in range
-    if (!config.plot_max_values) {
-        participant_obj;
-    }
 
     return participant_obj;
 }

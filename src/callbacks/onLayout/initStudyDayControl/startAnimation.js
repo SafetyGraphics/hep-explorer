@@ -58,9 +58,10 @@ export default function startAnimation() {
             }
 
             //Get the most recent data point (or the first point if participant isn't enrolled yet)
-            var getLastMeasureIndex = d3.bisector(d => d.day).left;
+            var getLastMeasureIndex = d3.bisector(d => d.day).right;
             var lastMeasureIndexPlusOne = vals ? getLastMeasureIndex(vals, currentDay) : 0;
             var lastMeasureIndex = lastMeasureIndexPlusOne - 1;
+
             d[m] =
                 lastMeasureIndex >= 0
                     ? vals[lastMeasureIndex]['value']

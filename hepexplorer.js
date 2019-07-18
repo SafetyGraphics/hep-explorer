@@ -2020,9 +2020,10 @@
                 //Get the most recent data point (or the first point if participant isn't enrolled yet)
                 var getLastMeasureIndex = d3.bisector(function(d) {
                     return d.day;
-                }).left;
+                }).right;
                 var lastMeasureIndexPlusOne = vals ? getLastMeasureIndex(vals, currentDay) : 0;
                 var lastMeasureIndex = lastMeasureIndexPlusOne - 1;
+
                 d[m] =
                     lastMeasureIndex >= 0
                         ? vals[lastMeasureIndex]['value']
@@ -2294,11 +2295,52 @@
     }
 
     function calculateRRatios(d, participant_obj) {
-        if (this.config.r_ratio_filter) {
-            //R-ratio should be the ratio of ALT to ALP, i.e. the x-axis to the z-axis.
-            participant_obj.rRatio =
-                participant_obj['ALT_relative_uln'] / participant_obj['ALP_relative_uln'];
-        }
+        var chart = this;
+        var config = this.config;
+        //R-ratio should be the ratio of ALT to ALP, i.e. the x-axis to the z-axis.
+        participant_obj.rRatio_overall =
+            participant_obj['ALT_relative_uln'] / participant_obj['ALP_relative_uln'];
+
+        //get r-ratio data for every visit where both ALT and ALP are available
+        var allMatches = chart.imputed_data.filter(function(f) {
+            return f[config.id_col] == participant_obj[config.id_col];
+        });
+
+        var raw_alt = allMatches
+            .filter(function(d) {
+                return d[config.measure_col] == config.measure_values.ALT;
+            })
+            .map(function(m) {
+                m.day = m[config.studyday_col];
+                m.alt_relative_uln = m.relative_uln;
+                return m;
+            });
+
+        participant_obj.rRatio_raw = allMatches
+            .filter(function(f) {
+                return f[config.measure_col] == config.measure_values.ALP;
+            })
+            .map(function(m) {
+                var obj = {};
+                obj.day = m[config.studyday_col];
+                obj.alp_relative_uln = m.relative_uln;
+                return obj;
+            })
+            .filter(function(f) {
+                var matched_alt = raw_alt.find(function(fi) {
+                    return fi.day == f.day;
+                });
+                f.alt_relative_uln = matched_alt ? matched_alt.relative_uln : null;
+                f.rRatio = f['alt_relative_uln'] / f['alp_relative_uln'];
+                return f.rRatio;
+            });
+        participant_obj.rRatio_max = d3.max(participant_obj.rRatio_raw, function(f) {
+            return f.rRatio;
+        });
+        participant_obj.rRatio = d3.max([
+            participant_obj.rRatio_max,
+            participant_obj.rRatio_overall
+        ]);
     }
 
     function getMaxValues(d) {
@@ -2385,6 +2427,7 @@
                         return di[config.studyday_col] <= config.plot_day;
                     });
                     var latest = onOrBefore[onOrBefore.length - 1];
+
                     currentRecord = latest ? latest : first;
                     participant_obj[mKey] = currentRecord[config.display];
                 }
@@ -2428,9 +2471,6 @@
         participant_obj.day_range = d3.extent(d, function(d) {
             return d[config.studyday_col];
         });
-
-        //check if both x and y are in range
-        if (!config.plot_max_values);
 
         return participant_obj;
     }
@@ -2558,14 +2598,14 @@
                     })
                 )
                 .values().length;
-            console.log(
+            console.warn(
                 'Of ' +
                     this.dropped_participants.length +
                     ' dropped participants, ' +
                     unique_dropped_participants +
                     ' are unique.'
             );
-            console.log(this.dropped_participants);
+            console.warn(this.dropped_participants);
         }
 
         chart.messages.remove(null, 'droppedPts', chart.messages); //remove message from previous render
@@ -2932,6 +2972,11 @@
     }
 
     function onDraw() {
+        var chart = this;
+        var dropped = chart.raw_data.filter(function(f) {
+            return chart.filtered_data.indexOf(f) == -1;
+        });
+
         //show/hide the study day controls
         updateStudyDayControl.call(this);
 
@@ -4396,7 +4441,6 @@
                     return m[config.point_size + '_raw'];
                 })
             );
-            console.log(sizeValues_all);
             var sizeDomain_all = d3.extent(sizeValues_all, function(f) {
                 return f.value;
             });
@@ -4406,8 +4450,6 @@
                 })
             );
             var sizeDomain = config.plot_max_values ? sizeDomain_max : sizeDomain_all;
-            console.log(sizeDomain_all);
-            console.log(sizeDomain_max);
 
             chart.sizeScale = d3.scale
                 .linear()

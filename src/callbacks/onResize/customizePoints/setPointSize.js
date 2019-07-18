@@ -10,12 +10,9 @@ export function setPointSize() {
 
     if (config.point_size != 'Uniform') {
         var sizeValues_all = d3.merge(chart.raw_data.map(m => m[config.point_size + '_raw']));
-        console.log(sizeValues_all);
         var sizeDomain_all = d3.extent(sizeValues_all, f => f.value);
         var sizeDomain_max = d3.extent(chart.raw_data.map(m => m[config.point_size]));
         var sizeDomain = config.plot_max_values ? sizeDomain_max : sizeDomain_all;
-        console.log(sizeDomain_all);
-        console.log(sizeDomain_max);
 
         chart.sizeScale = d3.scale
             .linear()
