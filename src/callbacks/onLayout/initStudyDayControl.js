@@ -14,7 +14,7 @@ export default function initStudyDayControl() {
 
     //set min and max values and add annotations
     chart.controls.studyDayRange = d3.extent(
-        chart.imputed_data.filter(d => d.analysisFlag),
+        chart.imputed_data.filter(f => f.key_measure),
         d => d[config.studyday_col]
     );
     chart.controls.studyDayInput.attr('min', chart.controls.studyDayRange[0]);

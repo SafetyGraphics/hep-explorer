@@ -11,11 +11,15 @@ export default function getMaxValues(d) {
     participant_obj.outOfRange = false;
     Object.keys(config.measure_values).forEach(function(mKey) {
         //get all raw data for the current measure
-        var matches = d
+        var all_matches = d
             .filter(f => config.measure_values[mKey] == f[config.measure_col]) //get matching measures
-            .filter(f => f.analysisFlag);
+            .sort(function(a, b) {
+                return a[config.studyday_col] - b[config.studyday_col];
+            });
 
-        participant_obj.drop_participant = matches.length === 0;
+        //Drop Participants with no analysis data
+        var analysis_matches = all_matches.filter(f => f.analysisFlag);
+        participant_obj.drop_participant = analysis_matches.length === 0;
 
         if (participant_obj.drop_participant) {
             if (config.debug) {
@@ -28,47 +32,59 @@ export default function getMaxValues(d) {
                 'No analysis results found for 1+ key measure, including ' + mKey + '.';
         } else {
             //keep an array of all [value, studyday] pairs for the measure
-            participant_obj[mKey + '_raw'] = matches
-                .map(function(m, i) {
-                    return {
-                        value: m[config.display],
-                        day: m[config.studyday_col]
-                    };
-                })
-                .sort(function(a, b) {
-                    return a.day - b.day;
-                });
+            participant_obj[mKey + '_raw'] = all_matches.map(function(m, i) {
+                return {
+                    value: m[config.display],
+                    day: m[config.studyday_col]
+                };
+            });
 
+            var currentRecord = null;
             //get the current record for each participant
             if (config.plot_max_values) {
                 //get record with maximum value for the current display type
-                participant_obj[mKey] = d3.max(matches, d => +d[config.display]);
+                const max_value = d3.max(analysis_matches, d => +d[config.display]);
+                var currentRecords = analysis_matches.filter(d => max_value == +d[config.display]);
+                if (config.debug & (currentRecords.length > 1)) {
+                    var firstDay = currentRecords[0][config.studyday_col];
+                    var id = currentRecords[0][config.id_col];
+                    console.warn(
+                        'Found duplicate maximum ' +
+                            mKey +
+                            ' values for ' +
+                            id +
+                            '. Using first value from study day ' +
+                            firstDay +
+                            ' for timing calculations.'
+                    );
+                }
+                var currentRecord = currentRecords[0];
+                participant_obj[mKey] = +currentRecord[config.display];
             } else {
                 //see if all selected config.plot_day was while participant was enrolled
-                var first = participant_obj[mKey + '_raw'][0];
-                var last = participant_obj[mKey + '_raw'].slice().pop(); // Array.pop() alters the original array, but not if you slice and dice it!
+                var first = all_matches[0];
+                var last = all_matches[all_matches.length - 1];
 
                 if ([config.x.column, config.y.column].includes(mKey)) {
                     // out-of-range should be calculated study day of with x- and y-axis measures
-                    var before = config.plot_day < first.day;
-                    var after = config.plot_day > last.day;
+                    var before = config.plot_day < first[config.studyday_col];
+                    var after = config.plot_day > last[config.studyday_col];
                     participant_obj.outOfRange = participant_obj.outOfRange || before || after;
                 }
 
                 //get the most recent measure on or before config.plot_day
-                var onOrBefore = participant_obj[mKey + '_raw'].filter(di => {
-                    return di.day <= config.plot_day;
+                var onOrBefore = all_matches.filter(di => {
+                    return di[config.studyday_col] <= config.plot_day;
                 });
-                var latest = onOrBefore.pop();
-
-                participant_obj[mKey] = latest ? latest.value : first.value;
+                var latest = onOrBefore[onOrBefore.length - 1];
+                currentRecord = latest ? latest : first;
+                participant_obj[mKey] = currentRecord[config.display];
             }
-
-            var maxRecord = matches.find(d => participant_obj[mKey] == +d[config.display]);
+            //  var currentRecord = all_matches.find(d => participant_obj[mKey] == +d[config.display]);
 
             //map all measure specific values
             config.flat_cols.forEach(function(col) {
-                participant_obj[mKey + '_' + col] = maxRecord ? maxRecord[col] : null;
+                participant_obj[mKey + '_' + col] = currentRecord ? currentRecord[col] : null;
             });
 
             //determine whether the value is above the specified threshold
@@ -84,11 +100,11 @@ export default function getMaxValues(d) {
             }
 
             //save study days for each axis;
-            if (maxRecord) {
+            if (currentRecord) {
                 if (mKey == config.x.column)
-                    participant_obj.days_x = maxRecord[config.studyday_col];
+                    participant_obj.days_x = currentRecord[config.studyday_col];
                 if (mKey == config.y.column)
-                    participant_obj.days_y = maxRecord[config.studyday_col];
+                    participant_obj.days_y = currentRecord[config.studyday_col];
             }
         }
     });
@@ -99,11 +115,9 @@ export default function getMaxValues(d) {
     //Calculate ratios between measures.
     calculateRRatio.call(chart, d, participant_obj);
 
-    //calculate the day difference between x and y
+    //calculate the day difference between x and y and total day range for all measure values
     participant_obj.day_diff = Math.abs(participant_obj.days_x - participant_obj.days_y);
-
-    var vals = d.filter(f => f.analysisFlag).filter(f => f.key_measure);
-    participant_obj.day_range = d3.extent(vals, d => d[config.studyday_col]);
+    participant_obj.day_range = d3.extent(d, d => d[config.studyday_col]);
 
     //check if both x and y are in range
     if (!config.plot_max_values) {
