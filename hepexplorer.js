@@ -4390,19 +4390,32 @@
         var max_size = base_size * 5;
         var small_size = base_size / 2;
 
-        //TODO: use all possible point sizes for size scale when viewing by study-day
-        chart.sizeScale = d3.scale
-            .linear()
-            .range([base_size, max_size])
-            .domain(
-                d3.extent(
-                    chart.raw_data.map(function(m) {
-                        return m[config.point_size];
-                    })
-                )
+        if (config.point_size != 'Uniform') {
+            var sizeValues_all = d3.merge(
+                chart.raw_data.map(function(m) {
+                    return m[config.point_size + '_raw'];
+                })
             );
+            console.log(sizeValues_all);
+            var sizeDomain_all = d3.extent(sizeValues_all, function(f) {
+                return f.value;
+            });
+            var sizeDomain_max = d3.extent(
+                chart.raw_data.map(function(m) {
+                    return m[config.point_size];
+                })
+            );
+            var sizeDomain = config.plot_max_values ? sizeDomain_max : sizeDomain_all;
+            console.log(sizeDomain_all);
+            console.log(sizeDomain_max);
 
-        //draw a legend (coming later?)
+            chart.sizeScale = d3.scale
+                .linear()
+                .range([base_size, max_size])
+                .domain(sizeDomain);
+        }
+
+        //TODO: draw a legend (coming later?)
 
         //set the point radius
         points
