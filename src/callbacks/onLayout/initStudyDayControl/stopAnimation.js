@@ -3,5 +3,9 @@ export default function stopAnimation() {
     chart.svg
         .transition()
         .duration(0)
-        .each('end', chart.draw());
+        .each('end', function() {
+            chart.controls.studyDayPlayButton.datum({ state: 'play' });
+            chart.controls.studyDayPlayButton.html('&#9658;');
+            chart.draw();
+        });
 }

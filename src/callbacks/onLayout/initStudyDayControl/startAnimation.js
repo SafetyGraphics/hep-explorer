@@ -6,8 +6,10 @@ export default function startAnimation() {
     const duration = day_count < 300 ? day_count * 100 : 30000;
     const day_duration = duration / day_count;
 
+    const base_size = config.marks[0].radius || config.flex_point_size;
+    const small_size = base_size / 2;
+
     function reposition(point) {
-        //TODO: recalculate size scale for each time point
         point
             .transition()
             .duration(day_duration)
@@ -19,12 +21,15 @@ export default function startAnimation() {
             })
             .attr('r', function(d) {
                 if (d.outOfRange) {
-                    return 1;
+                    return small_size;
                 } else if (config.point_size == 'Uniform') {
-                    return d.mark.radius || config.flex_point_size;
+                    return base_size;
                 } else {
                     return chart.sizeScale(d[config.point_size]);
                 }
+            })
+            .attr('fill-opacity', function(d) {
+                return config.plot_day < d.day_range[0] ? 0 : 1;
             });
     }
 
@@ -38,11 +43,13 @@ export default function startAnimation() {
 
         var raw = d.values.raw[0];
         d.outOfRange = false;
+        d.day_range = raw.day_range;
         measures.forEach(function(m) {
             var vals = raw[m + '_raw'];
 
             // Did currentDay occur while participant was enrolled?
-            if (vals.length) {
+            if (vals && vals.length) {
+                // && [config.x.column, config.y.column].includes(m)) { // out-of-range should be calculated study day of with x- and y-axis measures
                 var first = vals[0];
                 var last = vals[vals.length - 1];
                 var before = currentDay < first.day;
@@ -52,12 +59,12 @@ export default function startAnimation() {
 
             //Get the most recent data point (or the first point if participant isn't enrolled yet)
             var getLastMeasureIndex = d3.bisector(d => d.day).left;
-            var lastMeasureIndexPlusOne = getLastMeasureIndex(vals, currentDay);
+            var lastMeasureIndexPlusOne = vals ? getLastMeasureIndex(vals, currentDay) : 0;
             var lastMeasureIndex = lastMeasureIndexPlusOne - 1;
             d[m] =
                 lastMeasureIndex >= 0
                     ? vals[lastMeasureIndex]['value']
-                    : vals.length
+                    : vals && vals.length
                     ? vals[0].value
                     : null;
         });

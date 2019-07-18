@@ -1,5 +1,3 @@
-import { extent, max } from 'd3';
-
 export function setDomain(dimension) {
     var config = this.config;
     var domain = this[dimension].domain();
@@ -11,10 +9,10 @@ export function setDomain(dimension) {
         .map(m => +m[config.display])
         .filter(m => m > 0)
         .sort((a, b) => a - b);
-    var val_extent = extent(values);
+    var val_extent = d3.extent(values);
 
     //make sure the domain contains the cut point and the max possible value for the measure
-    domain[1] = max([domain[1], cut * 1.01, val_extent[1]]);
+    domain[1] = d3.max([domain[1], cut * 1.01, val_extent[1]]);
 
     // make sure the domain lower limit captures all of the raw Values
     if (this.config[dimension].type == 'linear') {
