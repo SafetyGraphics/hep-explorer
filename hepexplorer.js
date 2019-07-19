@@ -2004,7 +2004,7 @@
                     }
                 })
                 .attr('fill-opacity', function(d) {
-                    return config.plot_day < d.day_range[0] ? 0 : 0.5;
+                    return config.plot_day < d.day_range[0] ? 0 : 1;
                 });
         }
 
@@ -2019,8 +2019,11 @@
             var raw = d.values.raw[0];
             d.outOfRange = false;
             d.day_range = raw.day_range;
+            d.moved = false;
             measures.forEach(function(m) {
                 var vals = raw[m + '_raw'];
+                // capture the previous point position
+                d[m + '_prev'] = d[m];
 
                 // Did currentDay occur while participant was enrolled?
                 if (vals && vals.length) {
@@ -2045,6 +2048,11 @@
                         : vals && vals.length
                         ? vals[0].value
                         : null;
+
+                d[m + '_length'] = d[m] - d[m + '_prev'];
+                if (d[m + '_length']) {
+                    d.moved = true;
+                }
             });
             return d;
         }
@@ -2062,11 +2070,48 @@
                 .style('color', 'blue');
 
             //reposition the points
-            var points = chart.marks[0].circles
-                .datum(function(d) {
-                    return updateDatum(d, config.plot_day);
+            var marks = chart.marks[0];
+
+            var groups = marks.groups.datum(function(d) {
+                return updateDatum(d, config.plot_day);
+            });
+
+            var points = groups.select('circle').call(reposition);
+
+            //draw trails
+            var tails = groups
+                .filter(function(d) {
+                    return d.moved;
                 })
-                .call(reposition);
+                .append('line')
+                .attr('x1', function(d) {
+                    return chart.x(d[config.x.column + '_prev']);
+                })
+                .attr('x2', function(d) {
+                    return chart.x(d[config.x.column]);
+                })
+                .attr('y1', function(d) {
+                    return chart.y(d[config.y.column + '_prev']);
+                })
+                .attr('y2', function(d) {
+                    return chart.y(d[config.y.column]);
+                })
+                //  .attr('stroke', d => chart.colorScale(d[config.color_by]))
+                .attr('stroke', '#999')
+                .attr('stroke-width', base_size);
+            tails.each(function(d) {
+                var path = d3.select(this);
+                var totalLength = path.node().getTotalLength();
+                path.attr('stroke-dasharray', totalLength + ' ' + totalLength)
+                    .attr('stroke-dashoffset', totalLength)
+                    .transition()
+                    .duration(day_duration)
+                    .ease('linear')
+                    .attr('stroke-dashoffset', 0)
+                    .transition()
+                    .duration(day_duration * 10)
+                    .attr('stroke-width', '0px');
+            });
         }
 
         function tweenStudyDay() {
