@@ -29,7 +29,7 @@ export default function startAnimation() {
                 }
             })
             .attr('fill-opacity', function(d) {
-                return config.plot_day < d.day_range[0] ? 0 : 1;
+                return config.plot_day < d.day_range[0] ? 0 : 0.5;
             });
     }
 
@@ -136,6 +136,13 @@ export default function startAnimation() {
             showDay(studyday(t));
         };
     }
+
+    //draw the chart to clear details view
+    chart.draw();
+
+    //hide quadrant info during startAnimation
+    chart.config.quadrants.table.wrap.style('display', 'none');
+    chart.quadrant_labels.g.attr('display', 'none');
 
     //show the stop button
     chart.controls.studyDayPlayButton.datum({ state: 'stop' });

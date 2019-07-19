@@ -1186,6 +1186,8 @@
             });
         }
 
+        //make sure the table is visible
+        this.config.quadrants.table.wrap.style('display', null);
         //update the content of each row
         rows.data(quadrants, function(d) {
             return d.label;
@@ -2004,7 +2006,7 @@
                     }
                 })
                 .attr('fill-opacity', function(d) {
-                    return config.plot_day < d.day_range[0] ? 0 : 1;
+                    return config.plot_day < d.day_range[0] ? 0 : 0.5;
                 });
         }
 
@@ -2123,6 +2125,13 @@
                 showDay(studyday(t));
             };
         }
+
+        //draw the chart to clear details view
+        chart.draw();
+
+        //hide quadrant info during startAnimation
+        chart.config.quadrants.table.wrap.style('display', 'none');
+        chart.quadrant_labels.g.attr('display', 'none');
 
         //show the stop button
         chart.controls.studyDayPlayButton.datum({ state: 'stop' });
@@ -4781,6 +4790,7 @@
             });
 
         //position labels
+        this.quadrant_labels.g.attr('display', null); //show labels if they're hidden
         this.quadrant_labels.g
             .select('text.upper-right')
             .attr('x', this.plot_width)

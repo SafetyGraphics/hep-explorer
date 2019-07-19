@@ -36,6 +36,7 @@ export function drawQuadrants() {
         .attr('y2', d => this.y(y_cut));
 
     //position labels
+    this.quadrant_labels.g.attr('display', null); //show labels if they're hidden
     this.quadrant_labels.g
         .select('text.upper-right')
         .attr('x', this.plot_width)
