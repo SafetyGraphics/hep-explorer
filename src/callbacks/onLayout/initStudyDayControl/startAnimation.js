@@ -29,7 +29,7 @@ export default function startAnimation() {
                 }
             })
             .attr('fill-opacity', function(d) {
-                return config.plot_day < d.day_range[0] ? 0 : 1;
+                return config.plot_day < d.day_range[0] ? 0 : 0.5;
             });
     }
 

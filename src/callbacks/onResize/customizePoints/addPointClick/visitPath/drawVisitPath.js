@@ -103,7 +103,7 @@ export function drawVisitPath(d) {
         .attr('cx', d => chart.x(d.x))
         .attr('cy', d => chart.y(d.y))
         .attr('fill', d => chart.colorScale(d[config.color_by]))
-        .attr('fill-opacity', 0.5)
+        .attr('fill-opacity', 0)
         .transition()
         .delay(2000)
         .duration(200)

@@ -2004,7 +2004,7 @@
                     }
                 })
                 .attr('fill-opacity', function(d) {
-                    return config.plot_day < d.day_range[0] ? 0 : 1;
+                    return config.plot_day < d.day_range[0] ? 0 : 0.5;
                 });
         }
 
@@ -3256,7 +3256,7 @@
             .attr('fill', function(d) {
                 return chart.colorScale(d[config.color_by]);
             })
-            .attr('fill-opacity', 0.5)
+            .attr('fill-opacity', 0)
             .transition()
             .delay(2000)
             .duration(200)
@@ -4590,18 +4590,17 @@
     }
 
     function setPointOpacity() {
-        var chart = this;
         var config = this.config;
         var points = this.marks[0].circles;
 
         points.attr('fill-opacity', function(d) {
             var raw = d.values.raw[0];
-            if (chart.plot_max_values) {
+            if (config.plot_max_values) {
                 // if viewing max values, fill based on time window
-                return raw.day_diff <= config.visit_window ? 1 : 0;
+                return raw.day_diff <= config.visit_window ? 0.5 : 0;
             } else {
-                //fill points after participants first day
-                return config.plot_day < raw.day_range[0] ? 0 : 1;
+                //fill points after participant's first day
+                return config.plot_day < raw.day_range[0] ? 0 : 0.5;
             }
         });
     }

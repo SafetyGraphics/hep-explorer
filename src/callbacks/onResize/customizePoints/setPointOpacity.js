@@ -5,12 +5,12 @@ export function setPointOpacity() {
 
     points.attr('fill-opacity', function(d) {
         var raw = d.values.raw[0];
-        if (chart.plot_max_values) {
+        if (config.plot_max_values) {
             // if viewing max values, fill based on time window
-            return raw.day_diff <= config.visit_window ? 1 : 0;
+            return raw.day_diff <= config.visit_window ? 0.5 : 0;
         } else {
-            //fill points after participants first day
-            return config.plot_day < raw.day_range[0] ? 0 : 1;
+            //fill points after participant's first day
+            return config.plot_day < raw.day_range[0] ? 0 : 0.5;
         }
     });
 }
