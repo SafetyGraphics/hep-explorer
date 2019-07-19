@@ -1404,6 +1404,8 @@
         this.participantDetails.header = this.participantDetails.wrap
             .append('div')
             .attr('class', 'participantHeader');
+
+        //layout spaghettiPlot
         var splot = this.participantDetails.wrap.append('div').attr('class', 'spaghettiPlot');
         splot
             .append('h3')
@@ -1415,6 +1417,19 @@
 
         splot.append('div').attr('class', 'chart');
 
+        //layout rRatio plot
+        var rrplot = this.participantDetails.wrap.append('div').attr('class', 'rrPlot');
+        rrplot
+            .append('h3')
+            .attr('class', 'id')
+            .html('R Ratio by Visit')
+            .style('border-top', '2px solid black')
+            .style('border-bottom', '2px solid black')
+            .style('padding', '.2em');
+
+        rrplot.append('div').attr('class', 'chart');
+
+        //layout measure table
         var mtable = this.participantDetails.wrap.append('div').attr('class', 'measureTable');
         mtable
             .append('h3')
@@ -3168,6 +3183,12 @@
                     visitObj.yMatch = null;
                 }
 
+                //get rRatio
+                var rRatio_match = d.values.raw[0].rRatio_raw.filter(function(f) {
+                    return f[config.studyday_col] == m;
+                });
+                visitObj.rRatio = rRatio_match.length ? rRatio_match[0].rRatio : null;
+
                 return visitObj;
             })
             .sort(function(a, b) {
@@ -3245,13 +3266,15 @@
         visitPoints.append('title').text(function(d) {
             var xvar = config.x.column;
             var yvar = config.y.column;
+
             var studyday_label = 'Study day: ' + d.studyday + '\n',
                 visitn_label = d.visitn ? 'Visit Number: ' + d.visitn + '\n' : '',
                 visit_label = d.visit ? 'Visit: ' + d.visit + '\n' : '',
                 x_label = config.x.label + ': ' + d3.format('0.3f')(d.x) + '\n',
-                y_label = config.y.label + ': ' + d3.format('0.3f')(d.y);
+                y_label = config.y.label + ': ' + d3.format('0.3f')(d.y),
+                rRatio_label = d.rRatio ? '\nR Ratio: ' + d3.format('0.2f')(d.rRatio) : '';
 
-            return studyday_label + visit_label + visitn_label + x_label + y_label;
+            return studyday_label + visit_label + visitn_label + x_label + y_label + rRatio_label;
         });
     }
 
@@ -4366,6 +4389,78 @@
             );
     }
 
+    var defaultSettings$2 = {
+        max_width: 600,
+        x: {
+            column: 'day',
+            type: 'linear',
+            label: 'Study Day'
+        },
+        y: {
+            column: 'rRatio',
+            type: 'linear',
+            label: 'R Ratio  [(ALT/ULN) / (ALP/ULN)]',
+            format: '.1f',
+            domain: [0, null]
+        },
+        marks: [
+            {
+                type: 'line',
+                per: ['id']
+            },
+            {
+                type: 'circle',
+                radius: 4,
+                per: ['id', 'day']
+            }
+        ],
+        margin: { top: 20 },
+        gridlines: 'xy',
+        aspect: 2
+    };
+
+    function init$4(d) {
+        var chart = this; //the full eDish object
+        var config = this.config; //the eDish config
+        var matches = d.values.raw[0].rRatio_raw;
+        console.log(matches);
+
+        if ('rRatioChart' in chart) {
+            chart.rRatioChart.destroy();
+        }
+
+        //sync settings
+        defaultSettings$2.marks[0].per = [config.id_col];
+        defaultSettings$2.marks[1].per = [config.id_col, config.studyday_col];
+
+        //draw that chart
+        var rrElement = this.element + ' .participantDetails .rrPlot .chart';
+        chart.rRatioChart = webcharts.createChart(rrElement, defaultSettings$2);
+
+        chart.rRatioChart.edish = chart; //link the full eDish object
+
+        chart.rRatioChart.on('resize', function() {
+            //embiggen clip-path so points aren't clipped
+            var radius = this.config.marks.find(function(mark) {
+                return mark.type === 'circle';
+            }).radius;
+            this.svg
+                .select('.plotting-area')
+                .attr('width', this.plot_width + radius * 2 + 2) // plot width + circle radius * 2 + circle stroke width * 2
+                .attr('height', this.plot_height + radius * 2 + 2) // plot height + circle radius * 2 + circle stroke width * 2
+                .attr(
+                    'transform',
+                    'translate(-' +
+                        (radius + 1) + // translate left circle radius + circle stroke width
+                        ',-' +
+                        (radius + 1) + // translate up circle radius + circle stroke width
+                        ')'
+                );
+        });
+
+        chart.rRatioChart.init(matches);
+    }
+
     function addPointClick() {
         var chart = this;
         var config = this.config;
@@ -4404,6 +4499,7 @@
             chart.participantDetails.wrap.selectAll('*').style('display', null);
             makeParticipantHeader.call(chart, d);
             init$3.call(chart, d); //NOTE: the measure table is initialized from within the spaghettiPlot
+            init$4.call(chart, d);
         });
     }
 
@@ -4430,7 +4526,7 @@
                 dayDiff = raw['day_diff'] + ' days apart',
                 idLabel = 'Participant ID: ' + raw[config.id_col],
                 rRatioLabel = config.r_ratio_filter
-                    ? '\n' + 'Overall R Ratio: ' + d3.format('0.2f')(raw.rRatio)
+                    ? '\n' + 'R Ratio: ' + d3.format('0.2f')(raw.rRatio)
                     : '';
             return idLabel + rRatioLabel + '\n' + xLabel + '\n' + yLabel + '\n' + dayDiff;
         });
@@ -4770,7 +4866,7 @@
 
     // credit to https://bl.ocks.org/dimitardanailov/99950eee511375b97de749b597147d19
 
-    function init$4() {
+    function init$5() {
         var drag = d3.behavior
             .drag()
             .origin(function(d) {
@@ -4934,7 +5030,7 @@
             });
     }
 
-    function init$5() {
+    function init$6() {
         // Draw box plots
         this.svg.selectAll('g.yMargin').remove();
         this.svg.selectAll('g.xMargin').remove();
@@ -5032,13 +5128,13 @@
         //draw the quadrants and add drag interactivity
         updateSummaryTable.call(this);
         drawQuadrants.call(this);
-        init$4.call(this);
+        init$5.call(this);
 
         // hide the legend if no group options are given
         toggleLegend.call(this);
 
         // add boxplots
-        init$5.call(this);
+        init$6.call(this);
 
         //axis formatting
         adjustTicks.call(this);
@@ -5062,7 +5158,7 @@
         onDestroy: onDestroy
     };
 
-    function init$6() {
+    function init$7() {
         var lb = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
         var ex = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
 
@@ -5106,7 +5202,7 @@
             element: element,
             settings: settings,
             chart: chart,
-            init: init$6,
+            init: init$7,
             destroy: destroy
         };
 

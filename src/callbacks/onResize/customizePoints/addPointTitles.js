@@ -22,7 +22,7 @@ export function addPointTitles() {
             dayDiff = raw['day_diff'] + ' days apart',
             idLabel = 'Participant ID: ' + raw[config.id_col],
             rRatioLabel = config.r_ratio_filter
-                ? '\n' + 'Overall R Ratio: ' + d3.format('0.2f')(raw.rRatio)
+                ? '\n' + 'R Ratio: ' + d3.format('0.2f')(raw.rRatio)
                 : '';
         return idLabel + rRatioLabel + '\n' + xLabel + '\n' + yLabel + '\n' + dayDiff;
     });

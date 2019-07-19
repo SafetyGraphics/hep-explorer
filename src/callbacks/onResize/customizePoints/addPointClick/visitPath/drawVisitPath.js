@@ -48,6 +48,10 @@ export function drawVisitPath(d) {
                 visitObj.yMatch = null;
             }
 
+            //get rRatio
+            var rRatio_match = d.values.raw[0].rRatio_raw.filter(f => f[config.studyday_col] == m);
+            visitObj.rRatio = rRatio_match.length ? rRatio_match[0].rRatio : null;
+
             return visitObj;
         })
         .sort(function(a, b) {
@@ -109,12 +113,14 @@ export function drawVisitPath(d) {
     visitPoints.append('title').text(function(d) {
         var xvar = config.x.column;
         var yvar = config.y.column;
+
         const studyday_label = 'Study day: ' + d.studyday + '\n',
             visitn_label = d.visitn ? 'Visit Number: ' + d.visitn + '\n' : '',
             visit_label = d.visit ? 'Visit: ' + d.visit + '\n' : '',
             x_label = config.x.label + ': ' + d3.format('0.3f')(d.x) + '\n',
-            y_label = config.y.label + ': ' + d3.format('0.3f')(d.y);
+            y_label = config.y.label + ': ' + d3.format('0.3f')(d.y),
+            rRatio_label = d.rRatio ? '\nR Ratio: ' + d3.format('0.2f')(d.rRatio) : '';
 
-        return studyday_label + visit_label + visitn_label + x_label + y_label;
+        return studyday_label + visit_label + visitn_label + x_label + y_label + rRatio_label;
     });
 }
