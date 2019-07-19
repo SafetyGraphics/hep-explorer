@@ -282,7 +282,7 @@
             },
             imputation_values: null,
             display: 'relative_uln', //or "relative_baseline"
-            plot_max_values: false,
+            plot_max_values: true,
             plot_day: null, //set in onLayout/initStudyDayControl
             display_options: [
                 { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
