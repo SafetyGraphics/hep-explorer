@@ -27,6 +27,8 @@ export function updateSummaryTable() {
         row_cells.html(d => d.value);
     }
 
+    //make sure the table is visible
+    this.config.quadrants.table.wrap.style('display', null);
     //update the content of each row
     rows.data(quadrants, d => d.label);
     rows.each(updateCells);

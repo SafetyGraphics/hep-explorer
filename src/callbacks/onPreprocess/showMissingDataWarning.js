@@ -8,14 +8,14 @@ export function showMissingDataWarning() {
         //confirm participants are only dropped once (?!)
         var unique_dropped_participants = d3.set(this.dropped_participants.map(m => m.id)).values()
             .length;
-        console.log(
+        console.warn(
             'Of ' +
                 this.dropped_participants.length +
                 ' dropped participants, ' +
                 unique_dropped_participants +
                 ' are unique.'
         );
-        console.log(this.dropped_participants);
+        console.warn(this.dropped_participants);
     }
 
     chart.messages.remove(null, 'droppedPts', chart.messages); //remove message from previous render

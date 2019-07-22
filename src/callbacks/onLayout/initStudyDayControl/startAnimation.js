@@ -1,9 +1,10 @@
 export default function startAnimation() {
     var chart = this;
     var config = this.config;
+
     // calculate animation duration
     const day_count = chart.controls.studyDayRange[1] - config.plot_day;
-    const duration = day_count < 300 ? day_count * 100 : 30000;
+    const duration = day_count < 100 ? day_count * 100 : 30000;
     const day_duration = duration / day_count;
 
     const base_size = config.marks[0].radius || config.flex_point_size;
@@ -29,7 +30,7 @@ export default function startAnimation() {
                 }
             })
             .attr('fill-opacity', function(d) {
-                return config.plot_day < d.day_range[0] ? 0 : 1;
+                return config.plot_day < d.day_range[0] ? 0 : 0.5;
             });
     }
 
@@ -44,8 +45,11 @@ export default function startAnimation() {
         var raw = d.values.raw[0];
         d.outOfRange = false;
         d.day_range = raw.day_range;
+        d.moved = false;
         measures.forEach(function(m) {
             var vals = raw[m + '_raw'];
+            // capture the previous point position
+            d[m + '_prev'] = d[m];
 
             // Did currentDay occur while participant was enrolled?
             if (vals && vals.length) {
@@ -58,15 +62,21 @@ export default function startAnimation() {
             }
 
             //Get the most recent data point (or the first point if participant isn't enrolled yet)
-            var getLastMeasureIndex = d3.bisector(d => d.day).left;
+            var getLastMeasureIndex = d3.bisector(d => d.day).right;
             var lastMeasureIndexPlusOne = vals ? getLastMeasureIndex(vals, currentDay) : 0;
             var lastMeasureIndex = lastMeasureIndexPlusOne - 1;
+
             d[m] =
                 lastMeasureIndex >= 0
                     ? vals[lastMeasureIndex]['value']
                     : vals && vals.length
                     ? vals[0].value
                     : null;
+
+            d[m + '_length'] = d[m] - d[m + '_prev'];
+            if (d[m + '_length']) {
+                d.moved = true;
+            }
         });
         return d;
     }
@@ -84,11 +94,43 @@ export default function startAnimation() {
             .style('color', 'blue');
 
         //reposition the points
-        var points = chart.marks[0].circles
-            .datum(function(d) {
-                return updateDatum(d, config.plot_day);
-            })
-            .call(reposition);
+        var marks = chart.marks[0];
+
+        var groups = marks.groups.datum(function(d) {
+            return updateDatum(d, config.plot_day);
+        });
+
+        var points = groups.select('circle').each(function(d) {
+            if (d.moved) d3.select(this).call(reposition);
+        });
+
+        //draw trails
+        var tails = groups
+            .filter(d => d.moved)
+            .insert('line', ':first-child')
+            //static attributes
+            .attr('x1', d => chart.x(d[config.x.column + '_prev']))
+            .attr('y1', d => chart.y(d[config.y.column + '_prev']))
+            .attr('stroke', d => chart.colorScale(d.values.raw[0][config.color_by]))
+            //.attr('stroke', '#999')
+
+            //transitional attributes
+            .attr('x2', d => chart.x(d[config.x.column + '_prev']))
+            .attr('y2', d => chart.y(d[config.y.column + '_prev']))
+            .attr('stroke-width', base_size);
+        tails.each(function(d) {
+            var path = d3.select(this);
+            var transition1 = path
+                .transition()
+                .duration(day_duration)
+                .ease('linear')
+                .attr('x2', d => chart.x(d[config.x.column]))
+                .attr('y2', d => chart.y(d[config.y.column]));
+            var transition2 = transition1
+                .transition()
+                .duration(day_duration * 10)
+                .attr('stroke-width', '0px');
+        });
     }
 
     function tweenStudyDay() {
@@ -100,6 +142,13 @@ export default function startAnimation() {
             showDay(studyday(t));
         };
     }
+
+    //draw the chart to clear details view
+    chart.draw();
+
+    //hide quadrant info during startAnimation
+    chart.config.quadrants.table.wrap.style('display', 'none');
+    chart.quadrant_labels.g.attr('display', 'none');
 
     //show the stop button
     chart.controls.studyDayPlayButton.datum({ state: 'stop' });

@@ -17,6 +17,10 @@ const settings = {
         {
             value_col: 'SEX',
             label: 'Sex'
+        },
+        {
+            value_col: 'SUBJID',
+            label: 'ID'
         }
     ],
     measure_values:{

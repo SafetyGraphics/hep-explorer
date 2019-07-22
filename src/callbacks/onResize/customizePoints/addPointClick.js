@@ -4,6 +4,7 @@ import { drawMeasureTable } from './addPointClick/measureTable/drawMeasureTable'
 import { makeParticipantHeader } from './addPointClick/participantHeader/makeParticipantHeader';
 import { drawRugs } from './addPointMouseover/drawRugs';
 import { init as initSpaghettiPlot } from './addPointClick/spaghettiPlot/init';
+import { init as initRRatioPlot } from './addPointClick/rRatioPlot/init';
 
 export function addPointClick() {
     var chart = this;
@@ -41,5 +42,6 @@ export function addPointClick() {
         chart.participantDetails.wrap.selectAll('*').style('display', null);
         makeParticipantHeader.call(chart, d);
         initSpaghettiPlot.call(chart, d); //NOTE: the measure table is initialized from within the spaghettiPlot
+        initRRatioPlot.call(chart, d);
     });
 }
