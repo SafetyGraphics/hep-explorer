@@ -1978,9 +1978,10 @@
     function startAnimation() {
         var chart = this;
         var config = this.config;
+
         // calculate animation duration
         var day_count = chart.controls.studyDayRange[1] - config.plot_day;
-        var duration = day_count < 300 ? day_count * 100 : 30000;
+        var duration = day_count < 100 ? day_count * 100 : 30000;
         var day_duration = duration / day_count;
 
         var base_size = config.marks[0].radius || config.flex_point_size;
@@ -2078,38 +2079,49 @@
                 return updateDatum(d, config.plot_day);
             });
 
-            var points = groups.select('circle').call(reposition);
+            var points = groups.select('circle').each(function(d) {
+                if (d.moved) d3.select(this).call(reposition);
+            });
 
             //draw trails
             var tails = groups
                 .filter(function(d) {
                     return d.moved;
                 })
-                .append('line')
+                .insert('line', ':first-child')
+                //static attributes
                 .attr('x1', function(d) {
                     return chart.x(d[config.x.column + '_prev']);
-                })
-                .attr('x2', function(d) {
-                    return chart.x(d[config.x.column]);
                 })
                 .attr('y1', function(d) {
                     return chart.y(d[config.y.column + '_prev']);
                 })
-                .attr('y2', function(d) {
-                    return chart.y(d[config.y.column]);
+                .attr('stroke', function(d) {
+                    return chart.colorScale(d.values.raw[0][config.color_by]);
                 })
-                //  .attr('stroke', d => chart.colorScale(d[config.color_by]))
-                .attr('stroke', '#999')
+                //.attr('stroke', '#999')
+
+                //transitional attributes
+                .attr('x2', function(d) {
+                    return chart.x(d[config.x.column + '_prev']);
+                })
+                .attr('y2', function(d) {
+                    return chart.y(d[config.y.column + '_prev']);
+                })
                 .attr('stroke-width', base_size);
             tails.each(function(d) {
                 var path = d3.select(this);
-                var totalLength = path.node().getTotalLength();
-                path.attr('stroke-dasharray', totalLength + ' ' + totalLength)
-                    .attr('stroke-dashoffset', totalLength)
+                var transition1 = path
                     .transition()
                     .duration(day_duration)
                     .ease('linear')
-                    .attr('stroke-dashoffset', 0)
+                    .attr('x2', function(d) {
+                        return chart.x(d[config.x.column]);
+                    })
+                    .attr('y2', function(d) {
+                        return chart.y(d[config.y.column]);
+                    });
+                var transition2 = transition1
                     .transition()
                     .duration(day_duration * 10)
                     .attr('stroke-width', '0px');
@@ -3054,11 +3066,6 @@
     }
 
     function onDraw() {
-        var chart = this;
-        var dropped = chart.raw_data.filter(function(f) {
-            return chart.filtered_data.indexOf(f) == -1;
-        });
-
         //show/hide the study day controls
         updateStudyDayControl.call(this);
 
@@ -4477,7 +4484,6 @@
         var chart = this; //the full eDish object
         var config = this.config; //the eDish config
         var matches = d.values.raw[0].rRatio_raw;
-        console.log(matches);
 
         if ('rRatioChart' in chart) {
             chart.rRatioChart.destroy();

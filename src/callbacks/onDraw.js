@@ -8,9 +8,6 @@ import hideEmptyChart from './onDraw/hideEmptyChart';
 import updateStudyDayControl from './onDraw/updateStudyDayControl';
 
 export default function onDraw() {
-    var chart = this;
-    const dropped = chart.raw_data.filter(f => chart.filtered_data.indexOf(f) == -1);
-
     //show/hide the study day controls
     updateStudyDayControl.call(this);
 

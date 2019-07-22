@@ -1,9 +1,10 @@
 export default function startAnimation() {
     var chart = this;
     var config = this.config;
+
     // calculate animation duration
     const day_count = chart.controls.studyDayRange[1] - config.plot_day;
-    const duration = day_count < 300 ? day_count * 100 : 30000;
+    const duration = day_count < 100 ? day_count * 100 : 30000;
     const day_duration = duration / day_count;
 
     const base_size = config.marks[0].radius || config.flex_point_size;
@@ -99,28 +100,33 @@ export default function startAnimation() {
             return updateDatum(d, config.plot_day);
         });
 
-        var points = groups.select('circle').call(reposition);
+        var points = groups.select('circle').each(function(d) {
+            if (d.moved) d3.select(this).call(reposition);
+        });
 
         //draw trails
         var tails = groups
             .filter(d => d.moved)
-            .append('line')
+            .insert('line', ':first-child')
+            //static attributes
             .attr('x1', d => chart.x(d[config.x.column + '_prev']))
-            .attr('x2', d => chart.x(d[config.x.column]))
             .attr('y1', d => chart.y(d[config.y.column + '_prev']))
-            .attr('y2', d => chart.y(d[config.y.column]))
-            //  .attr('stroke', d => chart.colorScale(d[config.color_by]))
-            .attr('stroke', '#999')
+            .attr('stroke', d => chart.colorScale(d.values.raw[0][config.color_by]))
+            //.attr('stroke', '#999')
+
+            //transitional attributes
+            .attr('x2', d => chart.x(d[config.x.column + '_prev']))
+            .attr('y2', d => chart.y(d[config.y.column + '_prev']))
             .attr('stroke-width', base_size);
         tails.each(function(d) {
             var path = d3.select(this);
-            var totalLength = path.node().getTotalLength();
-            path.attr('stroke-dasharray', totalLength + ' ' + totalLength)
-                .attr('stroke-dashoffset', totalLength)
+            var transition1 = path
                 .transition()
                 .duration(day_duration)
                 .ease('linear')
-                .attr('stroke-dashoffset', 0)
+                .attr('x2', d => chart.x(d[config.x.column]))
+                .attr('y2', d => chart.y(d[config.y.column]));
+            var transition2 = transition1
                 .transition()
                 .duration(day_duration * 10)
                 .attr('stroke-width', '0px');

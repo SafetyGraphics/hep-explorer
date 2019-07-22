@@ -5,7 +5,6 @@ export function init(d) {
     var chart = this; //the full eDish object
     var config = this.config; //the eDish config
     var matches = d.values.raw[0].rRatio_raw;
-    console.log(matches);
 
     if ('rRatioChart' in chart) {
         chart.rRatioChart.destroy();
