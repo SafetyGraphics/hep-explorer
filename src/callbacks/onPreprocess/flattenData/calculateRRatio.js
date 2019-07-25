@@ -42,8 +42,17 @@ export default function calculateRRatios(d, participant_obj) {
         f => f.rRatio
     );
 
-    // Use the max value across all analysis visits for maximal R Ratio, otherwise just use the current time point
+    // rRatio at time of max ALT
+    let maxAltRecord = participant_obj.rRatio_raw
+        .filter(f => f.analysisFlag)
+        .sort(function(a, b) {
+            return b.alt_relative_uln - a.alt_relative_uln; //descending sort (so max is first value)
+        })[0];
+
+    participant_obj.rRatio_max_alt = maxAltRecord ? maxAltRecord.rRatio : null;
+
+    // Use the r ratio at the tme of the max ALT value for standard eDish, otherwise use rRatio from the current time point
     participant_obj.rRatio = config.plot_max_values
-        ? participant_obj.rRatio_max_anly
+        ? participant_obj.rRatio_max_alt
         : participant_obj.rRatio_current;
 }
