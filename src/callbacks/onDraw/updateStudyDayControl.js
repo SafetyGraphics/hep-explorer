@@ -23,7 +23,7 @@ export default function updateStudyDayControl() {
     //update the study day control label with the currently selected values
     const currentValue = chart.controls.studyDayControlWrap.select('input').property('value');
     chart.controls.studyDayControlWrap
-        .select('span.span-description')
+        .select('span.wc-control-label')
         .html('Showing data from: <strong>Day ' + currentValue + '</strong>')
         .select('strong')
         .style('color', 'blue');

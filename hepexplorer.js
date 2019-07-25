@@ -2067,7 +2067,7 @@
 
             //update the label
             chart.controls.studyDayControlWrap
-                .select('span.span-description')
+                .select('span.wc-control-label')
                 .html('Showing data from: <strong>Day ' + config.plot_day + '</strong>')
                 .select('strong')
                 .style('color', 'blue');
@@ -2195,15 +2195,25 @@
     function initStudyDayControl() {
         var chart = this;
         var config = this.config;
-        chart.controls.studyDayControlWrap = chart.controls.wrap
+
+        // Move the study day control beneath the chart
+        chart.controls.secondary = chart.wrap
+            .insert('div', 'div.footnote')
+            .attr('class', 'wc-controls secondary-controls');
+
+        var removed = chart.controls.wrap
             .selectAll('div')
             .filter(function(controlInput) {
                 return controlInput.label === 'Study Day';
-            });
+            })
+            .remove();
 
-        chart.controls.studyDayInput = chart.controls.studyDayControlWrap.select('input');
+        chart.controls.studyDayControlWrap = chart.controls.secondary.append(function() {
+            return removed.node();
+        });
 
         //convert control to a slider
+        chart.controls.studyDayInput = chart.controls.studyDayControlWrap.select('input');
         chart.controls.studyDayInput.attr('type', 'range');
 
         //set min and max values and add annotations
@@ -3070,7 +3080,7 @@
         //update the study day control label with the currently selected values
         var currentValue = chart.controls.studyDayControlWrap.select('input').property('value');
         chart.controls.studyDayControlWrap
-            .select('span.span-description')
+            .select('span.wc-control-label')
             .html('Showing data from: <strong>Day ' + currentValue + '</strong>')
             .select('strong')
             .style('color', 'blue');
