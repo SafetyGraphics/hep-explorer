@@ -22,7 +22,7 @@ export default function checkMeasureDetails() {
         );
 
     //check that x_options, y_options and size_options all have value keys/values in measure_values
-    const valid_options = Object.keys(config.measure_values);
+    const valid_options = d3.merge([Object.keys(config.measure_values), ['rRatio']]);
     const all_options = ['x_options', 'y_options', 'point_size_options'];
     all_options.forEach(function(options) {
         config[options].forEach(function(option) {

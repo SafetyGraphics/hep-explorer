@@ -32,6 +32,7 @@ export default function calculateRRatios(d, participant_obj) {
             var matched_alt = raw_alt.find(fi => fi.day == f.day);
             f.alt_relative_uln = matched_alt ? matched_alt.relative_uln : null;
             f.rRatio = f['alt_relative_uln'] / f['alp_relative_uln'];
+            f.value = f.rRatio;
             return f.rRatio;
         });
 

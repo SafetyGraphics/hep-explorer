@@ -252,7 +252,7 @@
             x_options: ['ALT', 'AST', 'ALP'],
             y_options: ['TB'],
             point_size: 'Uniform',
-            point_size_options: ['ALT', 'AST', 'ALP', 'TB'],
+            point_size_options: ['ALT', 'AST', 'ALP', 'TB', 'rRatio'],
             cuts: {
                 ALT: {
                     relative_baseline: 3.8,
@@ -819,7 +819,7 @@
             );
 
         //check that x_options, y_options and size_options all have value keys/values in measure_values
-        var valid_options = Object.keys(config.measure_values);
+        var valid_options = d3.merge([Object.keys(config.measure_values), ['rRatio']]);
         var all_options = ['x_options', 'y_options', 'point_size_options'];
         all_options.forEach(function(options) {
             config[options].forEach(function(option) {
@@ -2425,6 +2425,7 @@
                 });
                 f.alt_relative_uln = matched_alt ? matched_alt.relative_uln : null;
                 f.rRatio = f['alt_relative_uln'] / f['alp_relative_uln'];
+                f.value = f.rRatio;
                 return f.rRatio;
             });
 
@@ -4724,8 +4725,18 @@
                     return m[config.point_size];
                 })
             );
-            var sizeDomain = config.plot_max_values ? sizeDomain_max : sizeDomain_all;
-
+            var sizeDomain_rRatio = [
+                0,
+                d3.max(this.raw_data, function(d) {
+                    return d.rRatio_max;
+                })
+            ];
+            var sizeDomain =
+                config.point_size == 'rRatio'
+                    ? sizeDomain_rRatio
+                    : config.plot_max_values
+                    ? sizeDomain_max
+                    : sizeDomain_all;
             chart.sizeScale = d3.scale
                 .linear()
                 .range([base_size, max_size])
@@ -4738,7 +4749,9 @@
         points
             .transition()
             .attr('r', function(d) {
+                //  console.log(config.point_size);
                 var raw = d.values.raw[0];
+                //    console.log(raw);
                 if (raw.outOfRange) {
                     return small_size;
                 } else if (config.point_size == 'Uniform') {

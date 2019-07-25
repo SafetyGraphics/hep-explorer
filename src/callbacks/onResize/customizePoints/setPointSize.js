@@ -12,8 +12,13 @@ export function setPointSize() {
         var sizeValues_all = d3.merge(chart.raw_data.map(m => m[config.point_size + '_raw']));
         var sizeDomain_all = d3.extent(sizeValues_all, f => f.value);
         var sizeDomain_max = d3.extent(chart.raw_data.map(m => m[config.point_size]));
-        var sizeDomain = config.plot_max_values ? sizeDomain_max : sizeDomain_all;
-
+        var sizeDomain_rRatio = [0, d3.max(this.raw_data, d => d.rRatio_max)];
+        var sizeDomain =
+            config.point_size == 'rRatio'
+                ? sizeDomain_rRatio
+                : config.plot_max_values
+                ? sizeDomain_max
+                : sizeDomain_all;
         chart.sizeScale = d3.scale
             .linear()
             .range([base_size, max_size])
@@ -26,7 +31,9 @@ export function setPointSize() {
     points
         .transition()
         .attr('r', function(d) {
+            //  console.log(config.point_size);
             var raw = d.values.raw[0];
+            //    console.log(raw);
             if (raw.outOfRange) {
                 return small_size;
             } else if (config.point_size == 'Uniform') {
