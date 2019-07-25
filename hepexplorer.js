@@ -252,7 +252,7 @@
             x_options: ['ALT', 'AST', 'ALP'],
             y_options: ['TB'],
             point_size: 'Uniform',
-            point_size_options: ['ALT', 'AST', 'ALP', 'TB'],
+            point_size_options: ['ALT', 'AST', 'ALP', 'TB', 'rRatio'],
             cuts: {
                 ALT: {
                     relative_baseline: 3.8,
@@ -819,7 +819,7 @@
             );
 
         //check that x_options, y_options and size_options all have value keys/values in measure_values
-        var valid_options = Object.keys(config.measure_values);
+        var valid_options = d3.merge([Object.keys(config.measure_values), ['rRatio']]);
         var all_options = ['x_options', 'y_options', 'point_size_options'];
         all_options.forEach(function(options) {
             config[options].forEach(function(option) {
@@ -2067,7 +2067,7 @@
 
             //update the label
             chart.controls.studyDayControlWrap
-                .select('span.span-description')
+                .select('span.wc-control-label')
                 .html('Showing data from: <strong>Day ' + config.plot_day + '</strong>')
                 .select('strong')
                 .style('color', 'blue');
@@ -2195,15 +2195,25 @@
     function initStudyDayControl() {
         var chart = this;
         var config = this.config;
-        chart.controls.studyDayControlWrap = chart.controls.wrap
+
+        // Move the study day control beneath the chart
+        chart.controls.secondary = chart.wrap
+            .insert('div', 'div.footnote')
+            .attr('class', 'wc-controls secondary-controls');
+
+        var removed = chart.controls.wrap
             .selectAll('div')
             .filter(function(controlInput) {
                 return controlInput.label === 'Study Day';
-            });
+            })
+            .remove();
 
-        chart.controls.studyDayInput = chart.controls.studyDayControlWrap.select('input');
+        chart.controls.studyDayControlWrap = chart.controls.secondary.append(function() {
+            return removed.node();
+        });
 
         //convert control to a slider
+        chart.controls.studyDayInput = chart.controls.studyDayControlWrap.select('input');
         chart.controls.studyDayInput.attr('type', 'range');
 
         //set min and max values and add annotations
@@ -2415,6 +2425,7 @@
                 });
                 f.alt_relative_uln = matched_alt ? matched_alt.relative_uln : null;
                 f.rRatio = f['alt_relative_uln'] / f['alp_relative_uln'];
+                f.value = f.rRatio;
                 return f.rRatio;
             });
 
@@ -2431,9 +2442,20 @@
             }
         );
 
-        // Use the max value across all analysis visits for maximal R Ratio, otherwise just use the current time point
+        // rRatio at time of max ALT
+        var maxAltRecord = participant_obj.rRatio_raw
+            .filter(function(f) {
+                return f.analysisFlag;
+            })
+            .sort(function(a, b) {
+                return b.alt_relative_uln - a.alt_relative_uln; //descending sort (so max is first value)
+            })[0];
+
+        participant_obj.rRatio_max_alt = maxAltRecord ? maxAltRecord.rRatio : null;
+
+        // Use the r ratio at the tme of the max ALT value for standard eDish, otherwise use rRatio from the current time point
         participant_obj.rRatio = config.plot_max_values
-            ? participant_obj.rRatio_max_anly
+            ? participant_obj.rRatio_max_alt
             : participant_obj.rRatio_current;
     }
 
@@ -3059,7 +3081,7 @@
         //update the study day control label with the currently selected values
         var currentValue = chart.controls.studyDayControlWrap.select('input').property('value');
         chart.controls.studyDayControlWrap
-            .select('span.span-description')
+            .select('span.wc-control-label')
             .html('Showing data from: <strong>Day ' + currentValue + '</strong>')
             .select('strong')
             .style('color', 'blue');
@@ -4450,6 +4472,107 @@
             );
     }
 
+    function drawCutLines() {
+        var chart = this;
+        var config = this.config;
+
+        //line at R Ratio = 2
+        chart.svg
+            .append('line')
+            .attr('y1', chart.y(2))
+            .attr('y2', chart.y(2))
+            .attr('x1', 0)
+            .attr('x2', chart.plot_width)
+            .attr('stroke', '#999')
+            .attr('stroke-dasharray', '3 3');
+
+        chart.svg
+            .append('text')
+            .attr('y', chart.y(2))
+            .attr('dy', '-0.2em')
+            .attr('x', chart.plot_width)
+            .attr('text-anchor', 'end')
+            .attr('alignment-baseline', 'baseline')
+            .attr('fill', '#999')
+            .text('2');
+
+        //line at R Ratio = 5
+        chart.svg
+            .append('line')
+            .attr('y1', chart.y(5))
+            .attr('y2', chart.y(5))
+            .attr('x1', 0)
+            .attr('x2', chart.plot_width)
+            .attr('stroke', '#999')
+            .attr('stroke-dasharray', '3 3');
+
+        chart.svg
+            .append('text')
+            .attr('y', chart.y(5))
+            .attr('dy', '-0.2em')
+            .attr('x', chart.plot_width)
+            .attr('text-anchor', 'end')
+            .attr('alignment-baseline', 'baseline')
+            .attr('fill', '#999')
+            .text('5');
+    }
+
+    function updateClipPath() {
+        //embiggen clip-path so points aren't clipped
+        var radius = this.config.marks.find(function(mark) {
+            return mark.type === 'circle';
+        }).radius;
+        this.svg
+            .select('.plotting-area')
+            .attr('width', this.plot_width + radius * 2 + 2) // plot width + circle radius * 2 + circle stroke width * 2
+            .attr('height', this.plot_height + radius * 2 + 2) // plot height + circle radius * 2 + circle stroke width * 2
+            .attr(
+                'transform',
+                'translate(-' +
+                    (radius + 1) + // translate left circle radius + circle stroke width
+                    ',-' +
+                    (radius + 1) + // translate up circle radius + circle stroke width
+                    ')'
+            );
+    }
+
+    function addPointTitles$2() {
+        var config = this.edish.config;
+        var points = this.marks[1].circles;
+        points.select('title').remove();
+        points.append('title').text(function(d) {
+            var raw = d.values.raw[0];
+
+            var studyday_label = 'Study day: ' + raw[config.studyday_col] + '\n',
+                visitn_label = config.visitn_col
+                    ? 'Visit Number: ' + raw[config.visitn_col] + '\n'
+                    : '',
+                visit_label = config.visit_col ? 'Visit: ' + raw[config.visit_col] + '\n' : '',
+                rratio_label = 'R Ratio: ' + d3.format('0.2f')(raw.rRatio);
+            return studyday_label + visit_label + visitn_label + rratio_label;
+        });
+    }
+
+    function onResize$1() {
+        drawCutLines.call(this);
+        updateClipPath.call(this);
+        addPointTitles$2.call(this);
+    }
+
+    function onDraw$2() {
+        var chart = this;
+        var config = this.config;
+
+        //make sure y domain includes the current cut point for all measures
+        var max_value = d3.max(chart.filtered_data, function(f) {
+            return f[chart.config.y.column];
+        });
+        var max_cut = 5;
+        var y_max = d3.max([max_value, max_cut]);
+        chart.config.y.domain = [0, y_max];
+        chart.y_dom = chart.config.y.domain;
+    }
+
     var defaultSettings$2 = {
         max_width: 600,
         x: {
@@ -4499,24 +4622,8 @@
 
         chart.rRatioChart.edish = chart; //link the full eDish object
 
-        chart.rRatioChart.on('resize', function() {
-            //embiggen clip-path so points aren't clipped
-            var radius = this.config.marks.find(function(mark) {
-                return mark.type === 'circle';
-            }).radius;
-            this.svg
-                .select('.plotting-area')
-                .attr('width', this.plot_width + radius * 2 + 2) // plot width + circle radius * 2 + circle stroke width * 2
-                .attr('height', this.plot_height + radius * 2 + 2) // plot height + circle radius * 2 + circle stroke width * 2
-                .attr(
-                    'transform',
-                    'translate(-' +
-                        (radius + 1) + // translate left circle radius + circle stroke width
-                        ',-' +
-                        (radius + 1) + // translate up circle radius + circle stroke width
-                        ')'
-                );
-        });
+        chart.rRatioChart.on('draw', onDraw$2);
+        chart.rRatioChart.on('resize', onResize$1);
 
         chart.rRatioChart.init(matches);
     }
@@ -4563,7 +4670,7 @@
         });
     }
 
-    function addPointTitles$2() {
+    function addPointTitles$3() {
         var config = this.config;
         var points = this.marks[0].circles;
         points.select('title').remove();
@@ -4618,8 +4725,18 @@
                     return m[config.point_size];
                 })
             );
-            var sizeDomain = config.plot_max_values ? sizeDomain_max : sizeDomain_all;
-
+            var sizeDomain_rRatio = [
+                0,
+                d3.max(this.raw_data, function(d) {
+                    return d.rRatio_max;
+                })
+            ];
+            var sizeDomain =
+                config.point_size == 'rRatio'
+                    ? sizeDomain_rRatio
+                    : config.plot_max_values
+                    ? sizeDomain_max
+                    : sizeDomain_all;
             chart.sizeScale = d3.scale
                 .linear()
                 .range([base_size, max_size])
@@ -4632,7 +4749,9 @@
         points
             .transition()
             .attr('r', function(d) {
+                //  console.log(config.point_size);
                 var raw = d.values.raw[0];
+                //    console.log(raw);
                 if (raw.outOfRange) {
                     return small_size;
                 } else if (config.point_size == 'Uniform') {
@@ -4733,7 +4852,7 @@
     function customizePoints() {
         addPointMouseover.call(this);
         addPointClick.call(this);
-        addPointTitles$2.call(this);
+        addPointTitles$3.call(this);
         formatPoints.call(this);
         setPointSize.call(this);
         setPointOpacity.call(this);
@@ -5181,7 +5300,7 @@
         }
     }
 
-    function onResize$1() {
+    function onResize$2() {
         //add maximum point interactivity, custom title and formatting
         customizePoints.call(this);
 
@@ -5214,7 +5333,7 @@
         onPreprocess: onPreprocess,
         onDataTransform: onDataTransform,
         onDraw: onDraw,
-        onResize: onResize$1,
+        onResize: onResize$2,
         onDestroy: onDestroy
     };
 

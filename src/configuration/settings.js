@@ -40,7 +40,7 @@ export default function settings() {
         x_options: ['ALT', 'AST', 'ALP'],
         y_options: ['TB'],
         point_size: 'Uniform',
-        point_size_options: ['ALT', 'AST', 'ALP', 'TB'],
+        point_size_options: ['ALT', 'AST', 'ALP', 'TB', 'rRatio'],
         cuts: {
             ALT: {
                 relative_baseline: 3.8,

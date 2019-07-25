@@ -88,7 +88,7 @@ export default function startAnimation() {
 
         //update the label
         chart.controls.studyDayControlWrap
-            .select('span.span-description')
+            .select('span.wc-control-label')
             .html('Showing data from: <strong>Day ' + config.plot_day + '</strong>')
             .select('strong')
             .style('color', 'blue');
