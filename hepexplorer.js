@@ -4450,6 +4450,107 @@
             );
     }
 
+    function drawCutLines() {
+        var chart = this;
+        var config = this.config;
+
+        //line at R Ratio = 2
+        chart.svg
+            .append('line')
+            .attr('y1', chart.y(2))
+            .attr('y2', chart.y(2))
+            .attr('x1', 0)
+            .attr('x2', chart.plot_width)
+            .attr('stroke', '#999')
+            .attr('stroke-dasharray', '3 3');
+
+        chart.svg
+            .append('text')
+            .attr('y', chart.y(2))
+            .attr('dy', '-0.2em')
+            .attr('x', chart.plot_width)
+            .attr('text-anchor', 'end')
+            .attr('alignment-baseline', 'baseline')
+            .attr('fill', '#999')
+            .text('2');
+
+        //line at R Ratio = 5
+        chart.svg
+            .append('line')
+            .attr('y1', chart.y(5))
+            .attr('y2', chart.y(5))
+            .attr('x1', 0)
+            .attr('x2', chart.plot_width)
+            .attr('stroke', '#999')
+            .attr('stroke-dasharray', '3 3');
+
+        chart.svg
+            .append('text')
+            .attr('y', chart.y(5))
+            .attr('dy', '-0.2em')
+            .attr('x', chart.plot_width)
+            .attr('text-anchor', 'end')
+            .attr('alignment-baseline', 'baseline')
+            .attr('fill', '#999')
+            .text('5');
+    }
+
+    function updateClipPath() {
+        //embiggen clip-path so points aren't clipped
+        var radius = this.config.marks.find(function(mark) {
+            return mark.type === 'circle';
+        }).radius;
+        this.svg
+            .select('.plotting-area')
+            .attr('width', this.plot_width + radius * 2 + 2) // plot width + circle radius * 2 + circle stroke width * 2
+            .attr('height', this.plot_height + radius * 2 + 2) // plot height + circle radius * 2 + circle stroke width * 2
+            .attr(
+                'transform',
+                'translate(-' +
+                    (radius + 1) + // translate left circle radius + circle stroke width
+                    ',-' +
+                    (radius + 1) + // translate up circle radius + circle stroke width
+                    ')'
+            );
+    }
+
+    function addPointTitles$2() {
+        var config = this.edish.config;
+        var points = this.marks[1].circles;
+        points.select('title').remove();
+        points.append('title').text(function(d) {
+            var raw = d.values.raw[0];
+
+            var studyday_label = 'Study day: ' + raw[config.studyday_col] + '\n',
+                visitn_label = config.visitn_col
+                    ? 'Visit Number: ' + raw[config.visitn_col] + '\n'
+                    : '',
+                visit_label = config.visit_col ? 'Visit: ' + raw[config.visit_col] + '\n' : '',
+                rratio_label = 'R Ratio: ' + d3.format('0.2f')(raw.rRatio);
+            return studyday_label + visit_label + visitn_label + rratio_label;
+        });
+    }
+
+    function onResize$1() {
+        drawCutLines.call(this);
+        updateClipPath.call(this);
+        addPointTitles$2.call(this);
+    }
+
+    function onDraw$2() {
+        var chart = this;
+        var config = this.config;
+
+        //make sure y domain includes the current cut point for all measures
+        var max_value = d3.max(chart.filtered_data, function(f) {
+            return f[chart.config.y.column];
+        });
+        var max_cut = 5;
+        var y_max = d3.max([max_value, max_cut]);
+        chart.config.y.domain = [0, y_max];
+        chart.y_dom = chart.config.y.domain;
+    }
+
     var defaultSettings$2 = {
         max_width: 600,
         x: {
@@ -4499,24 +4600,8 @@
 
         chart.rRatioChart.edish = chart; //link the full eDish object
 
-        chart.rRatioChart.on('resize', function() {
-            //embiggen clip-path so points aren't clipped
-            var radius = this.config.marks.find(function(mark) {
-                return mark.type === 'circle';
-            }).radius;
-            this.svg
-                .select('.plotting-area')
-                .attr('width', this.plot_width + radius * 2 + 2) // plot width + circle radius * 2 + circle stroke width * 2
-                .attr('height', this.plot_height + radius * 2 + 2) // plot height + circle radius * 2 + circle stroke width * 2
-                .attr(
-                    'transform',
-                    'translate(-' +
-                        (radius + 1) + // translate left circle radius + circle stroke width
-                        ',-' +
-                        (radius + 1) + // translate up circle radius + circle stroke width
-                        ')'
-                );
-        });
+        chart.rRatioChart.on('draw', onDraw$2);
+        chart.rRatioChart.on('resize', onResize$1);
 
         chart.rRatioChart.init(matches);
     }
@@ -4563,7 +4648,7 @@
         });
     }
 
-    function addPointTitles$2() {
+    function addPointTitles$3() {
         var config = this.config;
         var points = this.marks[0].circles;
         points.select('title').remove();
@@ -4733,7 +4818,7 @@
     function customizePoints() {
         addPointMouseover.call(this);
         addPointClick.call(this);
-        addPointTitles$2.call(this);
+        addPointTitles$3.call(this);
         formatPoints.call(this);
         setPointSize.call(this);
         setPointOpacity.call(this);
@@ -5181,7 +5266,7 @@
         }
     }
 
-    function onResize$1() {
+    function onResize$2() {
         //add maximum point interactivity, custom title and formatting
         customizePoints.call(this);
 
@@ -5214,7 +5299,7 @@
         onPreprocess: onPreprocess,
         onDataTransform: onDataTransform,
         onDraw: onDraw,
-        onResize: onResize$1,
+        onResize: onResize$2,
         onDestroy: onDestroy
     };
 
