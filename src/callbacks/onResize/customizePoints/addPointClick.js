@@ -18,10 +18,14 @@ export function addPointClick() {
         chart.controls.studyDayPlayButton.datum({ state: 'play' });
         chart.controls.studyDayPlayButton.html('&#9658;');
 
-        //Update chart object.
-        chart.clicked_id = d.key;
+        // Reset the details view
         clearParticipantDetails.call(chart, d); //clear the previous participant
         chart.config.quadrants.table.wrap.style('display', 'none'); //hide the quadrant summary
+
+        //Update chart object & trigger the participantsSelected event on the overall chart.
+        chart.participantsSelected = [d.key];
+        chart.events.participantsSelected.data = chart.participantsSelected;
+        chart.wrap.node().dispatchEvent(chart.events.participantsSelected);
 
         //format the eDish chart
         points

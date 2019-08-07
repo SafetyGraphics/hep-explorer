@@ -126,6 +126,19 @@
         });
     }
 
+    (function() {
+        if (typeof window.CustomEvent === 'function') return false;
+
+        function CustomEvent(event, params) {
+            params = params || { bubbles: false, cancelable: false, detail: null };
+            var evt = document.createEvent('CustomEvent');
+            evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
+            return evt;
+        }
+
+        window.CustomEvent = CustomEvent;
+    })();
+
     // https://github.com/wbkd/d3-extended
     d3.selection.prototype.moveToFront = function() {
         return this.each(function() {
@@ -1949,6 +1962,12 @@
             .style('border-radius', '0.2em');
     }
 
+    function initCustomEvents() {
+        var chart = this;
+        chart.participantsSelected = [];
+        chart.events.participantsSelected = new CustomEvent('participantsSelected');
+    }
+
     function stopAnimation() {
         var chart = this;
         chart.svg
@@ -2274,6 +2293,8 @@
         initControlLabels.call(this);
         initEmptyChartWarning.call(this);
         initStudyDayControl.call(this);
+
+        initCustomEvents.call(this);
     }
 
     function updateAxisSettings() {
@@ -2933,6 +2954,7 @@
     }
 
     function clearParticipantDetails() {
+        var chart = this;
         var config = this.config;
         var points = this.svg
             .select('g.point-supergroup.mark1')
@@ -2941,6 +2963,12 @@
 
         points.classed('disabled', false);
 
+        // update
+        chart.participantsSelected = [];
+        chart.events.participantsSelected.data = chart.participantsSelected;
+        chart.wrap.node().dispatchEvent(chart.events.participantsSelected);
+
+        // remove/hide details
         this.config.quadrants.table.wrap.style('display', null);
         clearVisitPath.call(this); //remove path
         clearParticipantHeader.call(this);
@@ -4361,7 +4389,7 @@
         //make sure x-domain includes the extent of the exposure data
         if (this.edish.exposure.include) {
             this.exposure_data = this.edish.exposure.data.filter(function(d) {
-                return d[_this.edish.config.id_col] === _this.edish.clicked_id;
+                return d[_this.edish.config.id_col] === _this.edish.participantsSelected[0];
             });
             var extent = [
                 d3.min(this.exposure_data, function(d) {
@@ -4640,10 +4668,14 @@
             chart.controls.studyDayPlayButton.datum({ state: 'play' });
             chart.controls.studyDayPlayButton.html('&#9658;');
 
-            //Update chart object.
-            chart.clicked_id = d.key;
+            // Reset the details view
             clearParticipantDetails.call(chart, d); //clear the previous participant
             chart.config.quadrants.table.wrap.style('display', 'none'); //hide the quadrant summary
+
+            //Update chart object & trigger the participantsSelected event on the overall chart.
+            chart.participantsSelected = [d.key];
+            chart.events.participantsSelected.data = chart.participantsSelected;
+            chart.wrap.node().dispatchEvent(chart.events.participantsSelected);
 
             //format the eDish chart
             points
