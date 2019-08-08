@@ -1117,11 +1117,18 @@
         makeAnalysisFlag.call(this);
     }
 
+    function initCustomEvents() {
+        var chart = this;
+        chart.participantsSelected = [];
+        chart.events.participantsSelected = new CustomEvent('participantsSelected');
+    }
+
     function onInit() {
         checkMeasureDetails.call(this);
         iterateOverData.call(this);
         addRRatioFilter.call(this);
         cleanData.call(this); //clean visit-level data - imputation and variable derivations
+        initCustomEvents.call(this);
     }
 
     function formatRRatioControl() {
@@ -1962,12 +1969,6 @@
             .style('border-radius', '0.2em');
     }
 
-    function initCustomEvents() {
-        var chart = this;
-        chart.participantsSelected = [];
-        chart.events.participantsSelected = new CustomEvent('participantsSelected');
-    }
-
     function stopAnimation() {
         var chart = this;
         chart.svg
@@ -2293,8 +2294,6 @@
         initControlLabels.call(this);
         initEmptyChartWarning.call(this);
         initStudyDayControl.call(this);
-
-        initCustomEvents.call(this);
     }
 
     function updateAxisSettings() {
