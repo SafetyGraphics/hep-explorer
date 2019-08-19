@@ -7,7 +7,7 @@ export default function onDraw() {
     //make sure x-domain includes the extent of the exposure data
     if (this.edish.exposure.include) {
         this.exposure_data = this.edish.exposure.data.filter(
-            d => d[this.edish.config.id_col] === this.edish.clicked_id
+            d => d[this.edish.config.id_col] === this.edish.participantsSelected[0]
         );
         const extent = [
             d3.min(this.exposure_data, d => +d[this.edish.config.exposure_stdy_col]),

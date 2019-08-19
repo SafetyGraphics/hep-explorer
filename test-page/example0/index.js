@@ -10,5 +10,12 @@ d3.csv(
             } // settings
         );
         instance.init(data);
+        console.log(instance)
+
+        //quick test of participantSelected event
+        instance.chart.wrap.on("participantsSelected",function(){
+          console.log("Participant Selected Event:")
+          console.log(d3.event.data)
+        })
     }
 );

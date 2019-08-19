@@ -14,6 +14,12 @@ export function clearParticipantDetails() {
 
     points.classed('disabled', false);
 
+    // update
+    chart.participantsSelected = [];
+    chart.events.participantsSelected.data = chart.participantsSelected;
+    chart.wrap.node().dispatchEvent(chart.events.participantsSelected);
+
+    // remove/hide details
     this.config.quadrants.table.wrap.style('display', null);
     clearVisitPath.call(this); //remove path
     clearParticipantHeader.call(this);

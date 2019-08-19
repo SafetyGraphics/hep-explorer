@@ -14,6 +14,7 @@ import { initControlLabels } from './onLayout/initControlLabels';
 import { addFootnote } from './onLayout/addFootnote';
 import { addDownloadButton } from './onLayout/addDownloadButton';
 import { initEmptyChartWarning } from './onLayout/initEmptyChartWarning';
+
 import customizePlotStyleToggle from './onLayout/customizePlotStyleToggle';
 import initStudyDayControl from './onLayout/initStudyDayControl';
 
