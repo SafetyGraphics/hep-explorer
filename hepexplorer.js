@@ -5304,10 +5304,8 @@
     }
 
     function updateTimingFootnote() {
-        var chart = this;
         var config = this.config;
-
-        if (chart.plot_max_values) {
+        if (config.plot_max_values) {
             var windowText =
                 config.visit_window == 0
                     ? 'on the same day'
