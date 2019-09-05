@@ -40,7 +40,7 @@ export default function settings() {
         x_options: ['ALT', 'AST', 'ALP'],
         y_options: ['TB'],
         point_size: 'Uniform',
-        point_size_options: ['ALT', 'AST', 'ALP', 'TB'],
+        point_size_options: ['ALT', 'AST', 'ALP', 'TB', 'rRatio'],
         cuts: {
             ALT: {
                 relative_baseline: 3.8,
@@ -70,6 +70,8 @@ export default function settings() {
         },
         imputation_values: null,
         display: 'relative_uln', //or "relative_baseline"
+        plot_max_values: true,
+        plot_day: null, //set in onLayout/initStudyDayControl
         display_options: [
             { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
             { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' }

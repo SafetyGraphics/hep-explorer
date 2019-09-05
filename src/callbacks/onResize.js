@@ -1,29 +1,16 @@
+import customizePoints from './onResize/customizePoints';
 import { drawQuadrants } from './onResize/drawQuadrants';
 import { updateSummaryTable } from './onLayout/quadrants/updateSummaryTable';
-import { addPointMouseover } from './onResize/addPointMouseover';
-import { addPointClick } from './onResize/addPointClick';
-import { addPointTitles } from './onResize/addPointTitles';
 import { addAxisLabelTitles } from './onResize/addAxisLabelTitles';
 import { toggleLegend } from './onResize/toggleLegend';
 import { init as addLineDrag } from './onResize/addLineDrag/init';
 import { init as initBoxPlots } from './onResize/addBoxPlots/init';
-import { formatPoints } from './onResize/formatPoints';
-import { setPointSize } from './onResize/setPointSize';
-import { setPointOpacity } from './onResize/setPointOpacity';
 import { adjustTicks } from './onResize/adjustTicks';
-import { updateParticipantMarks } from './onResize/updateParticipantMarks';
 import updateTimingFootnote from './onResize/updateTimingFootnote';
 
 export default function onResize() {
-    //add point interactivity, custom title and formatting
-    addPointMouseover.call(this);
-    addPointClick.call(this);
-    addPointTitles.call(this);
-    addAxisLabelTitles.call(this);
-    formatPoints.call(this);
-    setPointSize.call(this);
-    setPointOpacity.call(this);
-    updateParticipantMarks.call(this);
+    //add maximum point interactivity, custom title and formatting
+    customizePoints.call(this);
 
     //draw the quadrants and add drag interactivity
     updateSummaryTable.call(this);
@@ -38,6 +25,7 @@ export default function onResize() {
 
     //axis formatting
     adjustTicks.call(this);
+    addAxisLabelTitles.call(this);
 
     //add timing footnote
     updateTimingFootnote.call(this);

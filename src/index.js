@@ -5,8 +5,9 @@ import configuration from './configuration/index';
 import { createChart, createControls } from 'webcharts';
 import callbacks from './callbacks/index';
 import init from './init';
+import destroy from './destroy';
 
-export default function safetyedish(element, settings) {
+export default function hepexplorer(element, settings) {
     const initial_settings = clone(settings);
     const defaultSettings = configuration.settings();
     const controlInputs = configuration.controlInputs();
@@ -23,12 +24,13 @@ export default function safetyedish(element, settings) {
     for (const callback in callbacks)
         chart.on(callback.substring(2).toLowerCase(), callbacks[callback]);
 
-    const se = {
+    const hepexplorer = {
         element,
         settings,
         chart,
-        init
+        init,
+        destroy
     };
 
-    return se;
+    return hepexplorer;
 }

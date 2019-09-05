@@ -4,6 +4,7 @@ import { drawMeasureTable } from './addPointClick/measureTable/drawMeasureTable'
 import { makeParticipantHeader } from './addPointClick/participantHeader/makeParticipantHeader';
 import { drawRugs } from './addPointMouseover/drawRugs';
 import { init as initSpaghettiPlot } from './addPointClick/spaghettiPlot/init';
+import { init as initRRatioPlot } from './addPointClick/rRatioPlot/init';
 
 export function addPointClick() {
     var chart = this;
@@ -12,9 +13,19 @@ export function addPointClick() {
 
     //add event listener to all participant level points
     points.on('click', function(d) {
-        chart.clicked_id = d.key;
+        //Stop animation.
+        chart.svg.transition().duration(0);
+        chart.controls.studyDayPlayButton.datum({ state: 'play' });
+        chart.controls.studyDayPlayButton.html('&#9658;');
+
+        // Reset the details view
         clearParticipantDetails.call(chart, d); //clear the previous participant
         chart.config.quadrants.table.wrap.style('display', 'none'); //hide the quadrant summary
+
+        //Update chart object & trigger the participantsSelected event on the overall chart.
+        chart.participantsSelected = [d.key];
+        chart.events.participantsSelected.data = chart.participantsSelected;
+        chart.wrap.node().dispatchEvent(chart.events.participantsSelected);
 
         //format the eDish chart
         points
@@ -35,5 +46,6 @@ export function addPointClick() {
         chart.participantDetails.wrap.selectAll('*').style('display', null);
         makeParticipantHeader.call(chart, d);
         initSpaghettiPlot.call(chart, d); //NOTE: the measure table is initialized from within the spaghettiPlot
+        initRRatioPlot.call(chart, d);
     });
 }

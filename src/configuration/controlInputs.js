@@ -31,6 +31,19 @@ export default function controlInputs() {
             require: true
         },
         {
+            type: 'radio',
+            option: 'plot_max_values',
+            label: 'Plot Style',
+            values: [true, false],
+            relabels: ['Max Values', 'By Study Day']
+        },
+        {
+            type: 'number',
+            label: 'Study Day',
+            description: null, //set in onDraw/updateStudyDaySlider
+            option: 'plot_day'
+        },
+        {
             type: 'dropdown',
             label: 'X-axis Measure',
             description: null, // set in syncControlInputs()

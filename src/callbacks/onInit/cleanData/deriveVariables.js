@@ -66,7 +66,7 @@ export default function deriveVariables() {
         return d;
     });
 
-    if (missingBaseline > 0)
+    if (config.debug & (missingBaseline > 0))
         console.warn(
             'No baseline value found for ' + missingBaseline + ' of ' + sub.length + ' records.'
         );

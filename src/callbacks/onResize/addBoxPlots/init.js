@@ -2,7 +2,8 @@ import { addBoxPlot } from './addBoxPlot';
 
 export function init() {
     // Draw box plots
-    this.svg.selectAll('g.boxplot').remove();
+    this.svg.selectAll('g.yMargin').remove();
+    this.svg.selectAll('g.xMargin').remove();
 
     // Y-axis box plot
     var yValues = this.current_data.map(function(d) {
