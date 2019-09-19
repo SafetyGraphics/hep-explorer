@@ -60,7 +60,11 @@ export default function settings() {
             },
             xMeasure: null, //set in syncSettings
             yMeasure: null, //set in syncSettings
-            display: null //set in syncSettings
+            display: null, //set in syncSettings
+            defaults: {
+                relative_baseline: 3.8,
+                relative_uln: 3
+            }
         },
         imputation_methods: {
             ALT: 'data-driven',

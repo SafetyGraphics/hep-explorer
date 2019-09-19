@@ -31,38 +31,34 @@ const settings = {
         'GGT':"GGT",
         "LDH":"LDH"
     },
+    /*
     cuts:{
       ALT: {
-  relative_baseline: 3.8,
-  relative_uln: 3,
-  absolute: 1.0
-},
-AST: {
-  relative_baseline: 3.8,
-  relative_uln: 3,
-  absolute: 1.0
-},
-TB: {
-  relative_baseline: 4.8,
-  relative_uln: 2,
-  absolute: 40
-},
-ALP: {
-  relative_baseline: 3.8,
-  relative_uln: 1,
-  absolute: 1.0
-},
+        relative_baseline: 3.8,
+        relative_uln: 3
+      },
+      AST: {
+        relative_baseline: 3.8,
+        relative_uln: 3
+      },
+      TB: {
+        relative_baseline: 4.8,
+        relative_uln: 2
+      },
+      ALP: {
+        relative_baseline: 3.8,
+        relative_uln: 1
+      },
       GGT: {
         relative_baseline: 3.8,
-        relative_uln: 3,
-        absolute: 20
-      },
+        relative_uln: 3
+            },
       LDH: {
         relative_baseline: 3.8,
-        relative_uln: 3,
-        absolute: 200
+        relative_uln: 3
       }
     },
+    */
     x_options:['ALT', 'AST', 'ALP','GGT',"LDH"],
     y_options:['TB', 'GGT', "LDH"],
     baseline:{
