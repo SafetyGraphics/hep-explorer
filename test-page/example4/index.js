@@ -32,6 +32,7 @@ const settings = {
         "LDH":"LDH"
     },
     /*
+    **Code below is required when measure_values is customized prior to v1.1.1**
     cuts:{
       ALT: {
         relative_baseline: 3.8,
