@@ -37,4 +37,18 @@ export default function checkMeasureDetails() {
             }
         });
     });
+
+    //check that all measure_values have associated cut measure_values
+    Object.keys(config.measure_values).forEach(function(m) {
+        // does a cut point for the custom value exist? if not create it.
+        if (!config.cuts.hasOwnProperty(m)) {
+            config.cuts[m] = {};
+        }
+
+        // does the cut have non-null baseline and ULN cuts associated, if not use the default values
+        config.cuts[m].relative_baseline =
+            config.cuts[m].relative_baseline || config.cuts.defaults.relative_baseline;
+        config.cuts[m].relative_uln =
+            config.cuts[m].relative_uln || config.cuts.defaults.relative_uln;
+    });
 }

@@ -285,7 +285,11 @@
                 },
                 xMeasure: null, //set in syncSettings
                 yMeasure: null, //set in syncSettings
-                display: null //set in syncSettings
+                display: null, //set in syncSettings
+                defaults: {
+                    relative_baseline: 3.8,
+                    relative_uln: 3
+                }
             },
             imputation_methods: {
                 ALT: 'data-driven',
@@ -847,6 +851,23 @@
                 }
             });
         });
+
+        //check that all measure_values have associated cut measure_values
+        console.log(config.cuts);
+        Object.keys(config.measure_values).forEach(function(m) {
+            console.log(m);
+            // does a cut point for the custom value exist? if not create it.
+            if (!config.cuts.hasOwnProperty(m)) {
+                config.cuts[m] = {};
+            }
+
+            // does the cut have non-null baseline and ULN cuts associated, if not use the default values
+            config.cuts[m].relative_baseline =
+                config.cuts[m].relative_baseline || config.cuts.defaults.relative_baseline;
+            config.cuts[m].relative_uln =
+                config.cuts[m].relative_uln || config.cuts.defaults.relative_uln;
+        });
+        console.log(config.cuts);
     }
 
     function iterateOverData() {
