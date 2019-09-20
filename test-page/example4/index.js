@@ -31,6 +31,7 @@ const settings = {
         'GGT':"GGT",
         "LDH":"LDH"
     },
+    add_measures:true,
     /*
     **Code below is required when measure_values is customized prior to v1.1.1**
     cuts:{

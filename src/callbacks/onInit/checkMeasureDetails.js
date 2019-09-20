@@ -1,6 +1,7 @@
 export default function checkMeasureDetails() {
     var chart = this;
     var config = this.config;
+    var defaults = this.initial_settings;
     const measures = d3
         .set(this.raw_data.map(d => d[config.measure_col]))
         .values()
@@ -21,10 +22,21 @@ export default function checkMeasureDetails() {
             }: ${missingMeasures.join(', ')}.`
         );
 
+    //automatically add Measures if requested
+    if (config.add_measures) {
+        measures.forEach(function(m, i) {
+            if (specifiedMeasures.indexOf(m) == -1) {
+                config.measure_values['m' + i] = m;
+            }
+        });
+    }
+    console.log(config.measure_values);
+
     //check that x_options, y_options and size_options all have value keys/values in measure_values
-    const valid_options = d3.merge([Object.keys(config.measure_values), ['rRatio']]);
+    const valid_options = Object.keys(config.measure_values);
     const all_options = ['x_options', 'y_options', 'point_size_options'];
     all_options.forEach(function(options) {
+        // remove invalid options
         config[options].forEach(function(option) {
             if (valid_options.indexOf(option) == -1) {
                 delete config[options][option];
@@ -36,7 +48,14 @@ export default function checkMeasureDetails() {
                 );
             }
         });
+
+        // add options for controls requesting 'all' measures
+        if (defaults[option] == 'all')
+            config[option] = valid_options;
     });
+
+    //update controls to use the current options
+    controlInputs.find(ci => ci.label === 'Point Size').values = [];
 
     //check that all measure_values have associated cuts
     Object.keys(config.measure_values).forEach(function(m) {

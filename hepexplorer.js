@@ -262,7 +262,7 @@
                 TB: 'Total Bilirubin',
                 ALP: 'Alkaline phosphatase (ALP)'
             },
-            addMeasures: false,
+            add_measures: false,
             x_options: 'all',
             y_options: ['TB'],
             point_size: 'Uniform',
@@ -565,7 +565,7 @@
         return settings$$1;
     }
 
-    function controlInputs() {
+    function controlInputs$1() {
         return [
             {
                 type: 'number',
@@ -820,12 +820,13 @@
     var configuration = {
         settings: settings,
         syncSettings: syncSettings,
-        controlInputs: controlInputs,
+        controlInputs: controlInputs$1,
         syncControlInputs: syncControlInputs
     };
 
     function checkMeasureDetails() {
         var config = this.config;
+        var defaults = this.initial_settings;
         var measures = d3
             .set(
                 this.raw_data.map(function(d) {
@@ -854,10 +855,21 @@
                     '.'
             );
 
+        //automatically add Measures if requested
+        if (config.add_measures) {
+            measures.forEach(function(m, i) {
+                if (specifiedMeasures.indexOf(m) == -1) {
+                    config.measure_values['m' + i] = m;
+                }
+            });
+        }
+        console.log(config.measure_values);
+
         //check that x_options, y_options and size_options all have value keys/values in measure_values
-        var valid_options = d3.merge([Object.keys(config.measure_values), ['rRatio']]);
+        var valid_options = Object.keys(config.measure_values);
         var all_options = ['x_options', 'y_options', 'point_size_options'];
         all_options.forEach(function(options) {
+            // remove invalid options
             config[options].forEach(function(option) {
                 if (valid_options.indexOf(option) == -1) {
                     delete config[options][option];
@@ -869,7 +881,16 @@
                     );
                 }
             });
+
+            // add options for controls requesting 'all' measures
+            if (defaults.point_size_options == 'all')
+                config[option] = d3.merge([['Uniform', 'rRatio'], valid_options]);
         });
+
+        //update controls to use the current options
+        controlInputs.find(function(ci) {
+            return ci.label === 'Point Size';
+        }).values = [];
 
         //check that all measure_values have associated cuts
         Object.keys(config.measure_values).forEach(function(m) {
@@ -4071,7 +4092,7 @@
         aspect: 2
     };
 
-    var controlInputs$1 = [
+    var controlInputs$2 = [
         {
             type: 'subsetter',
             label: 'Select Labs',
@@ -4493,20 +4514,20 @@
         var spaghettiElement = this.element + ' .participantDetails .spaghettiPlot .chart';
 
         //Add y axis type options
-        controlInputs$1.find(function(f) {
+        controlInputs$2.find(function(f) {
             return f.label == 'Y-axis Display Type';
         }).values = config.display_options.map(function(m) {
             return m.label;
         });
 
         //sync parameter filter
-        controlInputs$1.find(function(f) {
+        controlInputs$2.find(function(f) {
             return f.label == 'Select Labs';
         }).value_col = config.measure_col;
 
         var spaghettiControls = webcharts.createControls(spaghettiElement, {
             location: 'top',
-            inputs: controlInputs$1
+            inputs: controlInputs$2
         });
 
         //draw that chart
