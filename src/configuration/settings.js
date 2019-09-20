@@ -58,9 +58,6 @@ export default function settings() {
                 relative_baseline: 3.8,
                 relative_uln: 1
             },
-            xMeasure: null, //set in syncSettings
-            yMeasure: null, //set in syncSettings
-            display: null, //set in syncSettings
             defaults: {
                 relative_baseline: 3.8,
                 relative_uln: 3

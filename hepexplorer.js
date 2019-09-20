@@ -283,9 +283,6 @@
                     relative_baseline: 3.8,
                     relative_uln: 1
                 },
-                xMeasure: null, //set in syncSettings
-                yMeasure: null, //set in syncSettings
-                display: null, //set in syncSettings
                 defaults: {
                     relative_baseline: 3.8,
                     relative_uln: 3
@@ -388,18 +385,21 @@
     }
 
     //Replicate settings in multiple places in the settings object
-    function syncSettings(settings) {
-        settings.marks[0].per[0] = settings.id_col;
+    function syncSettings(settings$$1) {
+        var defaults = settings();
+        settings$$1.marks[0].per[0] = settings$$1.id_col;
 
         //set grouping config
-        if (typeof settings.group_cols == 'string') {
-            settings.group_cols = [{ value_col: settings.group_cols, label: settings.group_cols }];
+        if (typeof settings$$1.group_cols == 'string') {
+            settings$$1.group_cols = [
+                { value_col: settings$$1.group_cols, label: settings$$1.group_cols }
+            ];
         }
 
-        if (!(settings.group_cols instanceof Array && settings.group_cols.length)) {
-            settings.group_cols = [{ value_col: 'NONE', label: 'None' }];
+        if (!(settings$$1.group_cols instanceof Array && settings$$1.group_cols.length)) {
+            settings$$1.group_cols = [{ value_col: 'NONE', label: 'None' }];
         } else {
-            settings.group_cols = settings.group_cols.map(function(group) {
+            settings$$1.group_cols = settings$$1.group_cols.map(function(group) {
                 return {
                     value_col: group.value_col || group,
                     label: group.label || group.value_col || group
@@ -407,33 +407,34 @@
             });
 
             var hasNone =
-                settings.group_cols
+                settings$$1.group_cols
                     .map(function(m) {
                         return m.value_col;
                     })
                     .indexOf('NONE') > -1;
             if (!hasNone) {
-                settings.group_cols.unshift({ value_col: 'NONE', label: 'None' });
+                settings$$1.group_cols.unshift({ value_col: 'NONE', label: 'None' });
             }
         }
 
-        if (settings.group_cols.length > 1) {
-            settings.color_by = settings.group_cols[1].value_col
-                ? settings.group_cols[1].value_col
-                : settings.group_cols[1];
+        if (settings$$1.group_cols.length > 1) {
+            settings$$1.color_by = settings$$1.group_cols[1].value_col
+                ? settings$$1.group_cols[1].value_col
+                : settings$$1.group_cols[1];
         } else {
-            settings.color_by = 'NONE';
+            settings$$1.color_by = 'NONE';
         }
 
         //make sure filters is an Array
-        if (!(settings.filters instanceof Array)) {
-            settings.filters = typeof settings.filters == 'string' ? [settings.filters] : [];
+        if (!(settings$$1.filters instanceof Array)) {
+            settings$$1.filters =
+                typeof settings$$1.filters == 'string' ? [settings$$1.filters] : [];
         }
 
         //Define default details.
-        var defaultDetails = [{ value_col: settings.id_col, label: 'Subject Identifier' }];
-        if (settings.filters) {
-            settings.filters.forEach(function(filter) {
+        var defaultDetails = [{ value_col: settings$$1.id_col, label: 'Subject Identifier' }];
+        if (settings$$1.filters) {
+            settings$$1.filters.forEach(function(filter) {
                 var obj = {
                     value_col: filter.value_col ? filter.value_col : filter,
                     label: filter.label
@@ -453,8 +454,8 @@
             });
         }
 
-        if (settings.group_cols) {
-            settings.group_cols
+        if (settings$$1.group_cols) {
+            settings$$1.group_cols
                 .filter(function(f) {
                     return f.value_col != 'NONE';
                 })
@@ -478,17 +479,18 @@
         }
 
         //parse details to array if needed
-        if (!(settings.details instanceof Array)) {
-            settings.details = typeof settings.details == 'string' ? [settings.details] : [];
+        if (!(settings$$1.details instanceof Array)) {
+            settings$$1.details =
+                typeof settings$$1.details == 'string' ? [settings$$1.details] : [];
         }
 
         //If [settings.details] is not specified:
-        if (!settings.details) settings.details = defaultDetails;
+        if (!settings$$1.details) settings$$1.details = defaultDetails;
         else {
             //If [settings.details] is specified:
             //Allow user to specify an array of columns or an array of objects with a column property
             //and optionally a column label.
-            settings.details.forEach(function(detail) {
+            settings$$1.details.forEach(function(detail) {
                 if (
                     defaultDetails
                         .map(function(d) {
@@ -505,45 +507,53 @@
                             : detail
                     });
             });
-            settings.details = defaultDetails;
+            settings$$1.details = defaultDetails;
         }
 
         // If settings.analysisFlag is null
-        if (!settings.analysisFlag) settings.analysisFlag = { value_col: null, values: [] };
-        if (!settings.analysisFlag.value_col) settings.analysisFlag.value_col = null;
-        if (!(settings.analysisFlag.values instanceof Array)) {
-            settings.analysisFlag.values =
-                typeof settings.analysisFlag.values == 'string'
-                    ? [settings.analysisFlag.values]
+        if (!settings$$1.analysisFlag) settings$$1.analysisFlag = { value_col: null, values: [] };
+        if (!settings$$1.analysisFlag.value_col) settings$$1.analysisFlag.value_col = null;
+        if (!(settings$$1.analysisFlag.values instanceof Array)) {
+            settings$$1.analysisFlag.values =
+                typeof settings$$1.analysisFlag.values == 'string'
+                    ? [settings$$1.analysisFlag.values]
                     : [];
         }
         //if it is null, set settings.baseline.value_col to settings.studyday_col.
-        if (!settings.baseline) settings.baseline = { value_col: null, values: [] };
-        if (!settings.baseline.value_col) settings.baseline.value_col = settings.studyday_col;
-        if (!(settings.baseline.values instanceof Array)) {
-            settings.baseline.values =
-                typeof settings.baseline.values == 'string' ? [settings.baseline.values] : [];
+        if (!settings$$1.baseline) settings$$1.baseline = { value_col: null, values: [] };
+        if (!settings$$1.baseline.value_col)
+            settings$$1.baseline.value_col = settings$$1.studyday_col;
+        if (!(settings$$1.baseline.values instanceof Array)) {
+            settings$$1.baseline.values =
+                typeof settings$$1.baseline.values == 'string' ? [settings$$1.baseline.values] : [];
         }
 
         //parse x_ and y_options to array if needed
-        if (!(settings.x_options instanceof Array)) {
-            settings.x_options = typeof settings.x_options == 'string' ? [settings.x_options] : [];
+        if (!(settings$$1.x_options instanceof Array)) {
+            settings$$1.x_options =
+                typeof settings$$1.x_options == 'string' ? [settings$$1.x_options] : [];
         }
 
-        if (!(settings.y_options instanceof Array)) {
-            settings.y_options = typeof settings.y_options == 'string' ? [settings.y_options] : [];
+        if (!(settings$$1.y_options instanceof Array)) {
+            settings$$1.y_options =
+                typeof settings$$1.y_options == 'string' ? [settings$$1.y_options] : [];
         }
-
-        // track initial Cutpoint (lets us detect when cutpoint should change)
-        settings.cuts.x = settings.x.column;
-        settings.cuts.y = settings.y.column;
-        settings.cuts.display = settings.display;
 
         //Attach measure columns to axis settings.
-        settings.x.column = settings.x_options[0];
-        settings.y.column = settings.y_options[0];
+        settings$$1.x.column = settings$$1.x_options[0];
+        settings$$1.y.column = settings$$1.y_options[0];
 
-        return settings;
+        // track initial Cutpoint (lets us detect when cutpoint should change)
+        settings$$1.cuts.x = settings$$1.x.column;
+        settings$$1.cuts.y = settings$$1.y.column;
+        settings$$1.cuts.display = settings$$1.display;
+        settings$$1.cuts.defaults = settings$$1.cuts.defaults || defaults.cuts.defaults;
+        settings$$1.cuts.defaults.relative_uln =
+            settings$$1.cuts.defaults.relative_uln || defaults.cuts.defaults.relative_uln;
+        settings$$1.cuts.defaults.relative_baseline =
+            settings$$1.cuts.defaults.relative_baseline || defaults.cuts.defaults.relative_baseline;
+
+        return settings$$1;
     }
 
     function controlInputs() {
@@ -853,9 +863,7 @@
         });
 
         //check that all measure_values have associated cut measure_values
-        console.log(config.cuts);
         Object.keys(config.measure_values).forEach(function(m) {
-            console.log(m);
             // does a cut point for the custom value exist? if not create it.
             if (!config.cuts.hasOwnProperty(m)) {
                 config.cuts[m] = {};
@@ -867,7 +875,6 @@
             config.cuts[m].relative_uln =
                 config.cuts[m].relative_uln || config.cuts.defaults.relative_uln;
         });
-        console.log(config.cuts);
     }
 
     function iterateOverData() {

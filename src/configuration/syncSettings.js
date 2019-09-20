@@ -1,5 +1,8 @@
+import getDefaults from './settings';
+
 //Replicate settings in multiple places in the settings object
 export default function syncSettings(settings) {
+    const defaults = getDefaults();
     settings.marks[0].per[0] = settings.id_col;
 
     //set grouping config
@@ -118,14 +121,21 @@ export default function syncSettings(settings) {
         settings.y_options = typeof settings.y_options == 'string' ? [settings.y_options] : [];
     }
 
-    // track initial Cutpoint (lets us detect when cutpoint should change)
+    //Attach measure columns to axis settings.
+    settings.x.column = settings.x_options[0];
+    settings.y.column = settings.y_options[0];
+    
+    // track initial Cutpoint  (lets us detect when cutpoint should change)
     settings.cuts.x = settings.x.column;
     settings.cuts.y = settings.y.column;
     settings.cuts.display = settings.display;
 
-    //Attach measure columns to axis settings.
-    settings.x.column = settings.x_options[0];
-    settings.y.column = settings.y_options[0];
+    // Confirm detaults are set
+    settings.cuts.defaults = settings.cuts.defaults || defaults.cuts.defaults;
+    settings.cuts.defaults.relative_uln =
+        settings.cuts.defaults.relative_uln || defaults.cuts.defaults.relative_uln;
+    settings.cuts.defaults.relative_baseline =
+        settings.cuts.defaults.relative_baseline || defaults.cuts.defaults.relative_baseline;
 
     return settings;
 }
