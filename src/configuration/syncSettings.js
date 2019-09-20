@@ -124,7 +124,7 @@ export default function syncSettings(settings) {
     //Attach measure columns to axis settings.
     settings.x.column = settings.x_options[0];
     settings.y.column = settings.y_options[0];
-    
+
     // track initial Cutpoint  (lets us detect when cutpoint should change)
     settings.cuts.x = settings.x.column;
     settings.cuts.y = settings.y.column;
@@ -136,6 +136,14 @@ export default function syncSettings(settings) {
         settings.cuts.defaults.relative_uln || defaults.cuts.defaults.relative_uln;
     settings.cuts.defaults.relative_baseline =
         settings.cuts.defaults.relative_baseline || defaults.cuts.defaults.relative_baseline;
+
+    // keep default cuts if user hasn't provided an alternative
+    const cutMeasures = Object.keys(settings.cuts);
+    Object.keys(defaults.cuts).forEach(function(m) {
+        if (cutMeasures.indexOf(m) == -1) {
+            settings.cuts[m] = defaults.cuts[m];
+        }
+    });
 
     return settings;
 }

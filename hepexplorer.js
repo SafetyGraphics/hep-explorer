@@ -543,15 +543,25 @@
         settings$$1.x.column = settings$$1.x_options[0];
         settings$$1.y.column = settings$$1.y_options[0];
 
-        // track initial Cutpoint (lets us detect when cutpoint should change)
+        // track initial Cutpoint  (lets us detect when cutpoint should change)
         settings$$1.cuts.x = settings$$1.x.column;
         settings$$1.cuts.y = settings$$1.y.column;
         settings$$1.cuts.display = settings$$1.display;
+
+        // Confirm detaults are set
         settings$$1.cuts.defaults = settings$$1.cuts.defaults || defaults.cuts.defaults;
         settings$$1.cuts.defaults.relative_uln =
             settings$$1.cuts.defaults.relative_uln || defaults.cuts.defaults.relative_uln;
         settings$$1.cuts.defaults.relative_baseline =
             settings$$1.cuts.defaults.relative_baseline || defaults.cuts.defaults.relative_baseline;
+
+        // keep default cuts if user hasn't provided an alternative
+        var cutMeasures = Object.keys(settings$$1.cuts);
+        Object.keys(defaults.cuts).forEach(function(m) {
+            if (cutMeasures.indexOf(m) == -1) {
+                settings$$1.cuts[m] = defaults.cuts[m];
+            }
+        });
 
         return settings$$1;
     }
@@ -862,9 +872,9 @@
             });
         });
 
-        //check that all measure_values have associated cut measure_values
+        //check that all measure_values have associated cuts
         Object.keys(config.measure_values).forEach(function(m) {
-            // does a cut point for the custom value exist? if not create it.
+            // does a cut point for the measure exist? If not, use the default config or create a placeholder.
             if (!config.cuts.hasOwnProperty(m)) {
                 config.cuts[m] = {};
             }
