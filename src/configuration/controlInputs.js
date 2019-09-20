@@ -79,7 +79,7 @@ export default function controlInputs() {
             description: 'Parameter to set point radius',
             options: ['point_size'],
             start: null, // set in syncControlInputs()
-            values: ['Uniform'],
+            values: ['Uniform', 'rRatio'],
             require: true
         },
         {

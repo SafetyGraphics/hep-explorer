@@ -1,5 +1,8 @@
+import getDefaults from './settings';
+
 //Replicate settings in multiple places in the settings object
 export default function syncSettings(settings) {
+    const defaults = getDefaults();
     settings.marks[0].per[0] = settings.id_col;
 
     //set grouping config
@@ -109,6 +112,12 @@ export default function syncSettings(settings) {
             typeof settings.baseline.values == 'string' ? [settings.baseline.values] : [];
     }
 
+    //check for 'all' in x_, y_ and point_size_options
+    const allMeasures = Object.keys(settings.measure_values);
+    if (settings.x_options == 'all') settings.x_options = allMeasures;
+    if (settings.y_options == 'all') settings.y_options = allMeasures;
+    if (settings.point_size_options == 'all') settings.point_size_options = allMeasures;
+
     //parse x_ and y_options to array if needed
     if (!(settings.x_options instanceof Array)) {
         settings.x_options = typeof settings.x_options == 'string' ? [settings.x_options] : [];
@@ -118,14 +127,29 @@ export default function syncSettings(settings) {
         settings.y_options = typeof settings.y_options == 'string' ? [settings.y_options] : [];
     }
 
-    // track initial Cutpoint (lets us detect when cutpoint should change)
+    //Attach measure columns to axis settings.
+    settings.x.column = settings.x_options[0];
+    settings.y.column = settings.y_options[0];
+
+    // track initial Cutpoint  (lets us detect when cutpoint should change)
     settings.cuts.x = settings.x.column;
     settings.cuts.y = settings.y.column;
     settings.cuts.display = settings.display;
 
-    //Attach measure columns to axis settings.
-    settings.x.column = settings.x_options[0];
-    settings.y.column = settings.y_options[0];
+    // Confirm detaults are set
+    settings.cuts.defaults = settings.cuts.defaults || defaults.cuts.defaults;
+    settings.cuts.defaults.relative_uln =
+        settings.cuts.defaults.relative_uln || defaults.cuts.defaults.relative_uln;
+    settings.cuts.defaults.relative_baseline =
+        settings.cuts.defaults.relative_baseline || defaults.cuts.defaults.relative_baseline;
+
+    // keep default cuts if user hasn't provided an alternative
+    const cutMeasures = Object.keys(settings.cuts);
+    Object.keys(defaults.cuts).forEach(function(m) {
+        if (cutMeasures.indexOf(m) == -1) {
+            settings.cuts[m] = defaults.cuts[m];
+        }
+    });
 
     return settings;
 }
