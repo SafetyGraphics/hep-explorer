@@ -112,6 +112,12 @@ export default function syncSettings(settings) {
             typeof settings.baseline.values == 'string' ? [settings.baseline.values] : [];
     }
 
+    //check for 'all' in x_, y_ and point_size_options
+    const allMeasures = Object.keys(settings.measure_values);
+    if (settings.x_options == 'all') settings.x_options = allMeasures;
+    if (settings.y_options == 'all') settings.y_options = allMeasures;
+    if (settings.point_size_options == 'all') settings.point_size_options = allMeasures;
+
     //parse x_ and y_options to array if needed
     if (!(settings.x_options instanceof Array)) {
         settings.x_options = typeof settings.x_options == 'string' ? [settings.x_options] : [];

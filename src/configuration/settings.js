@@ -37,19 +37,12 @@ export default function settings() {
             TB: 'Total Bilirubin',
             ALP: 'Alkaline phosphatase (ALP)'
         },
-        x_options: ['ALT', 'AST', 'ALP'],
+        addMeasures: false,
+        x_options: 'all',
         y_options: ['TB'],
         point_size: 'Uniform',
-        point_size_options: ['ALT', 'AST', 'ALP', 'TB', 'rRatio'],
+        point_size_options: 'all',
         cuts: {
-            ALT: {
-                relative_baseline: 3.8,
-                relative_uln: 3
-            },
-            AST: {
-                relative_baseline: 3.8,
-                relative_uln: 3
-            },
             TB: {
                 relative_baseline: 4.8,
                 relative_uln: 2

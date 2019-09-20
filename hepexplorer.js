@@ -262,19 +262,12 @@
                 TB: 'Total Bilirubin',
                 ALP: 'Alkaline phosphatase (ALP)'
             },
-            x_options: ['ALT', 'AST', 'ALP'],
+            addMeasures: false,
+            x_options: 'all',
             y_options: ['TB'],
             point_size: 'Uniform',
-            point_size_options: ['ALT', 'AST', 'ALP', 'TB', 'rRatio'],
+            point_size_options: 'all',
             cuts: {
-                ALT: {
-                    relative_baseline: 3.8,
-                    relative_uln: 3
-                },
-                AST: {
-                    relative_baseline: 3.8,
-                    relative_uln: 3
-                },
                 TB: {
                     relative_baseline: 4.8,
                     relative_uln: 2
@@ -528,6 +521,12 @@
                 typeof settings$$1.baseline.values == 'string' ? [settings$$1.baseline.values] : [];
         }
 
+        //check for 'all' in x_, y_ and point_size_options
+        var allMeasures = Object.keys(settings$$1.measure_values);
+        if (settings$$1.x_options == 'all') settings$$1.x_options = allMeasures;
+        if (settings$$1.y_options == 'all') settings$$1.y_options = allMeasures;
+        if (settings$$1.point_size_options == 'all') settings$$1.point_size_options = allMeasures;
+
         //parse x_ and y_options to array if needed
         if (!(settings$$1.x_options instanceof Array)) {
             settings$$1.x_options =
@@ -647,7 +646,7 @@
                 description: 'Parameter to set point radius',
                 options: ['point_size'],
                 start: null, // set in syncControlInputs()
-                values: ['Uniform'],
+                values: ['Uniform', 'rRatio'],
                 require: true
             },
             {
@@ -874,7 +873,7 @@
 
         //check that all measure_values have associated cuts
         Object.keys(config.measure_values).forEach(function(m) {
-            // does a cut point for the measure exist? If not, use the default config or create a placeholder.
+            // does a cut point for the measure exist? If not, create a placeholder.
             if (!config.cuts.hasOwnProperty(m)) {
                 config.cuts[m] = {};
             }
