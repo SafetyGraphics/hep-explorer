@@ -521,10 +521,13 @@
                 typeof settings$$1.baseline.values == 'string' ? [settings$$1.baseline.values] : [];
         }
 
-        //check for 'all' in x_, y_ and point_size_options
+        //check for 'all' in x_, y_ and point_size_options, but keep track if all options are used for later
         var allMeasures = Object.keys(settings$$1.measure_values);
+        settings$$1.x_options_all = settings$$1.x_options == 'all';
         if (settings$$1.x_options == 'all') settings$$1.x_options = allMeasures;
+        settings$$1.y_options_all = settings$$1.y_options == 'all';
         if (settings$$1.y_options == 'all') settings$$1.y_options = allMeasures;
+        settings$$1.point_size_options_all = settings$$1.point_size_options == 'all';
         if (settings$$1.point_size_options == 'all') settings$$1.point_size_options = allMeasures;
 
         //parse x_ and y_options to array if needed
@@ -565,7 +568,7 @@
         return settings$$1;
     }
 
-    function controlInputs$1() {
+    function controlInputs() {
         return [
             {
                 type: 'number',
@@ -710,7 +713,7 @@
                 return controlInput.option === 'x.column';
             });
 
-            xAxisMeasureControl.description = settings.x_options.join(', ');
+            //xAxisMeasureControl.description = settings.x_options.join(', ');
             xAxisMeasureControl.start = settings.x_options[0];
             xAxisMeasureControl.values = settings.x_options;
         }
@@ -739,7 +742,7 @@
             var yAxisMeasureControl = controlInputs.find(function(controlInput) {
                 return controlInput.option === 'y.column';
             });
-            yAxisMeasureControl.description = settings.y_options.join(', ');
+            //  yAxisMeasureControl.description = settings.y_options.join(', ');
             yAxisMeasureControl.start = settings.y_options[0];
             yAxisMeasureControl.values = settings.y_options;
         }
@@ -820,13 +823,13 @@
     var configuration = {
         settings: settings,
         syncSettings: syncSettings,
-        controlInputs: controlInputs$1,
+        controlInputs: controlInputs,
         syncControlInputs: syncControlInputs
     };
 
     function checkMeasureDetails() {
+        var chart = this;
         var config = this.config;
-        var defaults = this.initial_settings;
         var measures = d3
             .set(
                 this.raw_data.map(function(d) {
@@ -863,34 +866,41 @@
                 }
             });
         }
-        console.log(config.measure_values);
 
         //check that x_options, y_options and size_options all have value keys/values in measure_values
         var valid_options = Object.keys(config.measure_values);
-        var all_options = ['x_options', 'y_options', 'point_size_options'];
-        all_options.forEach(function(options) {
+        var all_settings = ['x_options', 'y_options', 'point_size_options'];
+        all_settings.forEach(function(setting) {
             // remove invalid options
-            config[options].forEach(function(option) {
+            config[setting].forEach(function(option) {
                 if (valid_options.indexOf(option) == -1) {
                     delete config[options][option];
                     console.warn(
                         option +
                             " wasn't found in the measure_values index and has been removed from config." +
-                            options +
+                            setting +
                             '. This may cause problems with the chart.'
                     );
                 }
             });
 
             // add options for controls requesting 'all' measures
-            if (defaults.point_size_options == 'all')
-                config[option] = d3.merge([['Uniform', 'rRatio'], valid_options]);
+            if (config[setting + '_all']) {
+                var point_size_options = d3.merge([['Uniform', 'rRatio'], valid_options]);
+                config[setting] =
+                    setting == 'point_size_options' ? point_size_options : valid_options;
+                var controlLabel =
+                    setting == 'x_options'
+                        ? 'X-axis Measure'
+                        : setting == 'y_options'
+                        ? 'Y-axis Measure'
+                        : 'Point Size';
+                var input = chart.controls.config.inputs.find(function(ci) {
+                    return ci.label == controlLabel;
+                });
+                input.values = config[setting];
+            }
         });
-
-        //update controls to use the current options
-        controlInputs.find(function(ci) {
-            return ci.label === 'Point Size';
-        }).values = [];
 
         //check that all measure_values have associated cuts
         Object.keys(config.measure_values).forEach(function(m) {
@@ -4092,7 +4102,7 @@
         aspect: 2
     };
 
-    var controlInputs$2 = [
+    var controlInputs$1 = [
         {
             type: 'subsetter',
             label: 'Select Labs',
@@ -4514,20 +4524,20 @@
         var spaghettiElement = this.element + ' .participantDetails .spaghettiPlot .chart';
 
         //Add y axis type options
-        controlInputs$2.find(function(f) {
+        controlInputs$1.find(function(f) {
             return f.label == 'Y-axis Display Type';
         }).values = config.display_options.map(function(m) {
             return m.label;
         });
 
         //sync parameter filter
-        controlInputs$2.find(function(f) {
+        controlInputs$1.find(function(f) {
             return f.label == 'Select Labs';
         }).value_col = config.measure_col;
 
         var spaghettiControls = webcharts.createControls(spaghettiElement, {
             location: 'top',
-            inputs: controlInputs$2
+            inputs: controlInputs$1
         });
 
         //draw that chart

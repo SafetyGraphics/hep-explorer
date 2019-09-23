@@ -33,7 +33,7 @@ export default function syncControlInputs(controlInputs, settings) {
             controlInput => controlInput.option === 'x.column'
         );
 
-        xAxisMeasureControl.description = settings.x_options.join(', ');
+        //xAxisMeasureControl.description = settings.x_options.join(', ');
         xAxisMeasureControl.start = settings.x_options[0];
         xAxisMeasureControl.values = settings.x_options;
     }
@@ -60,7 +60,7 @@ export default function syncControlInputs(controlInputs, settings) {
         const yAxisMeasureControl = controlInputs.find(
             controlInput => controlInput.option === 'y.column'
         );
-        yAxisMeasureControl.description = settings.y_options.join(', ');
+        //  yAxisMeasureControl.description = settings.y_options.join(', ');
         yAxisMeasureControl.start = settings.y_options[0];
         yAxisMeasureControl.values = settings.y_options;
     }

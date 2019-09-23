@@ -1,7 +1,6 @@
 export default function checkMeasureDetails() {
     var chart = this;
     var config = this.config;
-    var defaults = this.initial_settings;
     const measures = d3
         .set(this.raw_data.map(d => d[config.measure_col]))
         .values()
@@ -30,32 +29,38 @@ export default function checkMeasureDetails() {
             }
         });
     }
-    console.log(config.measure_values);
 
     //check that x_options, y_options and size_options all have value keys/values in measure_values
     const valid_options = Object.keys(config.measure_values);
-    const all_options = ['x_options', 'y_options', 'point_size_options'];
-    all_options.forEach(function(options) {
+    const all_settings = ['x_options', 'y_options', 'point_size_options'];
+    all_settings.forEach(function(setting) {
         // remove invalid options
-        config[options].forEach(function(option) {
+        config[setting].forEach(function(option) {
             if (valid_options.indexOf(option) == -1) {
                 delete config[options][option];
                 console.warn(
                     option +
                         " wasn't found in the measure_values index and has been removed from config." +
-                        options +
+                        setting +
                         '. This may cause problems with the chart.'
                 );
             }
         });
 
         // add options for controls requesting 'all' measures
-        if (defaults[option] == 'all')
-            config[option] = valid_options;
+        if (config[setting + '_all']) {
+            const point_size_options = d3.merge([['Uniform', 'rRatio'], valid_options]);
+            config[setting] = setting == 'point_size_options' ? point_size_options : valid_options;
+            const controlLabel =
+                setting == 'x_options'
+                    ? 'X-axis Measure'
+                    : setting == 'y_options'
+                    ? 'Y-axis Measure'
+                    : 'Point Size';
+            var input = chart.controls.config.inputs.find(ci => ci.label == controlLabel);
+            input.values = config[setting];
+        }
     });
-
-    //update controls to use the current options
-    controlInputs.find(ci => ci.label === 'Point Size').values = [];
 
     //check that all measure_values have associated cuts
     Object.keys(config.measure_values).forEach(function(m) {

@@ -61,8 +61,9 @@ const settings = {
       }
     },
     */
-  //  x_options:['ALT', 'AST', 'ALP','GGT',"LDH"],
-    y_options:['TB'],
+    //x_options:['ALT', 'AST', 'ALP','GGT',"LDH"],
+//    x_options:"all",
+  //  y_options:"all",
     baseline:{
         value_col:"STUDYDAY",
         values:[1]
