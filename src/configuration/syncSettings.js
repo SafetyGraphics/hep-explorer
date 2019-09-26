@@ -112,6 +112,12 @@ export default function syncSettings(settings) {
             typeof settings.baseline.values == 'string' ? [settings.baseline.values] : [];
     }
 
+    //merge in default measure_values if user hasn't specified changes
+    Object.keys(defaults.measure_values).forEach(function(val) {
+        if (!settings.measure_values.hasOwnProperty(val))
+            settings.measure_values[val] = defaults.measure_values[val];
+    });
+
     //check for 'all' in x_, y_ and point_size_options, but keep track if all options are used for later
     const allMeasures = Object.keys(settings.measure_values);
     settings.x_options_all = settings.x_options == 'all';
@@ -151,7 +157,7 @@ export default function syncSettings(settings) {
     settings.cuts.y = settings.y.column;
     settings.cuts.display = settings.display;
 
-    // Confirm detaults are set
+    // Confirm detault cuts are set
     settings.cuts.defaults = settings.cuts.defaults || defaults.cuts.defaults;
     settings.cuts.defaults.relative_uln =
         settings.cuts.defaults.relative_uln || defaults.cuts.defaults.relative_uln;

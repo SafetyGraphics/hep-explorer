@@ -523,6 +523,12 @@
                 typeof settings$$1.baseline.values == 'string' ? [settings$$1.baseline.values] : [];
         }
 
+        //merge in default measure_values if user hasn't specified changes
+        Object.keys(defaults.measure_values).forEach(function(val) {
+            if (!settings$$1.measure_values.hasOwnProperty(val))
+                settings$$1.measure_values[val] = defaults.measure_values[val];
+        });
+
         //check for 'all' in x_, y_ and point_size_options, but keep track if all options are used for later
         var allMeasures = Object.keys(settings$$1.measure_values);
         settings$$1.x_options_all = settings$$1.x_options == 'all';
@@ -564,7 +570,7 @@
         settings$$1.cuts.y = settings$$1.y.column;
         settings$$1.cuts.display = settings$$1.display;
 
-        // Confirm detaults are set
+        // Confirm detault cuts are set
         settings$$1.cuts.defaults = settings$$1.cuts.defaults || defaults.cuts.defaults;
         settings$$1.cuts.defaults.relative_uln =
             settings$$1.cuts.defaults.relative_uln || defaults.cuts.defaults.relative_uln;
@@ -920,7 +926,7 @@
                 }
             }
         });
-
+        console.log(config.measure_values);
         //check that all measure_values have associated cuts
         Object.keys(config.measure_values).forEach(function(m) {
             // does a cut point for the measure exist? If not, create a placeholder.
