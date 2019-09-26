@@ -884,21 +884,26 @@
                 }
             });
 
-            // add options for controls requesting 'all' measures
-            if (config[setting + '_all']) {
-                var point_size_options = d3.merge([['Uniform', 'rRatio'], valid_options]);
-                config[setting] =
-                    setting == 'point_size_options' ? point_size_options : valid_options;
-                var controlLabel =
-                    setting == 'x_options'
-                        ? 'X-axis Measure'
-                        : setting == 'y_options'
-                        ? 'Y-axis Measure'
-                        : 'Point Size';
-                var input = chart.controls.config.inputs.find(function(ci) {
-                    return ci.label == controlLabel;
-                });
-                input.values = config[setting];
+            // update the control input settings
+            var controlLabel =
+                setting == 'x_options'
+                    ? 'X-axis Measure'
+                    : setting == 'y_options'
+                    ? 'Y-axis Measure'
+                    : 'Point Size';
+            var input = chart.controls.config.inputs.find(function(ci) {
+                return ci.label == controlLabel;
+            });
+
+            if (input) {
+                //only update this if the input settings exist - axis inputs with only one value are deleted
+                // add options for controls requesting 'all' measures
+                if (config[setting + '_all']) {
+                    var point_size_options = d3.merge([['Uniform', 'rRatio'], valid_options]);
+                    config[setting] =
+                        setting == 'point_size_options' ? point_size_options : valid_options;
+                    input.values = config[setting];
+                }
             }
         });
 
@@ -2037,6 +2042,25 @@
             .style('border-radius', '0.2em');
     }
 
+    function relabelMeasureControls() {
+        var chart = this;
+        var config = this.config;
+        var controlLabels = ['X-axis Measure', 'Y-axis Measure', 'Point Size'];
+        var controlWraps = chart.controls.wrap.selectAll('div').filter(function(controlInput) {
+            return controlLabels.indexOf(controlInput.label) > -1;
+        });
+        var controls = controlWraps.select('select');
+        var options = controls.selectAll('option');
+        var allKeys = Object.keys(config.measure_values);
+        options
+            .text(function(d) {
+                return allKeys.indexOf(d) > -1 ? config.measure_values[d] : d;
+            })
+            .property('value', function(d) {
+                return d;
+            });
+    }
+
     function stopAnimation() {
         var chart = this;
         chart.svg
@@ -2362,6 +2386,7 @@
         initControlLabels.call(this);
         initEmptyChartWarning.call(this);
         initStudyDayControl.call(this);
+        relabelMeasureControls.call(this);
     }
 
     function updateAxisSettings() {
