@@ -264,9 +264,11 @@
             },
             add_measures: false,
             x_options: 'all',
+            x_default: 'ALT',
             y_options: ['TB'],
-            point_size: 'Uniform',
+            y_default: 'TB',
             point_size_options: 'all',
+            point_size_default: 'Uniform',
             cuts: {
                 TB: {
                     relative_baseline: 4.8,
@@ -541,9 +543,21 @@
                 typeof settings$$1.y_options == 'string' ? [settings$$1.y_options] : [];
         }
 
-        //Attach measure columns to axis settings.
-        settings$$1.x.column = settings$$1.x_options[0];
-        settings$$1.y.column = settings$$1.y_options[0];
+        //set starting values for axis and point size settings.
+        settings$$1.point_size =
+            settings$$1.point_size_options.indexOf(settings$$1.point_size_default) > -1
+                ? settings$$1.point_size_default
+                : settings$$1.point_size_default == 'rRatio'
+                ? 'rRatio'
+                : 'Uniform';
+        settings$$1.x.column =
+            settings$$1.x_options.indexOf(settings$$1.x_default) > -1
+                ? settings$$1.x_default
+                : settings$$1.x_options[0];
+        settings$$1.y.column =
+            settings$$1.y_options.indexOf(settings$$1.y_default) > -1
+                ? settings$$1.y_default
+                : settings$$1.y_options[0];
 
         // track initial Cutpoint  (lets us detect when cutpoint should change)
         settings$$1.cuts.x = settings$$1.x.column;
@@ -714,7 +728,7 @@
             });
 
             //xAxisMeasureControl.description = settings.x_options.join(', ');
-            xAxisMeasureControl.start = settings.x_options[0];
+            xAxisMeasureControl.start = settings.x.column;
             xAxisMeasureControl.values = settings.x_options;
         }
 
@@ -743,7 +757,7 @@
                 return controlInput.option === 'y.column';
             });
             //  yAxisMeasureControl.description = settings.y_options.join(', ');
-            yAxisMeasureControl.start = settings.y_options[0];
+            yAxisMeasureControl.start = settings.y.column;
             yAxisMeasureControl.values = settings.y_options;
         }
 
@@ -777,7 +791,7 @@
             return ci.label === 'Point Size';
         });
 
-        pointSizeControl.start = settings.point_size || 'Uniform';
+        pointSizeControl.start = settings.point_size;
 
         settings.point_size_options.forEach(function(d) {
             pointSizeControl.values.push(d);

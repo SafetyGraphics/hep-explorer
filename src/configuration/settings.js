@@ -39,9 +39,11 @@ export default function settings() {
         },
         add_measures: false,
         x_options: 'all',
+        x_default: 'ALT',
         y_options: ['TB'],
-        point_size: 'Uniform',
+        y_default: 'TB',
         point_size_options: 'all',
+        point_size_default: 'Uniform',
         cuts: {
             TB: {
                 relative_baseline: 4.8,

@@ -130,9 +130,21 @@ export default function syncSettings(settings) {
         settings.y_options = typeof settings.y_options == 'string' ? [settings.y_options] : [];
     }
 
-    //Attach measure columns to axis settings.
-    settings.x.column = settings.x_options[0];
-    settings.y.column = settings.y_options[0];
+    //set starting values for axis and point size settings.
+    settings.point_size =
+        settings.point_size_options.indexOf(settings.point_size_default) > -1
+            ? settings.point_size_default
+            : settings.point_size_default == 'rRatio'
+            ? 'rRatio'
+            : 'Uniform';
+    settings.x.column =
+        settings.x_options.indexOf(settings.x_default) > -1
+            ? settings.x_default
+            : settings.x_options[0];
+    settings.y.column =
+        settings.y_options.indexOf(settings.y_default) > -1
+            ? settings.y_default
+            : settings.y_options[0];
 
     // track initial Cutpoint  (lets us detect when cutpoint should change)
     settings.cuts.x = settings.x.column;
