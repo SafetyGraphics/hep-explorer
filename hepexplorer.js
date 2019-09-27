@@ -262,7 +262,7 @@
                 TB: 'Total Bilirubin',
                 ALP: 'Alkaline phosphatase (ALP)'
             },
-            addMeasures: false,
+            add_measures: false,
             x_options: 'all',
             y_options: ['TB'],
             point_size: 'Uniform',
@@ -521,10 +521,13 @@
                 typeof settings$$1.baseline.values == 'string' ? [settings$$1.baseline.values] : [];
         }
 
-        //check for 'all' in x_, y_ and point_size_options
+        //check for 'all' in x_, y_ and point_size_options, but keep track if all options are used for later
         var allMeasures = Object.keys(settings$$1.measure_values);
+        settings$$1.x_options_all = settings$$1.x_options == 'all';
         if (settings$$1.x_options == 'all') settings$$1.x_options = allMeasures;
+        settings$$1.y_options_all = settings$$1.y_options == 'all';
         if (settings$$1.y_options == 'all') settings$$1.y_options = allMeasures;
+        settings$$1.point_size_options_all = settings$$1.point_size_options == 'all';
         if (settings$$1.point_size_options == 'all') settings$$1.point_size_options = allMeasures;
 
         //parse x_ and y_options to array if needed
@@ -710,7 +713,7 @@
                 return controlInput.option === 'x.column';
             });
 
-            xAxisMeasureControl.description = settings.x_options.join(', ');
+            //xAxisMeasureControl.description = settings.x_options.join(', ');
             xAxisMeasureControl.start = settings.x_options[0];
             xAxisMeasureControl.values = settings.x_options;
         }
@@ -739,7 +742,7 @@
             var yAxisMeasureControl = controlInputs.find(function(controlInput) {
                 return controlInput.option === 'y.column';
             });
-            yAxisMeasureControl.description = settings.y_options.join(', ');
+            //  yAxisMeasureControl.description = settings.y_options.join(', ');
             yAxisMeasureControl.start = settings.y_options[0];
             yAxisMeasureControl.values = settings.y_options;
         }
@@ -825,6 +828,7 @@
     };
 
     function checkMeasureDetails() {
+        var chart = this;
         var config = this.config;
         var measures = d3
             .set(
@@ -854,21 +858,48 @@
                     '.'
             );
 
+        //automatically add Measures if requested
+        if (config.add_measures) {
+            measures.forEach(function(m, i) {
+                if (specifiedMeasures.indexOf(m) == -1) {
+                    config.measure_values['m' + i] = m;
+                }
+            });
+        }
+
         //check that x_options, y_options and size_options all have value keys/values in measure_values
-        var valid_options = d3.merge([Object.keys(config.measure_values), ['rRatio']]);
-        var all_options = ['x_options', 'y_options', 'point_size_options'];
-        all_options.forEach(function(options) {
-            config[options].forEach(function(option) {
+        var valid_options = Object.keys(config.measure_values);
+        var all_settings = ['x_options', 'y_options', 'point_size_options'];
+        all_settings.forEach(function(setting) {
+            // remove invalid options
+            config[setting].forEach(function(option) {
                 if (valid_options.indexOf(option) == -1) {
                     delete config[options][option];
                     console.warn(
                         option +
                             " wasn't found in the measure_values index and has been removed from config." +
-                            options +
+                            setting +
                             '. This may cause problems with the chart.'
                     );
                 }
             });
+
+            // add options for controls requesting 'all' measures
+            if (config[setting + '_all']) {
+                var point_size_options = d3.merge([['Uniform', 'rRatio'], valid_options]);
+                config[setting] =
+                    setting == 'point_size_options' ? point_size_options : valid_options;
+                var controlLabel =
+                    setting == 'x_options'
+                        ? 'X-axis Measure'
+                        : setting == 'y_options'
+                        ? 'Y-axis Measure'
+                        : 'Point Size';
+                var input = chart.controls.config.inputs.find(function(ci) {
+                    return ci.label == controlLabel;
+                });
+                input.values = config[setting];
+            }
         });
 
         //check that all measure_values have associated cuts

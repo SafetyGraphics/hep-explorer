@@ -37,7 +37,7 @@ export default function settings() {
             TB: 'Total Bilirubin',
             ALP: 'Alkaline phosphatase (ALP)'
         },
-        addMeasures: false,
+        add_measures: false,
         x_options: 'all',
         y_options: ['TB'],
         point_size: 'Uniform',

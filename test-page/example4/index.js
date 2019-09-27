@@ -31,6 +31,7 @@ const settings = {
         'GGT':"GGT",
         "LDH":"LDH"
     },
+    add_measures:true,
     /*
     **Code below is required when measure_values is customized prior to v1.1.1**
     cuts:{
@@ -60,8 +61,9 @@ const settings = {
       }
     },
     */
-  //  x_options:['ALT', 'AST', 'ALP','GGT',"LDH"],
-    y_options:['TB'],
+    //x_options:['ALT', 'AST', 'ALP','GGT',"LDH"],
+//    x_options:"all",
+  //  y_options:"all",
     baseline:{
         value_col:"STUDYDAY",
         values:[1]
