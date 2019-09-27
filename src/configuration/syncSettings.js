@@ -112,6 +112,12 @@ export default function syncSettings(settings) {
             typeof settings.baseline.values == 'string' ? [settings.baseline.values] : [];
     }
 
+    //merge in default measure_values if user hasn't specified changes
+    Object.keys(defaults.measure_values).forEach(function(val) {
+        if (!settings.measure_values.hasOwnProperty(val))
+            settings.measure_values[val] = defaults.measure_values[val];
+    });
+
     //check for 'all' in x_, y_ and point_size_options, but keep track if all options are used for later
     const allMeasures = Object.keys(settings.measure_values);
     settings.x_options_all = settings.x_options == 'all';
@@ -130,16 +136,28 @@ export default function syncSettings(settings) {
         settings.y_options = typeof settings.y_options == 'string' ? [settings.y_options] : [];
     }
 
-    //Attach measure columns to axis settings.
-    settings.x.column = settings.x_options[0];
-    settings.y.column = settings.y_options[0];
+    //set starting values for axis and point size settings.
+    settings.point_size =
+        settings.point_size_options.indexOf(settings.point_size_default) > -1
+            ? settings.point_size_default
+            : settings.point_size_default == 'rRatio'
+            ? 'rRatio'
+            : 'Uniform';
+    settings.x.column =
+        settings.x_options.indexOf(settings.x_default) > -1
+            ? settings.x_default
+            : settings.x_options[0];
+    settings.y.column =
+        settings.y_options.indexOf(settings.y_default) > -1
+            ? settings.y_default
+            : settings.y_options[0];
 
     // track initial Cutpoint  (lets us detect when cutpoint should change)
     settings.cuts.x = settings.x.column;
     settings.cuts.y = settings.y.column;
     settings.cuts.display = settings.display;
 
-    // Confirm detaults are set
+    // Confirm detault cuts are set
     settings.cuts.defaults = settings.cuts.defaults || defaults.cuts.defaults;
     settings.cuts.defaults.relative_uln =
         settings.cuts.defaults.relative_uln || defaults.cuts.defaults.relative_uln;

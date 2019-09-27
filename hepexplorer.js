@@ -264,9 +264,11 @@
             },
             add_measures: false,
             x_options: 'all',
+            x_default: 'ALT',
             y_options: ['TB'],
-            point_size: 'Uniform',
+            y_default: 'TB',
             point_size_options: 'all',
+            point_size_default: 'Uniform',
             cuts: {
                 TB: {
                     relative_baseline: 4.8,
@@ -521,6 +523,12 @@
                 typeof settings$$1.baseline.values == 'string' ? [settings$$1.baseline.values] : [];
         }
 
+        //merge in default measure_values if user hasn't specified changes
+        Object.keys(defaults.measure_values).forEach(function(val) {
+            if (!settings$$1.measure_values.hasOwnProperty(val))
+                settings$$1.measure_values[val] = defaults.measure_values[val];
+        });
+
         //check for 'all' in x_, y_ and point_size_options, but keep track if all options are used for later
         var allMeasures = Object.keys(settings$$1.measure_values);
         settings$$1.x_options_all = settings$$1.x_options == 'all';
@@ -541,16 +549,28 @@
                 typeof settings$$1.y_options == 'string' ? [settings$$1.y_options] : [];
         }
 
-        //Attach measure columns to axis settings.
-        settings$$1.x.column = settings$$1.x_options[0];
-        settings$$1.y.column = settings$$1.y_options[0];
+        //set starting values for axis and point size settings.
+        settings$$1.point_size =
+            settings$$1.point_size_options.indexOf(settings$$1.point_size_default) > -1
+                ? settings$$1.point_size_default
+                : settings$$1.point_size_default == 'rRatio'
+                ? 'rRatio'
+                : 'Uniform';
+        settings$$1.x.column =
+            settings$$1.x_options.indexOf(settings$$1.x_default) > -1
+                ? settings$$1.x_default
+                : settings$$1.x_options[0];
+        settings$$1.y.column =
+            settings$$1.y_options.indexOf(settings$$1.y_default) > -1
+                ? settings$$1.y_default
+                : settings$$1.y_options[0];
 
         // track initial Cutpoint  (lets us detect when cutpoint should change)
         settings$$1.cuts.x = settings$$1.x.column;
         settings$$1.cuts.y = settings$$1.y.column;
         settings$$1.cuts.display = settings$$1.display;
 
-        // Confirm detaults are set
+        // Confirm detault cuts are set
         settings$$1.cuts.defaults = settings$$1.cuts.defaults || defaults.cuts.defaults;
         settings$$1.cuts.defaults.relative_uln =
             settings$$1.cuts.defaults.relative_uln || defaults.cuts.defaults.relative_uln;
@@ -714,7 +734,7 @@
             });
 
             //xAxisMeasureControl.description = settings.x_options.join(', ');
-            xAxisMeasureControl.start = settings.x_options[0];
+            xAxisMeasureControl.start = settings.x.column;
             xAxisMeasureControl.values = settings.x_options;
         }
 
@@ -743,7 +763,7 @@
                 return controlInput.option === 'y.column';
             });
             //  yAxisMeasureControl.description = settings.y_options.join(', ');
-            yAxisMeasureControl.start = settings.y_options[0];
+            yAxisMeasureControl.start = settings.y.column;
             yAxisMeasureControl.values = settings.y_options;
         }
 
@@ -777,7 +797,7 @@
             return ci.label === 'Point Size';
         });
 
-        pointSizeControl.start = settings.point_size || 'Uniform';
+        pointSizeControl.start = settings.point_size;
 
         settings.point_size_options.forEach(function(d) {
             pointSizeControl.values.push(d);
@@ -884,24 +904,29 @@
                 }
             });
 
-            // add options for controls requesting 'all' measures
-            if (config[setting + '_all']) {
-                var point_size_options = d3.merge([['Uniform', 'rRatio'], valid_options]);
-                config[setting] =
-                    setting == 'point_size_options' ? point_size_options : valid_options;
-                var controlLabel =
-                    setting == 'x_options'
-                        ? 'X-axis Measure'
-                        : setting == 'y_options'
-                        ? 'Y-axis Measure'
-                        : 'Point Size';
-                var input = chart.controls.config.inputs.find(function(ci) {
-                    return ci.label == controlLabel;
-                });
-                input.values = config[setting];
+            // update the control input settings
+            var controlLabel =
+                setting == 'x_options'
+                    ? 'X-axis Measure'
+                    : setting == 'y_options'
+                    ? 'Y-axis Measure'
+                    : 'Point Size';
+            var input = chart.controls.config.inputs.find(function(ci) {
+                return ci.label == controlLabel;
+            });
+
+            if (input) {
+                //only update this if the input settings exist - axis inputs with only one value are deleted
+                // add options for controls requesting 'all' measures
+                if (config[setting + '_all']) {
+                    var point_size_options = d3.merge([['Uniform', 'rRatio'], valid_options]);
+                    config[setting] =
+                        setting == 'point_size_options' ? point_size_options : valid_options;
+                    input.values = config[setting];
+                }
             }
         });
-
+        console.log(config.measure_values);
         //check that all measure_values have associated cuts
         Object.keys(config.measure_values).forEach(function(m) {
             // does a cut point for the measure exist? If not, create a placeholder.
@@ -2037,6 +2062,25 @@
             .style('border-radius', '0.2em');
     }
 
+    function relabelMeasureControls() {
+        var chart = this;
+        var config = this.config;
+        var controlLabels = ['X-axis Measure', 'Y-axis Measure', 'Point Size'];
+        var controlWraps = chart.controls.wrap.selectAll('div').filter(function(controlInput) {
+            return controlLabels.indexOf(controlInput.label) > -1;
+        });
+        var controls = controlWraps.select('select');
+        var options = controls.selectAll('option');
+        var allKeys = Object.keys(config.measure_values);
+        options
+            .text(function(d) {
+                return allKeys.indexOf(d) > -1 ? config.measure_values[d] : d;
+            })
+            .property('value', function(d) {
+                return d;
+            });
+    }
+
     function stopAnimation() {
         var chart = this;
         chart.svg
@@ -2362,6 +2406,7 @@
         initControlLabels.call(this);
         initEmptyChartWarning.call(this);
         initStudyDayControl.call(this);
+        relabelMeasureControls.call(this);
     }
 
     function updateAxisSettings() {

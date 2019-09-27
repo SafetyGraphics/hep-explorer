@@ -14,6 +14,7 @@ import { initControlLabels } from './onLayout/initControlLabels';
 import { addFootnote } from './onLayout/addFootnote';
 import { addDownloadButton } from './onLayout/addDownloadButton';
 import { initEmptyChartWarning } from './onLayout/initEmptyChartWarning';
+import { relabelMeasureControls } from './onLayout/relabelMeasureControls';
 
 import customizePlotStyleToggle from './onLayout/customizePlotStyleToggle';
 import initStudyDayControl from './onLayout/initStudyDayControl';
@@ -41,4 +42,5 @@ export default function onLayout() {
     initControlLabels.call(this);
     initEmptyChartWarning.call(this);
     initStudyDayControl.call(this);
+    relabelMeasureControls.call(this);
 }

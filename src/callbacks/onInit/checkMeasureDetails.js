@@ -47,21 +47,26 @@ export default function checkMeasureDetails() {
             }
         });
 
-        // add options for controls requesting 'all' measures
-        if (config[setting + '_all']) {
-            const point_size_options = d3.merge([['Uniform', 'rRatio'], valid_options]);
-            config[setting] = setting == 'point_size_options' ? point_size_options : valid_options;
-            const controlLabel =
-                setting == 'x_options'
-                    ? 'X-axis Measure'
-                    : setting == 'y_options'
-                    ? 'Y-axis Measure'
-                    : 'Point Size';
-            var input = chart.controls.config.inputs.find(ci => ci.label == controlLabel);
-            input.values = config[setting];
+        // update the control input settings
+        const controlLabel =
+            setting == 'x_options'
+                ? 'X-axis Measure'
+                : setting == 'y_options'
+                ? 'Y-axis Measure'
+                : 'Point Size';
+        var input = chart.controls.config.inputs.find(ci => ci.label == controlLabel);
+
+        if (input) {
+            //only update this if the input settings exist - axis inputs with only one value are deleted
+            // add options for controls requesting 'all' measures
+            if (config[setting + '_all']) {
+                const point_size_options = d3.merge([['Uniform', 'rRatio'], valid_options]);
+                config[setting] =
+                    setting == 'point_size_options' ? point_size_options : valid_options;
+                input.values = config[setting];
+            }
         }
     });
-
     //check that all measure_values have associated cuts
     Object.keys(config.measure_values).forEach(function(m) {
         // does a cut point for the measure exist? If not, create a placeholder.
