@@ -33,8 +33,8 @@ export default function syncControlInputs(controlInputs, settings) {
             controlInput => controlInput.option === 'x.column'
         );
 
-        xAxisMeasureControl.description = settings.x_options.join(', ');
-        xAxisMeasureControl.start = settings.x_options[0];
+        //xAxisMeasureControl.description = settings.x_options.join(', ');
+        xAxisMeasureControl.start = settings.x.column;
         xAxisMeasureControl.values = settings.x_options;
     }
 
@@ -60,8 +60,8 @@ export default function syncControlInputs(controlInputs, settings) {
         const yAxisMeasureControl = controlInputs.find(
             controlInput => controlInput.option === 'y.column'
         );
-        yAxisMeasureControl.description = settings.y_options.join(', ');
-        yAxisMeasureControl.start = settings.y_options[0];
+        //  yAxisMeasureControl.description = settings.y_options.join(', ');
+        yAxisMeasureControl.start = settings.y.column;
         yAxisMeasureControl.values = settings.y_options;
     }
 
@@ -93,7 +93,7 @@ export default function syncControlInputs(controlInputs, settings) {
 
     const pointSizeControl = controlInputs.find(ci => ci.label === 'Point Size');
 
-    pointSizeControl.start = settings.point_size || 'Uniform';
+    pointSizeControl.start = settings.point_size;
 
     settings.point_size_options.forEach(function(d) {
         pointSizeControl.values.push(d);

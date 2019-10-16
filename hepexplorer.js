@@ -262,19 +262,14 @@
                 TB: 'Total Bilirubin',
                 ALP: 'Alkaline phosphatase (ALP)'
             },
-            x_options: ['ALT', 'AST', 'ALP'],
+            add_measures: false,
+            x_options: 'all',
+            x_default: 'ALT',
             y_options: ['TB'],
-            point_size: 'Uniform',
-            point_size_options: ['ALT', 'AST', 'ALP', 'TB', 'rRatio'],
+            y_default: 'TB',
+            point_size_options: 'all',
+            point_size_default: 'Uniform',
             cuts: {
-                ALT: {
-                    relative_baseline: 3.8,
-                    relative_uln: 3
-                },
-                AST: {
-                    relative_baseline: 3.8,
-                    relative_uln: 3
-                },
                 TB: {
                     relative_baseline: 4.8,
                     relative_uln: 2
@@ -283,9 +278,10 @@
                     relative_baseline: 3.8,
                     relative_uln: 1
                 },
-                xMeasure: null, //set in syncSettings
-                yMeasure: null, //set in syncSettings
-                display: null //set in syncSettings
+                defaults: {
+                    relative_baseline: 3.8,
+                    relative_uln: 3
+                }
             },
             imputation_methods: {
                 ALT: 'data-driven',
@@ -384,18 +380,21 @@
     }
 
     //Replicate settings in multiple places in the settings object
-    function syncSettings(settings) {
-        settings.marks[0].per[0] = settings.id_col;
+    function syncSettings(settings$$1) {
+        var defaults = settings();
+        settings$$1.marks[0].per[0] = settings$$1.id_col;
 
         //set grouping config
-        if (typeof settings.group_cols == 'string') {
-            settings.group_cols = [{ value_col: settings.group_cols, label: settings.group_cols }];
+        if (typeof settings$$1.group_cols == 'string') {
+            settings$$1.group_cols = [
+                { value_col: settings$$1.group_cols, label: settings$$1.group_cols }
+            ];
         }
 
-        if (!(settings.group_cols instanceof Array && settings.group_cols.length)) {
-            settings.group_cols = [{ value_col: 'NONE', label: 'None' }];
+        if (!(settings$$1.group_cols instanceof Array && settings$$1.group_cols.length)) {
+            settings$$1.group_cols = [{ value_col: 'NONE', label: 'None' }];
         } else {
-            settings.group_cols = settings.group_cols.map(function(group) {
+            settings$$1.group_cols = settings$$1.group_cols.map(function(group) {
                 return {
                     value_col: group.value_col || group,
                     label: group.label || group.value_col || group
@@ -403,33 +402,34 @@
             });
 
             var hasNone =
-                settings.group_cols
+                settings$$1.group_cols
                     .map(function(m) {
                         return m.value_col;
                     })
                     .indexOf('NONE') > -1;
             if (!hasNone) {
-                settings.group_cols.unshift({ value_col: 'NONE', label: 'None' });
+                settings$$1.group_cols.unshift({ value_col: 'NONE', label: 'None' });
             }
         }
 
-        if (settings.group_cols.length > 1) {
-            settings.color_by = settings.group_cols[1].value_col
-                ? settings.group_cols[1].value_col
-                : settings.group_cols[1];
+        if (settings$$1.group_cols.length > 1) {
+            settings$$1.color_by = settings$$1.group_cols[1].value_col
+                ? settings$$1.group_cols[1].value_col
+                : settings$$1.group_cols[1];
         } else {
-            settings.color_by = 'NONE';
+            settings$$1.color_by = 'NONE';
         }
 
         //make sure filters is an Array
-        if (!(settings.filters instanceof Array)) {
-            settings.filters = typeof settings.filters == 'string' ? [settings.filters] : [];
+        if (!(settings$$1.filters instanceof Array)) {
+            settings$$1.filters =
+                typeof settings$$1.filters == 'string' ? [settings$$1.filters] : [];
         }
 
         //Define default details.
-        var defaultDetails = [{ value_col: settings.id_col, label: 'Subject Identifier' }];
-        if (settings.filters) {
-            settings.filters.forEach(function(filter) {
+        var defaultDetails = [{ value_col: settings$$1.id_col, label: 'Subject Identifier' }];
+        if (settings$$1.filters) {
+            settings$$1.filters.forEach(function(filter) {
                 var obj = {
                     value_col: filter.value_col ? filter.value_col : filter,
                     label: filter.label
@@ -449,8 +449,8 @@
             });
         }
 
-        if (settings.group_cols) {
-            settings.group_cols
+        if (settings$$1.group_cols) {
+            settings$$1.group_cols
                 .filter(function(f) {
                     return f.value_col != 'NONE';
                 })
@@ -474,17 +474,18 @@
         }
 
         //parse details to array if needed
-        if (!(settings.details instanceof Array)) {
-            settings.details = typeof settings.details == 'string' ? [settings.details] : [];
+        if (!(settings$$1.details instanceof Array)) {
+            settings$$1.details =
+                typeof settings$$1.details == 'string' ? [settings$$1.details] : [];
         }
 
         //If [settings.details] is not specified:
-        if (!settings.details) settings.details = defaultDetails;
+        if (!settings$$1.details) settings$$1.details = defaultDetails;
         else {
             //If [settings.details] is specified:
             //Allow user to specify an array of columns or an array of objects with a column property
             //and optionally a column label.
-            settings.details.forEach(function(detail) {
+            settings$$1.details.forEach(function(detail) {
                 if (
                     defaultDetails
                         .map(function(d) {
@@ -501,45 +502,90 @@
                             : detail
                     });
             });
-            settings.details = defaultDetails;
+            settings$$1.details = defaultDetails;
         }
 
         // If settings.analysisFlag is null
-        if (!settings.analysisFlag) settings.analysisFlag = { value_col: null, values: [] };
-        if (!settings.analysisFlag.value_col) settings.analysisFlag.value_col = null;
-        if (!(settings.analysisFlag.values instanceof Array)) {
-            settings.analysisFlag.values =
-                typeof settings.analysisFlag.values == 'string'
-                    ? [settings.analysisFlag.values]
+        if (!settings$$1.analysisFlag) settings$$1.analysisFlag = { value_col: null, values: [] };
+        if (!settings$$1.analysisFlag.value_col) settings$$1.analysisFlag.value_col = null;
+        if (!(settings$$1.analysisFlag.values instanceof Array)) {
+            settings$$1.analysisFlag.values =
+                typeof settings$$1.analysisFlag.values == 'string'
+                    ? [settings$$1.analysisFlag.values]
                     : [];
         }
         //if it is null, set settings.baseline.value_col to settings.studyday_col.
-        if (!settings.baseline) settings.baseline = { value_col: null, values: [] };
-        if (!settings.baseline.value_col) settings.baseline.value_col = settings.studyday_col;
-        if (!(settings.baseline.values instanceof Array)) {
-            settings.baseline.values =
-                typeof settings.baseline.values == 'string' ? [settings.baseline.values] : [];
+        if (!settings$$1.baseline) settings$$1.baseline = { value_col: null, values: [] };
+        if (!settings$$1.baseline.value_col)
+            settings$$1.baseline.value_col = settings$$1.studyday_col;
+        if (!(settings$$1.baseline.values instanceof Array)) {
+            settings$$1.baseline.values =
+                typeof settings$$1.baseline.values == 'string' ? [settings$$1.baseline.values] : [];
         }
+
+        //merge in default measure_values if user hasn't specified changes
+        Object.keys(defaults.measure_values).forEach(function(val) {
+            if (!settings$$1.measure_values.hasOwnProperty(val))
+                settings$$1.measure_values[val] = defaults.measure_values[val];
+        });
+
+        //check for 'all' in x_, y_ and point_size_options, but keep track if all options are used for later
+        var allMeasures = Object.keys(settings$$1.measure_values);
+        settings$$1.x_options_all = settings$$1.x_options == 'all';
+        if (settings$$1.x_options == 'all') settings$$1.x_options = allMeasures;
+        settings$$1.y_options_all = settings$$1.y_options == 'all';
+        if (settings$$1.y_options == 'all') settings$$1.y_options = allMeasures;
+        settings$$1.point_size_options_all = settings$$1.point_size_options == 'all';
+        if (settings$$1.point_size_options == 'all') settings$$1.point_size_options = allMeasures;
 
         //parse x_ and y_options to array if needed
-        if (!(settings.x_options instanceof Array)) {
-            settings.x_options = typeof settings.x_options == 'string' ? [settings.x_options] : [];
+        if (!(settings$$1.x_options instanceof Array)) {
+            settings$$1.x_options =
+                typeof settings$$1.x_options == 'string' ? [settings$$1.x_options] : [];
         }
 
-        if (!(settings.y_options instanceof Array)) {
-            settings.y_options = typeof settings.y_options == 'string' ? [settings.y_options] : [];
+        if (!(settings$$1.y_options instanceof Array)) {
+            settings$$1.y_options =
+                typeof settings$$1.y_options == 'string' ? [settings$$1.y_options] : [];
         }
 
-        // track initial Cutpoint (lets us detect when cutpoint should change)
-        settings.cuts.x = settings.x.column;
-        settings.cuts.y = settings.y.column;
-        settings.cuts.display = settings.display;
+        //set starting values for axis and point size settings.
+        settings$$1.point_size =
+            settings$$1.point_size_options.indexOf(settings$$1.point_size_default) > -1
+                ? settings$$1.point_size_default
+                : settings$$1.point_size_default == 'rRatio'
+                ? 'rRatio'
+                : 'Uniform';
+        settings$$1.x.column =
+            settings$$1.x_options.indexOf(settings$$1.x_default) > -1
+                ? settings$$1.x_default
+                : settings$$1.x_options[0];
+        settings$$1.y.column =
+            settings$$1.y_options.indexOf(settings$$1.y_default) > -1
+                ? settings$$1.y_default
+                : settings$$1.y_options[0];
 
-        //Attach measure columns to axis settings.
-        settings.x.column = settings.x_options[0];
-        settings.y.column = settings.y_options[0];
+        // track initial Cutpoint  (lets us detect when cutpoint should change)
+        settings$$1.cuts.x = settings$$1.x.column;
+        settings$$1.cuts.y = settings$$1.y.column;
+        settings$$1.cuts.display = settings$$1.display;
 
-        return settings;
+        // Confirm detault cuts are set
+        settings$$1.cuts.defaults = settings$$1.cuts.defaults || defaults.cuts.defaults;
+        settings$$1.cuts.defaults.relative_uln =
+            settings$$1.cuts.defaults.relative_uln || defaults.cuts.defaults.relative_uln;
+        settings$$1.cuts.defaults.relative_baseline =
+            settings$$1.cuts.defaults.relative_baseline || defaults.cuts.defaults.relative_baseline;
+
+        // keep default cuts if user hasn't provided an alternative
+        var cutMeasures = Object.keys(settings$$1.cuts);
+        Object.keys(defaults.cuts).forEach(function(m) {
+            if (cutMeasures.indexOf(m) == -1) {
+                settings$$1.cuts[m] = defaults.cuts[m];
+            }
+        });
+
+        return settings$$1;
     }
 
     function controlInputs() {
@@ -623,7 +669,7 @@
                 description: 'Parameter to set point radius',
                 options: ['point_size'],
                 start: null, // set in syncControlInputs()
-                values: ['Uniform'],
+                values: ['Uniform', 'rRatio'],
                 require: true
             },
             {
@@ -687,8 +733,8 @@
                 return controlInput.option === 'x.column';
             });
 
-            xAxisMeasureControl.description = settings.x_options.join(', ');
-            xAxisMeasureControl.start = settings.x_options[0];
+            //xAxisMeasureControl.description = settings.x_options.join(', ');
+            xAxisMeasureControl.start = settings.x.column;
             xAxisMeasureControl.values = settings.x_options;
         }
 
@@ -716,8 +762,8 @@
             var yAxisMeasureControl = controlInputs.find(function(controlInput) {
                 return controlInput.option === 'y.column';
             });
-            yAxisMeasureControl.description = settings.y_options.join(', ');
-            yAxisMeasureControl.start = settings.y_options[0];
+            //  yAxisMeasureControl.description = settings.y_options.join(', ');
+            yAxisMeasureControl.start = settings.y.column;
             yAxisMeasureControl.values = settings.y_options;
         }
 
@@ -751,7 +797,7 @@
             return ci.label === 'Point Size';
         });
 
-        pointSizeControl.start = settings.point_size || 'Uniform';
+        pointSizeControl.start = settings.point_size;
 
         settings.point_size_options.forEach(function(d) {
             pointSizeControl.values.push(d);
@@ -802,6 +848,7 @@
     };
 
     function checkMeasureDetails() {
+        var chart = this;
         var config = this.config;
         var measures = d3
             .set(
@@ -831,21 +878,67 @@
                     '.'
             );
 
+        //automatically add Measures if requested
+        if (config.add_measures) {
+            measures.forEach(function(m, i) {
+                if (specifiedMeasures.indexOf(m) == -1) {
+                    config.measure_values['m' + i] = m;
+                }
+            });
+        }
+
         //check that x_options, y_options and size_options all have value keys/values in measure_values
-        var valid_options = d3.merge([Object.keys(config.measure_values), ['rRatio']]);
-        var all_options = ['x_options', 'y_options', 'point_size_options'];
-        all_options.forEach(function(options) {
-            config[options].forEach(function(option) {
+        var valid_options = Object.keys(config.measure_values);
+        var all_settings = ['x_options', 'y_options', 'point_size_options'];
+        all_settings.forEach(function(setting) {
+            // remove invalid options
+            config[setting].forEach(function(option) {
                 if (valid_options.indexOf(option) == -1) {
                     delete config[options][option];
                     console.warn(
                         option +
                             " wasn't found in the measure_values index and has been removed from config." +
-                            options +
+                            setting +
                             '. This may cause problems with the chart.'
                     );
                 }
             });
+
+            // update the control input settings
+            var controlLabel =
+                setting == 'x_options'
+                    ? 'X-axis Measure'
+                    : setting == 'y_options'
+                    ? 'Y-axis Measure'
+                    : 'Point Size';
+            var input = chart.controls.config.inputs.find(function(ci) {
+                return ci.label == controlLabel;
+            });
+
+            if (input) {
+                //only update this if the input settings exist - axis inputs with only one value are deleted
+                // add options for controls requesting 'all' measures
+                if (config[setting + '_all']) {
+                    var point_size_options = d3.merge([['Uniform', 'rRatio'], valid_options]);
+                    config[setting] =
+                        setting == 'point_size_options' ? point_size_options : valid_options;
+                    input.values = config[setting];
+                }
+            }
+        });
+        console.log(config.measure_values);
+        //check that all measure_values have associated cuts
+        Object.keys(config.measure_values).forEach(function(m) {
+            // does a cut point for the measure exist? If not, create a placeholder.
+            if (!config.cuts.hasOwnProperty(m)) {
+                config.cuts[m] = {};
+            }
+
+            // does the cut have non-null baseline and ULN cuts associated, if not use the default values
+            config.cuts[m].relative_baseline =
+                config.cuts[m].relative_baseline || config.cuts.defaults.relative_baseline;
+            config.cuts[m].relative_uln =
+                config.cuts[m].relative_uln || config.cuts.defaults.relative_uln;
         });
     }
 
@@ -1969,6 +2062,25 @@
             .style('border-radius', '0.2em');
     }
 
+    function relabelMeasureControls() {
+        var chart = this;
+        var config = this.config;
+        var controlLabels = ['X-axis Measure', 'Y-axis Measure', 'Point Size'];
+        var controlWraps = chart.controls.wrap.selectAll('div').filter(function(controlInput) {
+            return controlLabels.indexOf(controlInput.label) > -1;
+        });
+        var controls = controlWraps.select('select');
+        var options = controls.selectAll('option');
+        var allKeys = Object.keys(config.measure_values);
+        options
+            .text(function(d) {
+                return allKeys.indexOf(d) > -1 ? config.measure_values[d] : d;
+            })
+            .property('value', function(d) {
+                return d;
+            });
+    }
+
     function stopAnimation() {
         var chart = this;
         chart.svg
@@ -2294,6 +2406,7 @@
         initControlLabels.call(this);
         initEmptyChartWarning.call(this);
         initStudyDayControl.call(this);
+        relabelMeasureControls.call(this);
     }
 
     function updateAxisSettings() {

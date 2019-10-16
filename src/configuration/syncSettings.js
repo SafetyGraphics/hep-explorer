@@ -1,5 +1,8 @@
+import getDefaults from './settings';
+
 //Replicate settings in multiple places in the settings object
 export default function syncSettings(settings) {
+    const defaults = getDefaults();
     settings.marks[0].per[0] = settings.id_col;
 
     //set grouping config
@@ -109,6 +112,21 @@ export default function syncSettings(settings) {
             typeof settings.baseline.values == 'string' ? [settings.baseline.values] : [];
     }
 
+    //merge in default measure_values if user hasn't specified changes
+    Object.keys(defaults.measure_values).forEach(function(val) {
+        if (!settings.measure_values.hasOwnProperty(val))
+            settings.measure_values[val] = defaults.measure_values[val];
+    });
+
+    //check for 'all' in x_, y_ and point_size_options, but keep track if all options are used for later
+    const allMeasures = Object.keys(settings.measure_values);
+    settings.x_options_all = settings.x_options == 'all';
+    if (settings.x_options == 'all') settings.x_options = allMeasures;
+    settings.y_options_all = settings.y_options == 'all';
+    if (settings.y_options == 'all') settings.y_options = allMeasures;
+    settings.point_size_options_all = settings.point_size_options == 'all';
+    if (settings.point_size_options == 'all') settings.point_size_options = allMeasures;
+
     //parse x_ and y_options to array if needed
     if (!(settings.x_options instanceof Array)) {
         settings.x_options = typeof settings.x_options == 'string' ? [settings.x_options] : [];
@@ -118,14 +136,41 @@ export default function syncSettings(settings) {
         settings.y_options = typeof settings.y_options == 'string' ? [settings.y_options] : [];
     }
 
-    // track initial Cutpoint (lets us detect when cutpoint should change)
+    //set starting values for axis and point size settings.
+    settings.point_size =
+        settings.point_size_options.indexOf(settings.point_size_default) > -1
+            ? settings.point_size_default
+            : settings.point_size_default == 'rRatio'
+            ? 'rRatio'
+            : 'Uniform';
+    settings.x.column =
+        settings.x_options.indexOf(settings.x_default) > -1
+            ? settings.x_default
+            : settings.x_options[0];
+    settings.y.column =
+        settings.y_options.indexOf(settings.y_default) > -1
+            ? settings.y_default
+            : settings.y_options[0];
+
+    // track initial Cutpoint  (lets us detect when cutpoint should change)
     settings.cuts.x = settings.x.column;
     settings.cuts.y = settings.y.column;
     settings.cuts.display = settings.display;
 
-    //Attach measure columns to axis settings.
-    settings.x.column = settings.x_options[0];
-    settings.y.column = settings.y_options[0];
+    // Confirm detault cuts are set
+    settings.cuts.defaults = settings.cuts.defaults || defaults.cuts.defaults;
+    settings.cuts.defaults.relative_uln =
+        settings.cuts.defaults.relative_uln || defaults.cuts.defaults.relative_uln;
+    settings.cuts.defaults.relative_baseline =
+        settings.cuts.defaults.relative_baseline || defaults.cuts.defaults.relative_baseline;
+
+    // keep default cuts if user hasn't provided an alternative
+    const cutMeasures = Object.keys(settings.cuts);
+    Object.keys(defaults.cuts).forEach(function(m) {
+        if (cutMeasures.indexOf(m) == -1) {
+            settings.cuts[m] = defaults.cuts[m];
+        }
+    });
 
     return settings;
 }
