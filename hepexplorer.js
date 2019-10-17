@@ -2425,6 +2425,7 @@
     }
 
     function updateControlCutpointLabels() {
+        var config = this.config;
         if (
             this.controls.config.inputs.find(function(input) {
                 return input.description === 'X-axis Reference Line';
@@ -2436,7 +2437,7 @@
                     return d.description === 'X-axis Reference Line';
                 })
                 .select('.wc-control-label')
-                .text(this.config.x.column + ' Reference Line');
+                .text(config.measure_values[config.x.column] + ' Reference Line');
         if (
             this.controls.config.inputs.find(function(input) {
                 return input.description === 'Y-axis Reference Line';
@@ -2448,7 +2449,7 @@
                     return d.description === 'Y-axis Reference Line';
                 })
                 .select('.wc-control-label')
-                .text(this.config.y.column + ' Reference Line');
+                .text(config.measure_values[config.y.column] + ' Reference Line');
     }
 
     function setMaxRRatio() {
