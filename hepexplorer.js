@@ -926,7 +926,6 @@
                 }
             }
         });
-        console.log(config.measure_values);
         //check that all measure_values have associated cuts
         Object.keys(config.measure_values).forEach(function(m) {
             // does a cut point for the measure exist? If not, create a placeholder.
