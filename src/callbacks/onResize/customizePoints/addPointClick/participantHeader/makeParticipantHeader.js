@@ -4,7 +4,7 @@ export function makeParticipantHeader(d) {
     var chart = this;
     var wrap = this.participantDetails.header;
     var raw = d.values.raw[0];
-
+    console.log(raw);
     var title = this.participantDetails.header
         .append('h3')
         .attr('class', 'id')
@@ -49,10 +49,61 @@ export function makeParticipantHeader(d) {
 
     lis.append('div')
         .text(d => d.label)
-        .attr('div', 'label')
+        .attr('class', 'label')
         .style('font-size', '0.8em');
 
     lis.append('div')
         .text(d => raw[d.value_col])
-        .attr('div', 'value');
+        .attr('class', 'value');
+
+    //show overall rRatio
+    var rratio_li = ul
+        .append('li')
+        .style('', 'block')
+        .style('display', 'inline-block')
+        .style('text-align', 'center')
+        .style('padding', '0.5em');
+
+    rratio_li
+        .append('div')
+        .html('R Ratio')
+        .attr('class', 'label')
+        .style('font-size', '0.8em');
+
+    rratio_li
+        .append('div')
+        .attr('class', 'value')
+        .text(d3.format('0.2f')(raw.rRatio));
+
+    //show PALT`
+    var palt_li = ul
+        .append('li')
+        .style('', 'block')
+        .style('display', 'inline-block')
+        .style('text-align', 'center')
+        .style('padding', '0.5em');
+
+    palt_li
+        .append('div')
+        .html('P<sub>ALT</sub>')
+        .attr('class', 'label')
+        .style('font-size', '0.8em');
+
+    palt_li
+        .append('div')
+        .attr('class', 'value')
+        .text(raw.p_alt.text_value)
+        .style('border-bottom', '1px dotted #999')
+        .style('cursor', 'pointer')
+        .on('click', function() {
+            wrap.select('p.footnote')
+                .attr('class', 'footnote')
+                .html(raw.p_alt.note);
+        });
+
+    //initialize empty footnote
+    wrap.append('p')
+        .attr('class', 'footnote')
+        .style('font-size', '0.7em')
+        .style('padding', '0.5em');
 }
