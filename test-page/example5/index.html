@@ -1,0 +1,48 @@
+<html>
+  <head>
+    <title>Hepatic Safety Explorer - Example 5</title>
+
+    <meta http-equiv="Content-Type" content="text/html; charset = utf-8" />
+
+    <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/gh/RhoInc/Webcharts@1/build/webcharts.min.js"
+    ></script>
+
+    <script type="text/javascript" src="../../hepexplorer.js"></script>
+    <link
+      type="text/css"
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/RhoInc/Webcharts@1/css/webcharts.min.css"
+    />
+    <link type="text/css" rel="stylesheet" href="../index.css" />
+  </head>
+
+  <body>
+    <div id="title">Hepatic Safety Explorer</div>
+    <div id="subtitle">Example 5 - Adding P<sub>ALT</sub></div>
+    <div class="details">
+      In this example, P<sub>ALT</sub> is shown for participants with elevated
+      Alanine Aminotransferase (U/L). P<sub>ALT</sub> shows promise in
+      predicting the percentage hepatocyte loss on the basis of the maximum
+      value and the AUC of serum ALT observed during a DILI event. For more
+      details see
+      <a href="https://www.ncbi.nlm.nih.gov/pubmed/30303523"
+        >A Rapid Method to Estimate Hepatocyte Loss Due to Drug-Induced Liver
+        Injury</a
+      >
+      by Chung et al.';
+    </div>
+
+    <div id="info">
+      This is a demo page for the interactive Hepatic Explorer created by the
+      ASA-DIA Interactive Safety Graphics working group. Code, details and
+      documentation are available on
+      <a href="https://github.com/SafetyGraphics/hep-explorer">github</a>.
+    </div>
+    <div id="container"></div>
+  </body>
+
+  <script type="text/javascript" src="./index.js"></script>
+</html>
