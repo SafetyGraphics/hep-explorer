@@ -31,6 +31,11 @@ export default function settings() {
             value_col: null, //synced with studyday_col in syncsettings()
             values: [0]
         },
+        calculate_palt: false,
+        paltFlag: {
+            value_col: null,
+            values: []
+        },
         measure_values: {
             ALT: 'Aminotransferase, alanine (ALT)',
             AST: 'Aminotransferase, aspartate (AST)',
@@ -69,7 +74,10 @@ export default function settings() {
         plot_max_values: true,
         plot_day: null, //set in onLayout/initStudyDayControl
         display_options: [
-            { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
+            {
+                label: 'Upper limit of normal adjusted (eDish)',
+                value: 'relative_uln'
+            },
             { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' }
         ],
         measureBounds: [0.01, 0.99],
@@ -83,6 +91,7 @@ export default function settings() {
         filters_multiselect: true,
         warningText:
             "This graphic has been thoroughly tested, but is not validated. Any clinical recommendations based on this tool should be confirmed using your organization's standard operating procedures.",
+
         //all values set in onLayout/quadrants/*.js
         quadrants: [
             {

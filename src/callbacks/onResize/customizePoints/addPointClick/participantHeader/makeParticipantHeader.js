@@ -76,30 +76,32 @@ export function makeParticipantHeader(d) {
         .text(d3.format('0.2f')(raw.rRatio));
 
     //show PALT`
-    var palt_li = ul
-        .append('li')
-        .style('', 'block')
-        .style('display', 'inline-block')
-        .style('text-align', 'center')
-        .style('padding', '0.5em');
+    if (raw.p_alt) {
+        var palt_li = ul
+            .append('li')
+            .style('', 'block')
+            .style('display', 'inline-block')
+            .style('text-align', 'center')
+            .style('padding', '0.5em');
 
-    palt_li
-        .append('div')
-        .html('P<sub>ALT</sub>')
-        .attr('class', 'label')
-        .style('font-size', '0.8em');
+        palt_li
+            .append('div')
+            .html('P<sub>ALT</sub>')
+            .attr('class', 'label')
+            .style('font-size', '0.8em');
 
-    palt_li
-        .append('div')
-        .attr('class', 'value')
-        .text(raw.p_alt.text_value)
-        .style('border-bottom', '1px dotted #999')
-        .style('cursor', 'pointer')
-        .on('click', function() {
-            wrap.select('p.footnote')
-                .attr('class', 'footnote')
-                .html(raw.p_alt.note);
-        });
+        palt_li
+            .append('div')
+            .attr('class', 'value')
+            .text(raw.p_alt.text_value)
+            .style('border-bottom', '1px dotted #999')
+            .style('cursor', 'pointer')
+            .on('click', function() {
+                wrap.select('p.footnote')
+                    .attr('class', 'footnote')
+                    .html(raw.p_alt.note);
+            });
+    }
 
     //initialize empty footnote
     wrap.append('p')

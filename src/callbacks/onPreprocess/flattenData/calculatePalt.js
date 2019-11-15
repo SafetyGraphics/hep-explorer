@@ -3,22 +3,21 @@ export default function calculatePalt(pt) {
     // For more on PAlt see the following paper: A Rapid Method to Estimate Hepatocyte Loss Due to Drug-Induced Liver Injury by Chung et al
     // Requires: Baseline visit
     // Assumes: Units on Alt are IU/L
-
+    console.log('calculating palt');
     var config = this.config;
 
     //Get a list of raw post-baseline ALT values
     var alt_values = pt.values.raw
-        .filter(f => f.analysisFlag)
         .filter(f => f[config.measure_col] == config.measure_values.ALT)
+        .filter(f => f.paltFlag)
         .map(function(d) {
             var obj = {};
             obj.value = d[config.value_col];
             obj.day = d[config.studyday_col];
-            obj.analysisFlag = d.analysisFlag;
             obj.hour = d.day * 24;
             return obj;
         });
-
+    console.log(alt_values.length);
     if (alt_values.length > 1) {
         //get peak alt value
         const alt_peak = d3.max(alt_values, f => f.value);
@@ -43,16 +42,16 @@ export default function calculatePalt(pt) {
         });
 
         //calculate pAlt  (ALT AUC + AltPeak ^ 0.18)
-        const p_alt = (alt_auc + Math.pow(alt_peak, 0.18)) / 100000;
+        const p_alt = (alt_auc * Math.pow(alt_peak, 0.18)) / 100000;
         const p_alt_rounded = d3.format('0.2f')(p_alt);
         const alt_auc_rounded = d3.format('0.2f')(alt_auc);
         const alt_peak_rounded = d3.format('0.2f')(alt_peak);
         const note =
             '<em>NOTE: </em>' +
             'For this participant, P<sub>ALT</sub> was calculated as: ' +
-            'ALT AUC + Peak ALT <sup>0.18</sup> / 10<sup>5</sup> = ' +
+            'ALT AUC * Peak ALT <sup>0.18</sup> / 10<sup>5</sup> = ' +
             alt_auc_rounded +
-            ' + ' +
+            ' * ' +
             alt_peak_rounded +
             ' <sup>0.18</sup> / 10<sup>5</sup> = ' +
             p_alt_rounded +

@@ -30,7 +30,9 @@ export function flattenData() {
                 allrecords: chart.initial_data.filter(f => f[config.id_col] == d.key)
             };
         });
-
+    console.log(config.paltFlag);
+    console.log(config.calculate_palt);
+    console.log(chart.imputed_data);
     var flat_data = flat_data
         .filter(f => !f.values.drop_participant)
         .map(function(m) {
@@ -40,7 +42,7 @@ export function flattenData() {
             var allMatches = chart.imputed_data.filter(f => f[config.id_col] == m.key);
             m.values.raw = allMatches;
 
-            m.values.p_alt = calculatePalt.call(chart, m);
+            m.values.p_alt = config.calculate_palt ? calculatePalt.call(chart, m) : null;
             return m.values;
         });
     return flat_data;
