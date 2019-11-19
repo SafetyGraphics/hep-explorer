@@ -2798,7 +2798,6 @@
         // For more on PAlt see the following paper: A Rapid Method to Estimate Hepatocyte Loss Due to Drug-Induced Liver Injury by Chung et al
         // Requires: Baseline visit
         // Assumes: Units on Alt are IU/L
-        console.log('calculating palt');
         var config = this.config;
 
         //Get a list of raw post-baseline ALT values
@@ -2816,7 +2815,6 @@
                 obj.hour = d.day * 24;
                 return obj;
             });
-        console.log(alt_values.length);
         if (alt_values.length > 1) {
             //get peak alt value
             var alt_peak = d3.max(alt_values, function(f) {
@@ -2916,9 +2914,6 @@
                     })
                 };
             });
-        console.log(config.paltFlag);
-        console.log(config.calculate_palt);
-        console.log(chart.imputed_data);
         var flat_data = flat_data
             .filter(function(f) {
                 return !f.values.drop_participant;
@@ -4173,7 +4168,6 @@
         var chart = this;
         var wrap = this.participantDetails.header;
         var raw = d.values.raw[0];
-        console.log(raw);
         var title = this.participantDetails.header
             .append('h3')
             .attr('class', 'id')

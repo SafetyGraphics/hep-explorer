@@ -30,9 +30,6 @@ export function flattenData() {
                 allrecords: chart.initial_data.filter(f => f[config.id_col] == d.key)
             };
         });
-    console.log(config.paltFlag);
-    console.log(config.calculate_palt);
-    console.log(chart.imputed_data);
     var flat_data = flat_data
         .filter(f => !f.values.drop_participant)
         .map(function(m) {
