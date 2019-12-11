@@ -14,7 +14,7 @@ export function initParticipantDetails() {
     splot
         .append('h3')
         .attr('class', 'id')
-        .html('Standardized Lab Values by Visit')
+        .html('Standardized Lab Values by Study Day')
         .style('border-top', '2px solid black')
         .style('border-bottom', '2px solid black')
         .style('padding', '.2em');
@@ -26,7 +26,7 @@ export function initParticipantDetails() {
     rrplot
         .append('h3')
         .attr('class', 'id')
-        .html('R Ratio by Visit')
+        .html('R Ratio by Study Day')
         .style('border-top', '2px solid black')
         .style('border-bottom', '2px solid black')
         .style('padding', '.2em');

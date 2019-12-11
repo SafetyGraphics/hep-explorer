@@ -256,6 +256,11 @@
                 value_col: null, //synced with studyday_col in syncsettings()
                 values: [0]
             },
+            calculate_palt: false,
+            paltFlag: {
+                value_col: null,
+                values: []
+            },
             measure_values: {
                 ALT: 'Aminotransferase, alanine (ALT)',
                 AST: 'Aminotransferase, aspartate (AST)',
@@ -294,7 +299,10 @@
             plot_max_values: true,
             plot_day: null, //set in onLayout/initStudyDayControl
             display_options: [
-                { label: 'Upper limit of normal adjusted (eDish)', value: 'relative_uln' },
+                {
+                    label: 'Upper limit of normal adjusted (eDish)',
+                    value: 'relative_uln'
+                },
                 { label: 'Baseline adjusted (mDish)', value: 'relative_baseline' }
             ],
             measureBounds: [0.01, 0.99],
@@ -308,6 +316,7 @@
             filters_multiselect: true,
             warningText:
                 "This graphic has been thoroughly tested, but is not validated. Any clinical recommendations based on this tool should be confirmed using your organization's standard operating procedures.",
+
             //all values set in onLayout/quadrants/*.js
             quadrants: [
                 {
@@ -514,6 +523,15 @@
                     ? [settings$$1.analysisFlag.values]
                     : [];
         }
+
+        // If settings.paltFlag is null
+        if (!settings$$1.paltFlag) settings$$1.paltFlag = { value_col: null, values: [] };
+        if (!settings$$1.paltFlag.value_col) settings$$1.paltFlag.value_col = null;
+        if (!(settings$$1.paltFlag.values instanceof Array)) {
+            settings$$1.paltFlag.values =
+                typeof settings$$1.paltFlag.values == 'string' ? [settings$$1.paltFlag.values] : [];
+        }
+
         //if it is null, set settings.baseline.value_col to settings.studyday_col.
         if (!settings$$1.baseline) settings$$1.baseline = { value_col: null, values: [] };
         if (!settings$$1.baseline.value_col)
@@ -926,7 +944,6 @@
                 }
             }
         });
-        console.log(config.measure_values);
         //check that all measure_values have associated cuts
         Object.keys(config.measure_values).forEach(function(m) {
             // does a cut point for the measure exist? If not, create a placeholder.
@@ -1195,6 +1212,18 @@
         });
     }
 
+    function makePaltFlag() {
+        var config = this.config;
+        this.imputed_data = this.imputed_data.map(function(d) {
+            var hasPaltSetting =
+                config.paltFlag.value_col != null && config.paltFlag.values.length > 0;
+            d.paltFlag = hasPaltSetting
+                ? config.paltFlag.values.indexOf(d[config.paltFlag.value_col]) > -1
+                : true;
+            return d;
+        });
+    }
+
     function cleanData() {
         var config = this.config;
 
@@ -1208,6 +1237,7 @@
         imputeData.call(this);
         deriveVariables.call(this);
         makeAnalysisFlag.call(this);
+        makePaltFlag.call(this);
     }
 
     function initCustomEvents() {
@@ -1525,7 +1555,7 @@
         splot
             .append('h3')
             .attr('class', 'id')
-            .html('Standardized Lab Values by Visit')
+            .html('Standardized Lab Values by Study Day')
             .style('border-top', '2px solid black')
             .style('border-bottom', '2px solid black')
             .style('padding', '.2em');
@@ -1537,7 +1567,7 @@
         rrplot
             .append('h3')
             .attr('class', 'id')
-            .html('R Ratio by Visit')
+            .html('R Ratio by Study Day')
             .style('border-top', '2px solid black')
             .style('border-bottom', '2px solid black')
             .style('padding', '.2em');
@@ -2426,6 +2456,7 @@
     }
 
     function updateControlCutpointLabels() {
+        var config = this.config;
         if (
             this.controls.config.inputs.find(function(input) {
                 return input.description === 'X-axis Reference Line';
@@ -2437,7 +2468,7 @@
                     return d.description === 'X-axis Reference Line';
                 })
                 .select('.wc-control-label')
-                .text(this.config.x.column + ' Reference Line');
+                .text(config.measure_values[config.x.column] + ' Reference Line');
         if (
             this.controls.config.inputs.find(function(input) {
                 return input.description === 'Y-axis Reference Line';
@@ -2449,7 +2480,7 @@
                     return d.description === 'Y-axis Reference Line';
                 })
                 .select('.wc-control-label')
-                .text(this.config.y.column + ' Reference Line');
+                .text(config.measure_values[config.y.column] + ' Reference Line');
     }
 
     function setMaxRRatio() {
@@ -2630,7 +2661,8 @@
                 participant_obj[mKey + '_raw'] = all_matches.map(function(m, i) {
                     return {
                         value: m[config.display],
-                        day: m[config.studyday_col]
+                        day: m[config.studyday_col],
+                        analysisFlag: m.analysisFlag
                     };
                 });
 
@@ -2761,6 +2793,87 @@
         return d3.merge([flat_cols, derived_cols]);
     }
 
+    function calculatePalt(pt) {
+        // Calculates the pAlt value for the given participant ID
+        // For more on PAlt see the following paper: A Rapid Method to Estimate Hepatocyte Loss Due to Drug-Induced Liver Injury by Chung et al
+        // Requires: Baseline visit
+        // Assumes: Units on Alt are IU/L
+        var config = this.config;
+
+        //Get a list of raw post-baseline ALT values
+        var alt_values = pt.values.raw
+            .filter(function(f) {
+                return f[config.measure_col] == config.measure_values.ALT;
+            })
+            .filter(function(f) {
+                return f.paltFlag;
+            })
+            .map(function(d) {
+                var obj = {};
+                obj.value = d[config.value_col];
+                obj.day = d[config.studyday_col];
+                obj.hour = d.day * 24;
+                return obj;
+            });
+        if (alt_values.length > 1) {
+            //get peak alt value
+            var alt_peak = d3.max(alt_values, function(f) {
+                return f.value;
+            });
+
+            //caluculate ALT AUC
+            var alt_auc = d3.sum(alt_values, function(d, i) {
+                if (i < alt_values.length - 1) {
+                    var di = d;
+                    var vi = di.value;
+                    var hi = di.hour;
+                    var dii = alt_values[i + 1];
+                    var vii = dii.value;
+                    var hii = dii.hour;
+                    var v_avg = (vii + vi) / 2;
+                    var h_diff = hii - hi;
+                    var segment_auc = v_avg * h_diff;
+
+                    return segment_auc;
+                } else {
+                    return 0;
+                }
+            });
+
+            //calculate pAlt  (ALT AUC + AltPeak ^ 0.18)
+            var p_alt = (alt_auc * Math.pow(alt_peak, 0.18)) / 100000;
+            var p_alt_rounded = d3.format('0.2f')(p_alt);
+            var alt_auc_rounded = d3.format('0.2f')(alt_auc);
+            var alt_peak_rounded = d3.format('0.2f')(alt_peak);
+            var note =
+                '<em>NOTE: </em>' +
+                'For this participant, P<sub>ALT</sub> was calculated as: ' +
+                'ALT AUC * Peak ALT <sup>0.18</sup> / 10<sup>5</sup> = ' +
+                alt_auc_rounded +
+                ' * ' +
+                alt_peak_rounded +
+                ' <sup>0.18</sup> / 10<sup>5</sup> = ' +
+                p_alt_rounded +
+                '<br>' +
+                'P<sub>ALT</sub> shows promise in predicting the percentage hepatocyte loss on the basis of the maximum value and the AUC of serum ALT observed during a DILI event. For more details see <a href = "https://www.ncbi.nlm.nih.gov/pubmed/30303523">A Rapid Method to Estimate Hepatocyte Loss Due to Drug-Induced Liver Injury</a> by Chung et al.';
+
+            var obj = {
+                value: p_alt,
+                text_value: p_alt_rounded,
+                values: alt_values,
+                note: note,
+                components: {
+                    peak: alt_peak,
+                    auc: alt_auc
+                }
+            };
+
+            return obj;
+        } else {
+            return null; //if no alt values are found
+        }
+    }
+
     //Converts a one record per measure data object to a one record per participant objects
     function flattenData() {
         var chart = this;
@@ -2814,6 +2927,7 @@
                 });
                 m.values.raw = allMatches;
 
+                m.values.p_alt = config.calculate_palt ? calculatePalt.call(chart, m) : null;
                 return m.values;
             });
         return flat_data;
@@ -4054,7 +4168,6 @@
         var chart = this;
         var wrap = this.participantDetails.header;
         var raw = d.values.raw[0];
-
         var title = this.participantDetails.header
             .append('h3')
             .attr('class', 'id')
@@ -4101,14 +4214,67 @@
             .text(function(d) {
                 return d.label;
             })
-            .attr('div', 'label')
+            .attr('class', 'label')
             .style('font-size', '0.8em');
 
         lis.append('div')
             .text(function(d) {
                 return raw[d.value_col];
             })
-            .attr('div', 'value');
+            .attr('class', 'value');
+
+        //show overall rRatio
+        var rratio_li = ul
+            .append('li')
+            .style('', 'block')
+            .style('display', 'inline-block')
+            .style('text-align', 'center')
+            .style('padding', '0.5em');
+
+        rratio_li
+            .append('div')
+            .html('R Ratio')
+            .attr('class', 'label')
+            .style('font-size', '0.8em');
+
+        rratio_li
+            .append('div')
+            .attr('class', 'value')
+            .text(d3.format('0.2f')(raw.rRatio));
+
+        //show PALT`
+        if (raw.p_alt) {
+            var palt_li = ul
+                .append('li')
+                .style('', 'block')
+                .style('display', 'inline-block')
+                .style('text-align', 'center')
+                .style('padding', '0.5em');
+
+            palt_li
+                .append('div')
+                .html('P<sub>ALT</sub>')
+                .attr('class', 'label')
+                .style('font-size', '0.8em');
+
+            palt_li
+                .append('div')
+                .attr('class', 'value')
+                .text(raw.p_alt.text_value)
+                .style('border-bottom', '1px dotted #999')
+                .style('cursor', 'pointer')
+                .on('click', function() {
+                    wrap.select('p.footnote')
+                        .attr('class', 'footnote')
+                        .html(raw.p_alt.note);
+                });
+        }
+
+        //initialize empty footnote
+        wrap.append('p')
+            .attr('class', 'footnote')
+            .style('font-size', '0.7em')
+            .style('padding', '0.5em');
     }
 
     var defaultSettings$1 = {
@@ -4601,7 +4767,7 @@
         chart.spaghetti.on('resize', onResize);
         chart.spaghetti.init(matches);
 
-        //add a footnote
+        //add informational footnote
         chart.spaghetti.wrap
             .append('div')
             .attr('class', 'footnote')

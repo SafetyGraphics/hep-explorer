@@ -35,7 +35,8 @@ export default function getMaxValues(d) {
             participant_obj[mKey + '_raw'] = all_matches.map(function(m, i) {
                 return {
                     value: m[config.display],
-                    day: m[config.studyday_col]
+                    day: m[config.studyday_col],
+                    analysisFlag: m.analysisFlag
                 };
             });
 

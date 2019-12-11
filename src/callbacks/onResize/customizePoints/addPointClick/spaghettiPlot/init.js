@@ -64,7 +64,7 @@ export function init(d) {
     chart.spaghetti.on('resize', onResize);
     chart.spaghetti.init(matches);
 
-    //add a footnote
+    //add informational footnote
     chart.spaghetti.wrap
         .append('div')
         .attr('class', 'footnote')
