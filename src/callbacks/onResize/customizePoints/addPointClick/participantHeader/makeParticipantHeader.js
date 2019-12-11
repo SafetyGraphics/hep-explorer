@@ -4,7 +4,6 @@ export function makeParticipantHeader(d) {
     var chart = this;
     var wrap = this.participantDetails.header;
     var raw = d.values.raw[0];
-    console.log(raw);
     var title = this.participantDetails.header
         .append('h3')
         .attr('class', 'id')
