@@ -1,5 +1,6 @@
 import getMaxValues from './flattenData/getMaxValues';
 import getFlatCols from './flattenData/getFlatCols';
+import calculatePalt from './flattenData/calculatePalt';
 
 //Converts a one record per measure data object to a one record per participant objects
 export function flattenData() {
@@ -38,6 +39,7 @@ export function flattenData() {
             var allMatches = chart.imputed_data.filter(f => f[config.id_col] == m.key);
             m.values.raw = allMatches;
 
+            m.values.p_alt = config.calculate_palt ? calculatePalt.call(chart, m) : null;
             return m.values;
         });
     return flat_data;

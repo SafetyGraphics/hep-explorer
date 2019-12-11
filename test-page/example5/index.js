@@ -1,4 +1,9 @@
 const settings = {
+  calculate_palt: true,
+  paltFlag: {
+    value_col: "PALT",
+    values: ["1"]
+  },
   max_width: 600,
   value_col: "AVAL",
   measure_col: "PARAM",
@@ -16,16 +21,8 @@ const settings = {
       label: "Treatment"
     },
     {
-      value_col: "SEX",
-      label: "Sex"
-    },
-    {
-      value_col: "RACE",
-      label: "Race"
-    },
-    {
-      value_col: "AGEGR1",
-      label: "Age group"
+      value_col: "ALT_ELEVATED",
+      label: "ALT Elevated?"
     }
   ],
   measure_values: {
@@ -40,7 +37,7 @@ const settings = {
   }
 };
 const chart = hepexplorer("#container", settings);
-d3.csv("adlbc.csv", function(data) {
+d3.csv("palt_adlbc.csv", function(data) {
   data.forEach(function(d) {
     d.EPOCH = +d.VISITNUM > 1 ? "Analysis" : "Baseline";
   });
