@@ -4214,14 +4214,11 @@
             .text(function(d) {
                 return d.label;
             })
-            .attr('class', 'label')
             .style('font-size', '0.8em');
 
-        lis.append('div')
-            .text(function(d) {
-                return raw[d.value_col];
-            })
-            .attr('class', 'value');
+        lis.append('div').text(function(d) {
+            return raw[d.value_col];
+        });
 
         //show overall rRatio
         var rratio_li = ul
@@ -4234,13 +4231,9 @@
         rratio_li
             .append('div')
             .html('R Ratio')
-            .attr('class', 'label')
             .style('font-size', '0.8em');
 
-        rratio_li
-            .append('div')
-            .attr('class', 'value')
-            .text(d3.format('0.2f')(raw.rRatio));
+        rratio_li.append('div').text(d3.format('0.2f')(raw.rRatio));
 
         //show PALT`
         if (raw.p_alt) {
@@ -4254,12 +4247,10 @@
             palt_li
                 .append('div')
                 .html('P<sub>ALT</sub>')
-                .attr('class', 'label')
                 .style('font-size', '0.8em');
 
             palt_li
                 .append('div')
-                .attr('class', 'value')
                 .text(raw.p_alt.text_value)
                 .style('border-bottom', '1px dotted #999')
                 .style('cursor', 'pointer')
