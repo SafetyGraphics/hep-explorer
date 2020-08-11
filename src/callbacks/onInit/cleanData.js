@@ -3,11 +3,9 @@ import dropRows from './cleanData/dropRows';
 import deriveVariables from './cleanData/deriveVariables';
 import makeAnalysisFlag from './cleanData/makeAnalysisFlag';
 import makePaltFlag from './cleanData/makePaltFlag';
+import makeRRatio from './cleanData/makeRRatio';
 
 export function cleanData() {
-    var chart = this,
-        config = this.config;
-
     //drop rows with invalid data
     this.imputedData = dropRows.call(this);
 
@@ -19,4 +17,5 @@ export function cleanData() {
     deriveVariables.call(this);
     makeAnalysisFlag.call(this);
     makePaltFlag.call(this);
+    makeRRatio.call(this);
 }

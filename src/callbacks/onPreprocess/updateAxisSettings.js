@@ -10,6 +10,12 @@ export default function updateAxisSettings() {
             : null;
 
     //Update axis labels.
-    config.x.label = config.measure_values[config.x.column] + unit;
-    config.y.label = config.measure_values[config.y.column] + unit;
+    let xValue = config.measure_values[config.x.column]
+        ? config.measure_values[config.x.column]
+        : config.x.column;
+    config.x.label = xValue + unit;
+    let yValue = config.measure_values[config.y.column]
+        ? config.measure_values[config.y.column]
+        : config.y.column;
+    config.y.label = yValue + unit;
 }

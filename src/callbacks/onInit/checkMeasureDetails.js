@@ -30,6 +30,10 @@ export default function checkMeasureDetails() {
         });
     }
 
+    // add measures for nrRatio and rRatio
+    config.measure_values.nrRatio = 'nrRatio';
+    config.measure_values.rRatio = 'rRatio';
+
     //check that x_options, y_options and size_options all have value keys/values in measure_values
     const valid_options = Object.keys(config.measure_values);
     const all_settings = ['x_options', 'y_options', 'point_size_options'];
@@ -60,9 +64,12 @@ export default function checkMeasureDetails() {
             //only update this if the input settings exist - axis inputs with only one value are deleted
             // add options for controls requesting 'all' measures
             if (config[setting + '_all']) {
-                const point_size_options = d3.merge([['Uniform', 'rRatio'], valid_options]);
+                const point_size_options = d3.merge([
+                    ['Uniform', 'rRatio', 'nrRatio'],
+                    valid_options
+                ]);
                 config[setting] =
-                    setting == 'point_size_options' ? point_size_options : valid_options;
+                    setting == 'point_size_options' ? point_size_options : point_size_options;
                 input.values = config[setting];
             }
         }

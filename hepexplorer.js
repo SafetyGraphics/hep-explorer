@@ -283,6 +283,14 @@
                     relative_baseline: 3.8,
                     relative_uln: 1
                 },
+                nrRatio: {
+                    relative_baseline: 5,
+                    relative_uln: 5
+                },
+                rRatio: {
+                    relative_baseline: 5,
+                    relative_uln: 5
+                },
                 defaults: {
                     relative_baseline: 3.8,
                     relative_uln: 3
@@ -687,7 +695,7 @@
                 description: 'Parameter to set point radius',
                 options: ['point_size'],
                 start: null, // set in syncControlInputs()
-                values: ['Uniform', 'rRatio'],
+                values: ['Uniform', 'rRatio', 'nrRatio'],
                 require: true
             },
             {
@@ -905,6 +913,10 @@
             });
         }
 
+        // add measures for nrRatio and rRatio
+        config.measure_values.nrRatio = 'nrRatio';
+        config.measure_values.rRatio = 'rRatio';
+
         //check that x_options, y_options and size_options all have value keys/values in measure_values
         var valid_options = Object.keys(config.measure_values);
         var all_settings = ['x_options', 'y_options', 'point_size_options'];
@@ -937,9 +949,12 @@
                 //only update this if the input settings exist - axis inputs with only one value are deleted
                 // add options for controls requesting 'all' measures
                 if (config[setting + '_all']) {
-                    var point_size_options = d3.merge([['Uniform', 'rRatio'], valid_options]);
+                    var point_size_options = d3.merge([
+                        ['Uniform', 'rRatio', 'nrRatio'],
+                        valid_options
+                    ]);
                     config[setting] =
-                        setting == 'point_size_options' ? point_size_options : valid_options;
+                        setting == 'point_size_options' ? point_size_options : point_size_options;
                     input.values = config[setting];
                 }
             }
@@ -1224,9 +1239,138 @@
         });
     }
 
-    function cleanData() {
+    function makeRRatio() {
+        var chart = this;
         var config = this.config;
+        //adds rows for rRatio and nrRatio to this.imputed_data
 
+        var rRatio = d3
+            .nest()
+            .key(function(f) {
+                return (
+                    f[config.id_col] + '::' + f[config.studyday_col] + '::' + f[config.visitn_col]
+                );
+            })
+            .rollup(function(d) {
+                //get ALT, AST and ALP for each visit
+                var alt_data = d.find(function(f) {
+                    return f[config.measure_col] == config.measure_values.ALT;
+                });
+                var alt = alt_data ? alt_data.relative_uln : null;
+                var alt_relative_baseline = alt_data ? alt_data.relative_baseline : null;
+
+                var alp_data = d.find(function(f) {
+                    return f[config.measure_col] == config.measure_values.ALP;
+                });
+                var alp = alp_data ? alp_data.relative_uln : null;
+                var alp_relative_baseline = alp_data ? alp_data.relative_baseline : null;
+
+                var rratio = alt === null || alp === null ? null : alt / alp;
+                var rratio_relative_baseline =
+                    alt_relative_baseline === null || alp_relative_baseline === null
+                        ? null
+                        : alt_relative_baseline / alp_relative_baseline;
+
+                //create object to return - keep the demographics, etc. overwrite measure-specific variables
+                var obj = {};
+                obj[config.id_col] = d[0][config.id_col];
+                obj[config.studyday_col] = d[0][config.studyday_col];
+                obj.analysisFlag = d[0].analysisFlag;
+                obj.key_measure = true;
+
+                obj[config.measure_col] = 'rRatio';
+                obj[config.value_col] = rratio;
+                obj[config.normal_col_low] = null;
+                obj[config.normal_col_high] = null;
+                obj.uln = null;
+
+                obj.absolute = rratio; // NOTE: absolute doesn't really make sense, but this hack lets us use the relative values in visit-level plot.
+                obj.relative_uln = rratio;
+                obj.relative_baseline = rratio_relative_baseline;
+                // note that the baseline calculation uses raw values and doesn't account for changes in ULN over the course of the study.
+                return obj;
+            })
+            .entries(chart.imputed_data)
+            .map(function(m) {
+                return m.values;
+            })
+            .filter(function(f) {
+                return f.absolute || f.relative_baseline;
+            });
+
+        console.log(rRatio);
+
+        var nrRatio = d3
+            .nest()
+            .key(function(f) {
+                return (
+                    f[config.id_col] + '::' + f[config.studyday_col] + '::' + f[config.visitn_col]
+                );
+            })
+            .rollup(function(d) {
+                //get ALT, AST and ALP for each visit
+                var alt_data = d.find(function(f) {
+                    return f[config.measure_col] == config.measure_values.ALT;
+                });
+                var alt = alt_data ? alt_data.relative_uln : null;
+                var alt_relative_baseline = alt_data ? alt_data.relative_baseline : null;
+
+                var alp_data = d.find(function(f) {
+                    return f[config.measure_col] == config.measure_values.ALP;
+                });
+                var alp = alp_data ? alp_data.relative_uln : null;
+                var alp_relative_baseline = alp_data ? alp_data.relative_baseline : null;
+
+                var ast_data = d.find(function(f) {
+                    return f[config.measure_col] == config.measure_values.AST;
+                });
+                var ast = ast_data ? ast_data.relative_uln : null;
+                var ast_relative_baseline = ast_data ? ast_data.relative_baseline : null;
+
+                var nrratio =
+                    Math.max(alt, ast) == null || alp == null ? null : Math.max(alt, ast) / alp;
+                var nrratio_relative_baseline =
+                    Math.max(alt_relative_baseline, ast_relative_baseline) == null ||
+                    alp_relative_baseline == null
+                        ? null
+                        : Math.max(alt_relative_baseline, ast_relative_baseline) /
+                          alp_relative_baseline;
+
+                //create object to return - keep the demographics, etc. overwrite measure-specific variables
+
+                var obj = {};
+                obj.raw = d;
+                obj[config.id_col] = d[0][config.id_col];
+                obj[config.studyday_col] = d[0][config.studyday_col];
+                obj.analysisFlag = d[0].analysisFlag;
+                obj.key_measure = true;
+
+                obj[config.measure_col] = 'nrRatio';
+                obj[config.value_col] = nrratio;
+                obj[config.normal_col_low] = null;
+                obj[config.normal_col_high] = null;
+                obj.uln = null;
+
+                obj.absolute = nrratio; // NOTE: absolute doesn't really make sense, but this hack lets us use the relative values in visit-level plot.
+                obj.relative_uln = nrratio;
+                obj.relative_baseline = nrratio_relative_baseline;
+                // note that the baseline calculation uses raw values and doesn't account for changes in ULN over the course of the study.
+                return obj;
+            })
+            .entries(chart.imputed_data)
+            .map(function(m) {
+                return m.values;
+            })
+            .filter(function(f) {
+                return f.absolute || f.relative_baseline;
+            });
+        console.log(nrRatio);
+
+        this.imputed_data = d3.merge([this.imputed_data, rRatio, nrRatio]);
+        console.log(this.imputed_data);
+    }
+
+    function cleanData() {
         //drop rows with invalid data
         this.imputedData = dropRows.call(this);
 
@@ -1238,6 +1382,7 @@
         deriveVariables.call(this);
         makeAnalysisFlag.call(this);
         makePaltFlag.call(this);
+        makeRRatio.call(this);
     }
 
     function initCustomEvents() {
@@ -2451,8 +2596,14 @@
                 : null;
 
         //Update axis labels.
-        config.x.label = config.measure_values[config.x.column] + unit;
-        config.y.label = config.measure_values[config.y.column] + unit;
+        var xValue = config.measure_values[config.x.column]
+            ? config.measure_values[config.x.column]
+            : config.x.column;
+        config.x.label = xValue + unit;
+        var yValue = config.measure_values[config.y.column]
+            ? config.measure_values[config.y.column]
+            : config.y.column;
+        config.y.label = yValue + unit;
     }
 
     function updateControlCutpointLabels() {
@@ -2547,80 +2698,6 @@
         varList.forEach(function(v) {
             participant_obj[v] = '' + d[0][v];
         });
-    }
-
-    function calculateRRatios(d, participant_obj) {
-        var chart = this;
-        var config = this.config;
-
-        // R-ratio should be the ratio of ALT to ALP
-
-        // For current time point or maximal values (depends on view)
-        participant_obj.rRatio_current =
-            participant_obj['ALT_relative_uln'] / participant_obj['ALP_relative_uln'];
-
-        //get r-ratio data for every visit where both ALT and ALP are available
-        var allMatches = chart.imputed_data.filter(function(f) {
-            return f[config.id_col] == participant_obj[config.id_col];
-        });
-
-        var raw_alt = allMatches
-            .filter(function(d) {
-                return d[config.measure_col] == config.measure_values.ALT;
-            })
-            .map(function(m) {
-                m.day = m[config.studyday_col];
-                m.alt_relative_uln = m.relative_uln;
-                return m;
-            });
-
-        participant_obj.rRatio_raw = allMatches
-            .filter(function(f) {
-                return f[config.measure_col] == config.measure_values.ALP;
-            })
-            .map(function(m) {
-                m.day = m[config.studyday_col];
-                m.alp_relative_uln = m.relative_uln;
-                return m;
-            })
-            .filter(function(f) {
-                var matched_alt = raw_alt.find(function(fi) {
-                    return fi.day == f.day;
-                });
-                f.alt_relative_uln = matched_alt ? matched_alt.relative_uln : null;
-                f.rRatio = f['alt_relative_uln'] / f['alp_relative_uln'];
-                f.value = f.rRatio;
-                return f.rRatio;
-            });
-
-        //max rRatios across visits
-        participant_obj.rRatio_max = d3.max(participant_obj.rRatio_raw, function(f) {
-            return f.rRatio;
-        }); //max rRatio for all visits
-        participant_obj.rRatio_max_anly = d3.max(
-            participant_obj.rRatio_raw.filter(function(f) {
-                return f.analysisFlag;
-            }),
-            function(f) {
-                return f.rRatio;
-            }
-        );
-
-        // rRatio at time of max ALT
-        var maxAltRecord = participant_obj.rRatio_raw
-            .filter(function(f) {
-                return f.analysisFlag;
-            })
-            .sort(function(a, b) {
-                return b.alt_relative_uln - a.alt_relative_uln; //descending sort (so max is first value)
-            })[0];
-
-        participant_obj.rRatio_max_alt = maxAltRecord ? maxAltRecord.rRatio : null;
-
-        // Use the r ratio at the tme of the max ALT value for standard eDish, otherwise use rRatio from the current time point
-        participant_obj.rRatio = config.plot_max_values
-            ? participant_obj.rRatio_max_alt
-            : participant_obj.rRatio_current;
     }
 
     function getMaxValues(d) {
@@ -2745,7 +2822,8 @@
         addParticipantLevelMetadata.call(chart, d, participant_obj);
 
         //Calculate ratios between measures.
-        calculateRRatios.call(chart, d, participant_obj);
+        //calculateRRatio.call(chart, d, participant_obj);
+        //calculateNRRatio.call(chart, d, participant_obj);
 
         //calculate the day difference between x and y and total day range for all measure values
         participant_obj.day_diff = Math.abs(participant_obj.days_x - participant_obj.days_y);
@@ -5032,12 +5110,14 @@
                     return d.rRatio_max;
                 })
             ];
-            var sizeDomain =
-                config.point_size == 'rRatio'
-                    ? sizeDomain_rRatio
-                    : config.plot_max_values
-                    ? sizeDomain_max
-                    : sizeDomain_all;
+            var sizeDomain_nrRatio = [
+                0,
+                d3.max(this.raw_data, function(d) {
+                    return d.nrRatio_max;
+                })
+            ];
+
+            var sizeDomain = config.point_size == 'rRatio' ? sizeDomain_rRatio : sizeDomain_nrRatio;
             chart.sizeScale = d3.scale
                 .linear()
                 .range([base_size, max_size])
@@ -5050,9 +5130,7 @@
         points
             .transition()
             .attr('r', function(d) {
-                //  console.log(config.point_size);
                 var raw = d.values.raw[0];
-                //    console.log(raw);
                 if (raw.outOfRange) {
                     return small_size;
                 } else if (config.point_size == 'Uniform') {
