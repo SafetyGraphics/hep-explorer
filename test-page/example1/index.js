@@ -9,8 +9,7 @@ const settings = {
   normal_col_high: "A1HI",
   id_col: "USUBJID",
   group_cols: ["TRTA", "RACE", "AGEGR1"],
-  r_ratio_filter: false,
-  /*
+  r_ratio_filter: true,
   filters: [
     {
       value_col: "TRTA",
@@ -29,7 +28,6 @@ const settings = {
       label: "Age group"
     }
   ],
-  */
   measure_values: {
     ALT: "Alanine Aminotransferase (U/L)",
     AST: "Aspartate Aminotransferase (U/L)",

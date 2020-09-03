@@ -949,12 +949,9 @@
                 //only update this if the input settings exist - axis inputs with only one value are deleted
                 // add options for controls requesting 'all' measures
                 if (config[setting + '_all']) {
-                    var point_size_options = d3.merge([
-                        ['Uniform', 'rRatio', 'nrRatio'],
-                        valid_options
-                    ]);
+                    var point_size_options = d3.merge([['Uniform'], valid_options]);
                     config[setting] =
-                        setting == 'point_size_options' ? point_size_options : point_size_options;
+                        setting == 'point_size_options' ? point_size_options : valid_options;
                     input.values = config[setting];
                 }
             }
@@ -2644,10 +2641,10 @@
         //if no max value is defined, use the max value from the data
         if (this.config.r_ratio_filter) {
             if (!config.r_ratio[1]) {
-                var raw_max_r_ratio = d3.max(this.raw_data, function(d) {
-                    return d.rRatio_max;
+                var max_r_ratio = d3.max(this.raw_data, function(d) {
+                    return d.rRatio_relative_uln;
                 });
-                config.max_r_ratio = Math.ceil(raw_max_r_ratio * 10) / 10; //round up to the nearest 0.1
+                config.max_r_ratio = Math.ceil(max_r_ratio * 10) / 10; //round up to the nearest 0.1
                 config.r_ratio[1] = config.max_r_ratio;
                 chart.controls.wrap
                     .selectAll('.control-group')
@@ -2667,8 +2664,8 @@
 
             //Define flag given r-ratio minimum.
             this.raw_data.forEach(function(participant_obj) {
-                var aboveMin = participant_obj.rRatio >= config.r_ratio[0];
-                var belowMax = participant_obj.rRatio <= config.r_ratio[1];
+                var aboveMin = participant_obj.rRatio_relative_uln >= config.r_ratio[0];
+                var belowMax = participant_obj.rRatio_relative_uln <= config.r_ratio[1];
                 participant_obj.rRatioFlag = aboveMin & belowMax ? 'Y' : 'N';
             });
         }
@@ -2698,6 +2695,44 @@
         varList.forEach(function(v) {
             participant_obj[v] = '' + d[0][v];
         });
+    }
+
+    function calculateMaxRRatio(d, participant_obj) {
+        var config = this.config;
+
+        // R-ratio should be the ratio of ALT to ALP
+        console.log(d);
+        console.log(participant_obj);
+        // For current time point or maximal values (depends on view)
+        // participant_obj.rRatio_current = participant_obj['rRatio_relative_uln'];
+
+        // //get r-ratio data for every visit where both ALT and ALP are available
+        // var allMatches = chart.imputed_data.filter(
+        //     f => f[config.id_col] == participant_obj[config.id_col]
+        // );
+        // console.log(allMatches);
+        // participant_obj.rRatio_raw = allMatches.filter(f => f[config.measure_col] == 'rRatio');
+        // console.log(participant_obj.rRatio_raw);
+        // //max rRatios across visits
+        // participant_obj.rRatio_max = d3.max(participant_obj.rRatio_raw, f => f[config.value_col]); //max rRatio for all visits
+        // participant_obj.rRatio_max_anly = d3.max(
+        //     participant_obj.rRatio_raw.filter(f => f.analysisFlag),
+        //     f => f[config.value_col]
+        // );
+
+        // // rRatio at time of max ALT
+        // let maxAltRecord = participant_obj.rRatio_raw
+        //     .filter(f => f.analysisFlag)
+        //     .sort(function(a, b) {
+        //         return b.alt_relative_uln - a.alt_relative_uln; //descending sort (so max is first value)
+        //     })[0];
+
+        // participant_obj.rRatio_max_alt = maxAltRecord ? maxAltRecord.rRatio : null;
+
+        // // Use the r ratio at the tme of the max ALT value for standard eDish, otherwise use rRatio from the current time point
+        // participant_obj.rRatio = config.plot_max_values
+        //     ? participant_obj.rRatio_max_alt
+        //     : participant_obj.rRatio_current;
     }
 
     function getMaxValues(d) {
@@ -2822,7 +2857,7 @@
         addParticipantLevelMetadata.call(chart, d, participant_obj);
 
         //Calculate ratios between measures.
-        //calculateRRatio.call(chart, d, participant_obj);
+        calculateMaxRRatio.call(chart, d, participant_obj);
         //calculateNRRatio.call(chart, d, participant_obj);
 
         //calculate the day difference between x and y and total day range for all measure values
@@ -3696,7 +3731,16 @@
     function makeNestedData(d) {
         var chart = this;
         var config = chart.config;
-        var allMatches = d.values.raw[0].raw;
+        var allMatches = d.values.raw[0].raw
+            .filter(function(d) {
+                return d[config.measure_col] != 'rRatio';
+            })
+            .filter(function(d) {
+                return d[config.measure_col] != 'nrRatio';
+            });
+        //.filter(function(d) {
+        //    return ['nrRatio', 'rRatio'].indexOf(d[config.measure_col] == -1);
+        //});
 
         var ranges = d3
             .nest()
@@ -3716,7 +3760,7 @@
                 return [lower_extent, upper_extent];
             })
             .entries(chart.initial_data);
-
+        console.log(ranges);
         //make nest by measure
         var nested = d3
             .nest()
@@ -3736,6 +3780,7 @@
                 measureObj.median = +d3.format('0.2f')(d3.median(measureObj.values));
                 measureObj.n = measureObj.values.length;
                 measureObj.spark = 'spark!';
+                console.log(measureObj);
                 measureObj.population_extent = ranges.find(function(f) {
                     return measureObj.key == f.key;
                 }).values;
@@ -4847,161 +4892,7 @@
             );
     }
 
-    function drawCutLines() {
-        var chart = this;
-        var config = this.config;
-
-        //line at R Ratio = 2
-        chart.svg
-            .append('line')
-            .attr('y1', chart.y(2))
-            .attr('y2', chart.y(2))
-            .attr('x1', 0)
-            .attr('x2', chart.plot_width)
-            .attr('stroke', '#999')
-            .attr('stroke-dasharray', '3 3');
-
-        chart.svg
-            .append('text')
-            .attr('y', chart.y(2))
-            .attr('dy', '-0.2em')
-            .attr('x', chart.plot_width)
-            .attr('text-anchor', 'end')
-            .attr('alignment-baseline', 'baseline')
-            .attr('fill', '#999')
-            .text('2');
-
-        //line at R Ratio = 5
-        chart.svg
-            .append('line')
-            .attr('y1', chart.y(5))
-            .attr('y2', chart.y(5))
-            .attr('x1', 0)
-            .attr('x2', chart.plot_width)
-            .attr('stroke', '#999')
-            .attr('stroke-dasharray', '3 3');
-
-        chart.svg
-            .append('text')
-            .attr('y', chart.y(5))
-            .attr('dy', '-0.2em')
-            .attr('x', chart.plot_width)
-            .attr('text-anchor', 'end')
-            .attr('alignment-baseline', 'baseline')
-            .attr('fill', '#999')
-            .text('5');
-    }
-
-    function updateClipPath() {
-        //embiggen clip-path so points aren't clipped
-        var radius = this.config.marks.find(function(mark) {
-            return mark.type === 'circle';
-        }).radius;
-        this.svg
-            .select('.plotting-area')
-            .attr('width', this.plot_width + radius * 2 + 2) // plot width + circle radius * 2 + circle stroke width * 2
-            .attr('height', this.plot_height + radius * 2 + 2) // plot height + circle radius * 2 + circle stroke width * 2
-            .attr(
-                'transform',
-                'translate(-' +
-                    (radius + 1) + // translate left circle radius + circle stroke width
-                    ',-' +
-                    (radius + 1) + // translate up circle radius + circle stroke width
-                    ')'
-            );
-    }
-
-    function addPointTitles$2() {
-        var config = this.edish.config;
-        var points = this.marks[1].circles;
-        points.select('title').remove();
-        points.append('title').text(function(d) {
-            var raw = d.values.raw[0];
-
-            var studyday_label = 'Study day: ' + raw[config.studyday_col] + '\n',
-                visitn_label = config.visitn_col
-                    ? 'Visit Number: ' + raw[config.visitn_col] + '\n'
-                    : '',
-                visit_label = config.visit_col ? 'Visit: ' + raw[config.visit_col] + '\n' : '',
-                rratio_label = 'R Ratio: ' + d3.format('0.2f')(raw.rRatio);
-            return studyday_label + visit_label + visitn_label + rratio_label;
-        });
-    }
-
-    function onResize$1() {
-        drawCutLines.call(this);
-        updateClipPath.call(this);
-        addPointTitles$2.call(this);
-    }
-
-    function onDraw$2() {
-        var chart = this;
-        var config = this.config;
-
-        //make sure y domain includes the current cut point for all measures
-        var max_value = d3.max(chart.filtered_data, function(f) {
-            return f[chart.config.y.column];
-        });
-        var max_cut = 5;
-        var y_max = d3.max([max_value, max_cut]);
-        chart.config.y.domain = [0, y_max];
-        chart.y_dom = chart.config.y.domain;
-    }
-
-    var defaultSettings$2 = {
-        max_width: 600,
-        x: {
-            column: 'day',
-            type: 'linear',
-            label: 'Study Day'
-        },
-        y: {
-            column: 'rRatio',
-            type: 'linear',
-            label: 'R Ratio  [(ALT/ULN) / (ALP/ULN)]',
-            format: '.1f',
-            domain: [0, null]
-        },
-        marks: [
-            {
-                type: 'line',
-                per: ['id']
-            },
-            {
-                type: 'circle',
-                radius: 4,
-                per: ['id', 'day']
-            }
-        ],
-        margin: { top: 20 },
-        gridlines: 'xy',
-        aspect: 2
-    };
-
-    function init$4(d) {
-        var chart = this; //the full eDish object
-        var config = this.config; //the eDish config
-        var matches = d.values.raw[0].rRatio_raw;
-
-        if ('rRatioChart' in chart) {
-            chart.rRatioChart.destroy();
-        }
-
-        //sync settings
-        defaultSettings$2.marks[0].per = [config.id_col];
-        defaultSettings$2.marks[1].per = [config.id_col, config.studyday_col];
-
-        //draw that chart
-        var rrElement = this.element + ' .participantDetails .rrPlot .chart';
-        chart.rRatioChart = webcharts.createChart(rrElement, defaultSettings$2);
-
-        chart.rRatioChart.edish = chart; //link the full eDish object
-
-        chart.rRatioChart.on('draw', onDraw$2);
-        chart.rRatioChart.on('resize', onResize$1);
-
-        chart.rRatioChart.init(matches);
-    }
+    //import { init as initRRatioPlot } from './addPointClick/rRatioPlot/init';
 
     function addPointClick() {
         var chart = this;
@@ -5045,11 +4936,11 @@
             chart.participantDetails.wrap.selectAll('*').style('display', null);
             makeParticipantHeader.call(chart, d);
             init$3.call(chart, d); //NOTE: the measure table is initialized from within the spaghettiPlot
-            init$4.call(chart, d);
+            //initRRatioPlot.call(chart, d);
         });
     }
 
-    function addPointTitles$3() {
+    function addPointTitles$2() {
         var config = this.config;
         var points = this.marks[0].circles;
         points.select('title').remove();
@@ -5231,7 +5122,7 @@
     function customizePoints() {
         addPointMouseover.call(this);
         addPointClick.call(this);
-        addPointTitles$3.call(this);
+        addPointTitles$2.call(this);
         formatPoints.call(this);
         setPointSize.call(this);
         setPointOpacity.call(this);
@@ -5424,7 +5315,7 @@
 
     // credit to https://bl.ocks.org/dimitardanailov/99950eee511375b97de749b597147d19
 
-    function init$5() {
+    function init$4() {
         var drag = d3.behavior
             .drag()
             .origin(function(d) {
@@ -5588,7 +5479,7 @@
             });
     }
 
-    function init$6() {
+    function init$5() {
         // Draw box plots
         this.svg.selectAll('g.yMargin').remove();
         this.svg.selectAll('g.xMargin').remove();
@@ -5677,20 +5568,20 @@
         }
     }
 
-    function onResize$2() {
+    function onResize$1() {
         //add maximum point interactivity, custom title and formatting
         customizePoints.call(this);
 
         //draw the quadrants and add drag interactivity
         updateSummaryTable.call(this);
         drawQuadrants.call(this);
-        init$5.call(this);
+        init$4.call(this);
 
         // hide the legend if no group options are given
         toggleLegend.call(this);
 
         // add boxplots
-        init$6.call(this);
+        init$5.call(this);
 
         //axis formatting
         adjustTicks.call(this);
@@ -5710,11 +5601,11 @@
         onPreprocess: onPreprocess,
         onDataTransform: onDataTransform,
         onDraw: onDraw,
-        onResize: onResize$2,
+        onResize: onResize$1,
         onDestroy: onDestroy
     };
 
-    function init$7() {
+    function init$6() {
         var lb = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
         var ex = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
 
@@ -5758,7 +5649,7 @@
             element: element,
             settings: settings,
             chart: chart,
-            init: init$7,
+            init: init$6,
             destroy: destroy
         };
 

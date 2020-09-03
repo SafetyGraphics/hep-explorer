@@ -64,12 +64,9 @@ export default function checkMeasureDetails() {
             //only update this if the input settings exist - axis inputs with only one value are deleted
             // add options for controls requesting 'all' measures
             if (config[setting + '_all']) {
-                const point_size_options = d3.merge([
-                    ['Uniform', 'rRatio', 'nrRatio'],
-                    valid_options
-                ]);
+                const point_size_options = d3.merge([['Uniform'], valid_options]);
                 config[setting] =
-                    setting == 'point_size_options' ? point_size_options : point_size_options;
+                    setting == 'point_size_options' ? point_size_options : valid_options;
                 input.values = config[setting];
             }
         }
