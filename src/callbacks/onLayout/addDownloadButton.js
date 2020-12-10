@@ -21,17 +21,34 @@ export function addDownloadButton() {
             .style('font-weight', 'bold')
             .datum(chart.initial_data)
             .on('click', function(d) {
-                var systemVars = [
-                    'dropReason',
-                    'NONE',
-                    'ALT',
-                    'TB',
-                    'impute_flag',
-                    'key_measure',
-                    'analysisFlag'
-                ];
-                var cols = Object.keys(d[0]).filter(f => systemVars.indexOf(f) == -1);
-                downloadCSV.call(this, d, cols, 'eDishRawData');
+                if (d3.event.altKey) {
+                    let nrRatioData = d3.merge(
+                        chart.raw_data.map(function(m) {
+                            let obj = m.nrRatio_raw;
+                            obj.forEach(function(mm) {
+                                mm.id = m[config.id_col];
+                            });
+                            return obj;
+                        })
+                    );
+                    let cols = Object.keys(nrRatioData[0]);
+                    downloadCSV.call(this, nrRatioData, cols, 'eDish_nrRatioData_testing');
+                } else if (d3.event.shiftKey) {
+                    let cols = Object.keys(chart.raw_data[0]);
+                    downloadCSV.call(this, chart.raw_data, cols, 'eDish_RawData_testing');
+                } else {
+                    var systemVars = [
+                        'dropReason',
+                        'NONE',
+                        'ALT',
+                        'TB',
+                        'impute_flag',
+                        'key_measure',
+                        'analysisFlag'
+                    ];
+                    var cols = Object.keys(d[0]).filter(f => systemVars.indexOf(f) == -1);
+                    downloadCSV.call(this, d, cols, 'eDish_InitialData');
+                }
             });
     }
 }

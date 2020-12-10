@@ -1295,8 +1295,6 @@
                 return f.absolute || f.relative_baseline;
             });
 
-        console.log(rRatio);
-
         var nrRatio = d3
             .nest()
             .key(function(f) {
@@ -1361,10 +1359,8 @@
             .filter(function(f) {
                 return f.absolute || f.relative_baseline;
             });
-        console.log(nrRatio);
 
         this.imputed_data = d3.merge([this.imputed_data, rRatio, nrRatio]);
-        console.log(this.imputed_data);
     }
 
     function cleanData() {
@@ -2017,6 +2013,7 @@
     }
 
     function downloadCSV(data, cols, file) {
+        console.log(file);
         var CSVarray = [];
 
         //add headers to CSV array
@@ -2203,19 +2200,37 @@
                 .style('font-weight', 'bold')
                 .datum(chart.initial_data)
                 .on('click', function(d) {
-                    var systemVars = [
-                        'dropReason',
-                        'NONE',
-                        'ALT',
-                        'TB',
-                        'impute_flag',
-                        'key_measure',
-                        'analysisFlag'
-                    ];
-                    var cols = Object.keys(d[0]).filter(function(f) {
-                        return systemVars.indexOf(f) == -1;
-                    });
-                    downloadCSV.call(this, d, cols, 'eDishRawData');
+                    console.log(d3.event);
+                    if (d3.event.altKey) {
+                        var nrRatioData = d3.merge(
+                            chart.raw_data.map(function(m) {
+                                var obj = m.nrRatio_raw;
+                                obj.forEach(function(mm) {
+                                    mm.id = m[config.id_col];
+                                });
+                                return obj;
+                            })
+                        );
+                        var _cols = Object.keys(nrRatioData[0]);
+                        downloadCSV.call(this, nrRatioData, _cols, 'eDish_nrRatioData_testing');
+                    } else if (d3.event.shiftKey) {
+                        var _cols2 = Object.keys(chart.raw_data[0]);
+                        downloadCSV.call(this, chart.raw_data, _cols2, 'eDish_RawData_testing');
+                    } else {
+                        var systemVars = [
+                            'dropReason',
+                            'NONE',
+                            'ALT',
+                            'TB',
+                            'impute_flag',
+                            'key_measure',
+                            'analysisFlag'
+                        ];
+                        var cols = Object.keys(d[0]).filter(function(f) {
+                            return systemVars.indexOf(f) == -1;
+                        });
+                        downloadCSV.call(this, d, cols, 'eDish_InitialData');
+                    }
                 });
         }
     }
@@ -2701,8 +2716,7 @@
         var config = this.config;
 
         // R-ratio should be the ratio of ALT to ALP
-        console.log(d);
-        console.log(participant_obj);
+
         // For current time point or maximal values (depends on view)
         // participant_obj.rRatio_current = participant_obj['rRatio_relative_uln'];
 
@@ -3760,7 +3774,7 @@
                 return [lower_extent, upper_extent];
             })
             .entries(chart.initial_data);
-        console.log(ranges);
+
         //make nest by measure
         var nested = d3
             .nest()
@@ -3780,7 +3794,6 @@
                 measureObj.median = +d3.format('0.2f')(d3.median(measureObj.values));
                 measureObj.n = measureObj.values.length;
                 measureObj.spark = 'spark!';
-                console.log(measureObj);
                 measureObj.population_extent = ranges.find(function(f) {
                     return measureObj.key == f.key;
                 }).values;

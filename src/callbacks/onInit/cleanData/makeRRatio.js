@@ -45,8 +45,6 @@ export default function makeRRatio() {
         .map(m => m.values)
         .filter(f => f.absolute || f.relative_baseline);
 
-    console.log(rRatio);
-
     let nrRatio = d3
         .nest()
         .key(f => f[config.id_col] + '::' + f[config.studyday_col] + '::' + f[config.visitn_col])
@@ -97,8 +95,6 @@ export default function makeRRatio() {
         .entries(chart.imputed_data)
         .map(m => m.values)
         .filter(f => f.absolute || f.relative_baseline);
-    console.log(nrRatio);
 
     this.imputed_data = d3.merge([this.imputed_data, rRatio, nrRatio]);
-    console.log(this.imputed_data);
 }

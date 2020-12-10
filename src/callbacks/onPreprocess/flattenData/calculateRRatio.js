@@ -3,8 +3,7 @@ export default function calculateMaxRRatio(d, participant_obj) {
     var config = this.config;
 
     // R-ratio should be the ratio of ALT to ALP
-    console.log(d);
-    console.log(participant_obj);
+
     // For current time point or maximal values (depends on view)
     // participant_obj.rRatio_current = participant_obj['rRatio_relative_uln'];
 
