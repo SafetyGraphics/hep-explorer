@@ -2,7 +2,7 @@ library(data.table)
 library(dplyr)
 
 # input data
-data <- '../test-page/example2/allQuads.csv' %>%
+data <- '../../test-page/example2/allQuads.csv' %>%
     fread(
         sep = ',',
         na.strings = 'NA',
@@ -101,8 +101,6 @@ pALT <- auc %>%
     mutate(
         pALT = auc * max ** 0.18 / 10 ** 5
     )
-
-see <- pALT %>% filter(!is.na(pALT))
 
 # output data
 pALT %>%
