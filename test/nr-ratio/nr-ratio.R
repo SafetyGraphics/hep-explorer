@@ -103,5 +103,5 @@ nrRatioPlot <- function(data, id_value, x = 'day', y = 'nr_ratio') {
 
 for (id in unique(nr_ratio$id)) {
     nrRatioPlot(nr_ratio, id)
-    ggsave(paste0('./', id, '.pdf'))
+    ggsave(paste0('./output/', id, '.pdf'))
 }

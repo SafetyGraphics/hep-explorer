@@ -2013,7 +2013,6 @@
     }
 
     function downloadCSV(data, cols, file) {
-        console.log(file);
         var CSVarray = [];
 
         //add headers to CSV array
@@ -2200,8 +2199,9 @@
                 .style('font-weight', 'bold')
                 .datum(chart.initial_data)
                 .on('click', function(d) {
-                    console.log(d3.event);
-                    if (d3.event.altKey) {
+                    var cols = void 0;
+
+                    if (d3.event.ctrlKey) {
                         var nrRatioData = d3.merge(
                             chart.raw_data.map(function(m) {
                                 var obj = m.nrRatio_raw;
@@ -2211,11 +2211,11 @@
                                 return obj;
                             })
                         );
-                        var _cols = Object.keys(nrRatioData[0]);
-                        downloadCSV.call(this, nrRatioData, _cols, 'eDish_nrRatioData_testing');
+                        cols = Object.keys(nrRatioData[0]);
+                        downloadCSV.call(this, nrRatioData, cols, 'eDish_nrRatioData_testing');
                     } else if (d3.event.shiftKey) {
-                        var _cols2 = Object.keys(chart.raw_data[0]);
-                        downloadCSV.call(this, chart.raw_data, _cols2, 'eDish_RawData_testing');
+                        cols = Object.keys(chart.raw_data[0]);
+                        downloadCSV.call(this, chart.raw_data, cols, 'eDish_RawData_testing');
                     } else {
                         var systemVars = [
                             'dropReason',
@@ -2226,7 +2226,7 @@
                             'key_measure',
                             'analysisFlag'
                         ];
-                        var cols = Object.keys(d[0]).filter(function(f) {
+                        cols = Object.keys(d[0]).filter(function(f) {
                             return systemVars.indexOf(f) == -1;
                         });
                         downloadCSV.call(this, d, cols, 'eDish_InitialData');
