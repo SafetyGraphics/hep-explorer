@@ -105,6 +105,7 @@ set.seed(8675309)
         select(id, day, nr_ratio) %>%
         arrange(id, day)
 
+    # ID 4062-20 has duplicate records.
     comparison_allQuads <- production_allQuads %>%
         full_join(
             validation_allQuads,
@@ -115,8 +116,8 @@ set.seed(8675309)
         ) %>%
         filter(
             nr_ratio.x != nr_ratio.y
-            | is.na(nr_ratio.x)
-            | is.na(nr_ratio.y)
+            | (is.na(nr_ratio.x) & !is.na(nr_ratio.y))
+            | (is.na(nr_ratio.y) & !is.na(nr_ratio.x))
         )
 
     # save data
