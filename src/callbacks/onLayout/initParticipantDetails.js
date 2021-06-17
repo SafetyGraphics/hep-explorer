@@ -21,18 +21,6 @@ export function initParticipantDetails() {
 
     splot.append('div').attr('class', 'chart');
 
-    //layout rRatio plot
-    var rrplot = this.participantDetails.wrap.append('div').attr('class', 'rrPlot');
-    rrplot
-        .append('h3')
-        .attr('class', 'id')
-        .html('R Ratio by Study Day')
-        .style('border-top', '2px solid black')
-        .style('border-bottom', '2px solid black')
-        .style('padding', '.2em');
-
-    rrplot.append('div').attr('class', 'chart');
-
     //layout measure table
     var mtable = this.participantDetails.wrap.append('div').attr('class', 'measureTable');
     mtable

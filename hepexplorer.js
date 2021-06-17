@@ -1700,18 +1700,6 @@
 
         splot.append('div').attr('class', 'chart');
 
-        //layout rRatio plot
-        var rrplot = this.participantDetails.wrap.append('div').attr('class', 'rrPlot');
-        rrplot
-            .append('h3')
-            .attr('class', 'id')
-            .html('R Ratio by Study Day')
-            .style('border-top', '2px solid black')
-            .style('border-bottom', '2px solid black')
-            .style('padding', '.2em');
-
-        rrplot.append('div').attr('class', 'chart');
-
         //layout measure table
         var mtable = this.participantDetails.wrap.append('div').attr('class', 'measureTable');
         mtable
@@ -2712,43 +2700,6 @@
         });
     }
 
-    function calculateMaxRRatio(d, participant_obj) {
-        var config = this.config;
-
-        // R-ratio should be the ratio of ALT to ALP
-
-        // For current time point or maximal values (depends on view)
-        // participant_obj.rRatio_current = participant_obj['rRatio_relative_uln'];
-
-        // //get r-ratio data for every visit where both ALT and ALP are available
-        // var allMatches = chart.imputed_data.filter(
-        //     f => f[config.id_col] == participant_obj[config.id_col]
-        // );
-        // console.log(allMatches);
-        // participant_obj.rRatio_raw = allMatches.filter(f => f[config.measure_col] == 'rRatio');
-        // console.log(participant_obj.rRatio_raw);
-        // //max rRatios across visits
-        // participant_obj.rRatio_max = d3.max(participant_obj.rRatio_raw, f => f[config.value_col]); //max rRatio for all visits
-        // participant_obj.rRatio_max_anly = d3.max(
-        //     participant_obj.rRatio_raw.filter(f => f.analysisFlag),
-        //     f => f[config.value_col]
-        // );
-
-        // // rRatio at time of max ALT
-        // let maxAltRecord = participant_obj.rRatio_raw
-        //     .filter(f => f.analysisFlag)
-        //     .sort(function(a, b) {
-        //         return b.alt_relative_uln - a.alt_relative_uln; //descending sort (so max is first value)
-        //     })[0];
-
-        // participant_obj.rRatio_max_alt = maxAltRecord ? maxAltRecord.rRatio : null;
-
-        // // Use the r ratio at the tme of the max ALT value for standard eDish, otherwise use rRatio from the current time point
-        // participant_obj.rRatio = config.plot_max_values
-        //     ? participant_obj.rRatio_max_alt
-        //     : participant_obj.rRatio_current;
-    }
-
     function getMaxValues(d) {
         var chart = this;
         var config = this.config;
@@ -2869,10 +2820,6 @@
 
         //Add participant level metadata
         addParticipantLevelMetadata.call(chart, d, participant_obj);
-
-        //Calculate ratios between measures.
-        calculateMaxRRatio.call(chart, d, participant_obj);
-        //calculateNRRatio.call(chart, d, participant_obj);
 
         //calculate the day difference between x and y and total day range for all measure values
         participant_obj.day_diff = Math.abs(participant_obj.days_x - participant_obj.days_y);
@@ -3752,9 +3699,6 @@
             .filter(function(d) {
                 return d[config.measure_col] != 'nrRatio';
             });
-        //.filter(function(d) {
-        //    return ['nrRatio', 'rRatio'].indexOf(d[config.measure_col] == -1);
-        //});
 
         var ranges = d3
             .nest()
@@ -4905,8 +4849,6 @@
             );
     }
 
-    //import { init as initRRatioPlot } from './addPointClick/rRatioPlot/init';
-
     function addPointClick() {
         var chart = this;
         var config = this.config;
@@ -4949,7 +4891,6 @@
             chart.participantDetails.wrap.selectAll('*').style('display', null);
             makeParticipantHeader.call(chart, d);
             init$3.call(chart, d); //NOTE: the measure table is initialized from within the spaghettiPlot
-            //initRRatioPlot.call(chart, d);
         });
     }
 

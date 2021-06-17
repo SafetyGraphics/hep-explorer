@@ -4,9 +4,6 @@ export function makeNestedData(d) {
     var allMatches = d.values.raw[0].raw
         .filter(d => d[config.measure_col] != 'rRatio')
         .filter(d => d[config.measure_col] != 'nrRatio');
-    //.filter(function(d) {
-    //    return ['nrRatio', 'rRatio'].indexOf(d[config.measure_col] == -1);
-    //});
 
     var ranges = d3
         .nest()
