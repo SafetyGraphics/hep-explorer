@@ -1,7 +1,9 @@
 export function makeNestedData(d) {
     var chart = this;
     var config = chart.config;
-    var allMatches = d.values.raw[0].raw;
+    var allMatches = d.values.raw[0].raw
+        .filter(d => d[config.measure_col] != 'rRatio')
+        .filter(d => d[config.measure_col] != 'nrRatio');
 
     var ranges = d3
         .nest()

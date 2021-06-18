@@ -58,6 +58,14 @@ export default function settings() {
                 relative_baseline: 3.8,
                 relative_uln: 1
             },
+            nrRatio: {
+                relative_baseline: 5,
+                relative_uln: 5
+            },
+            rRatio: {
+                relative_baseline: 5,
+                relative_uln: 5
+            },
             defaults: {
                 relative_baseline: 3.8,
                 relative_uln: 3

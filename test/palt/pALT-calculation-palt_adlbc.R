@@ -2,7 +2,7 @@ library(data.table)
 library(dplyr)
 
 # input data
-data <- '../test-page/example5/palt_adlbc.csv' %>%
+data <- '../../test-page/example5/palt_adlbc.csv' %>%
     fread(
         sep = ',',
         na.strings = 'NA',

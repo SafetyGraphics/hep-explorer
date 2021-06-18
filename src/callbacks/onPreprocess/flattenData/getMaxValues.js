@@ -1,5 +1,4 @@
 import addParticipantLevelMetadata from './addParticipantLevelMetadata';
-import calculateRRatio from './calculateRRatio';
 
 export default function getMaxValues(d) {
     var chart = this;
@@ -113,9 +112,6 @@ export default function getMaxValues(d) {
 
     //Add participant level metadata
     addParticipantLevelMetadata.call(chart, d, participant_obj);
-
-    //Calculate ratios between measures.
-    calculateRRatio.call(chart, d, participant_obj);
 
     //calculate the day difference between x and y and total day range for all measure values
     participant_obj.day_diff = Math.abs(participant_obj.days_x - participant_obj.days_y);
