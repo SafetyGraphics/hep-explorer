@@ -4926,53 +4926,62 @@
     function setPointSize() {
         var _this = this;
 
-        var chart = this;
         var config = this.config;
-        var points = this.marks[0].circles;
 
-        //create the scale
-        var base_size = config.marks[0].radius || config.flex_point_size;
-        var max_size = base_size * 5;
-        var small_size = base_size / 2;
+        // Create the scale.
+        var base_size = config.marks[0].radius || config.flex_point_size; // minimum radius
+        var max_size = base_size * 5; // maximum radius
+        var small_size = base_size / 2; // radius for missing values
 
-        if (config.point_size != 'Uniform') {
+        if (config.point_size !== 'Uniform') {
+            // Get all values of selected measure.
             var sizeValues_all = d3.merge(
-                chart.raw_data.map(function(m) {
-                    return m[config.point_size + '_raw'];
-                })
+                this.raw_data
+                    .map(function(d) {
+                        return d[config.point_size + '_raw'];
+                    })
+                    .filter(function(d) {
+                        return d !== undefined;
+                    })
             );
-            var sizeDomain_all = d3.extent(sizeValues_all, function(f) {
-                return f.value;
-            });
-            var sizeDomain_max = d3.extent(
-                chart.raw_data.map(function(m) {
-                    return m[config.point_size];
-                })
-            );
-            var sizeDomain_rRatio = [
-                0,
-                d3.max(this.raw_data, function(d) {
-                    return d.rRatio_max;
-                })
-            ];
-            var sizeDomain_nrRatio = [
-                0,
-                d3.max(this.raw_data, function(d) {
-                    return d.nrRatio_max;
-                })
-            ];
 
-            var sizeDomain = config.point_size == 'rRatio' ? sizeDomain_rRatio : sizeDomain_nrRatio;
-            chart.sizeScale = d3.scale
+            // Define the domain of the selected measure.
+            var sizeDomain =
+                config.point_size === 'rRatio'
+                    ? [
+                          0,
+                          d3.max(this.raw_data, function(d) {
+                              return d.rRatio_relative_uln;
+                          })
+                      ]
+                    : config.point_size === 'nrRatio'
+                    ? [
+                          0,
+                          d3.max(this.raw_data, function(d) {
+                              return d.nrRatio_relative_uln;
+                          })
+                      ]
+                    : config.plot_max_values
+                    ? d3.extent(
+                          this.raw_data.map(function(m) {
+                              return m[config.point_size];
+                          })
+                      )
+                    : d3.extent(sizeValues_all, function(f) {
+                          return f.value;
+                      });
+
+            //  Scale the selected domain to the minimum and maximum radius values.
+            this.sizeScale = d3.scale
                 .linear()
-                .range([base_size, max_size])
-                .domain(sizeDomain);
+                .domain(sizeDomain)
+                .range([base_size, max_size]);
         }
 
         //TODO: draw a legend (coming later?)
 
         //set the point radius
-        points
+        this.marks[0].circles
             .transition()
             .attr('r', function(d) {
                 var raw = d.values.raw[0];
@@ -4981,7 +4990,7 @@
                 } else if (config.point_size == 'Uniform') {
                     return base_size;
                 } else {
-                    return chart.sizeScale(raw[config.point_size]);
+                    return _this.sizeScale(raw[config.point_size]);
                 }
             })
             .attr('cx', function(d) {
