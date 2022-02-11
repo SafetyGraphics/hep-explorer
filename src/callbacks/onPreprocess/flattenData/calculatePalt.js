@@ -12,9 +12,10 @@ export default function calculatePalt(pt) {
             var obj = {};
             obj.value = d[config.value_col];
             obj.day = d[config.studyday_col];
-            obj.hour = d.day * 24;
+            obj.hour = obj.day * 24;
             return obj;
         });
+
     if (alt_values.length > 1) {
         //get peak alt value
         const alt_peak = d3.max(alt_values, f => f.value);
