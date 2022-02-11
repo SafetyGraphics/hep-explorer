@@ -2862,8 +2862,6 @@
                 return obj;
             });
 
-        console.log(alt_values);
-
         if (alt_values.length > 1) {
             //get peak alt value
             var alt_peak = d3.max(alt_values, function(f) {
@@ -2916,7 +2914,7 @@
                     auc: alt_auc
                 }
             };
-            console.log(obj);
+
             return obj;
         } else {
             return null; //if no alt values are found
