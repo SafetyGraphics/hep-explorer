@@ -105,14 +105,6 @@ export default function syncSettings(settings) {
             typeof settings.analysisFlag.values == 'string' ? [settings.analysisFlag.values] : [];
     }
 
-    // If settings.paltFlag is null
-    if (!settings.paltFlag) settings.paltFlag = { value_col: null, values: [] };
-    if (!settings.paltFlag.value_col) settings.paltFlag.value_col = null;
-    if (!(settings.paltFlag.values instanceof Array)) {
-        settings.paltFlag.values =
-            typeof settings.paltFlag.values == 'string' ? [settings.paltFlag.values] : [];
-    }
-
     //if it is null, set settings.baseline.value_col to settings.studyday_col.
     if (!settings.baseline) settings.baseline = { value_col: null, values: [] };
     if (!settings.baseline.value_col) settings.baseline.value_col = settings.studyday_col;

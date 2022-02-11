@@ -8,7 +8,6 @@ export default function calculatePalt(pt) {
     //Get a list of raw post-baseline ALT values
     var alt_values = pt.values.raw
         .filter(f => f[config.measure_col] == config.measure_values.ALT)
-        .filter(f => f.paltFlag)
         .map(function(d) {
             var obj = {};
             obj.value = d[config.value_col];
