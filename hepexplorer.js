@@ -256,11 +256,7 @@
                 value_col: null, //synced with studyday_col in syncsettings()
                 values: [0]
             },
-            calculate_palt: false,
-            paltFlag: {
-                value_col: null,
-                values: []
-            },
+            calculate_palt: true,
             measure_values: {
                 ALT: 'Aminotransferase, alanine (ALT)',
                 AST: 'Aminotransferase, aspartate (AST)',
@@ -530,14 +526,6 @@
                 typeof settings$$1.analysisFlag.values == 'string'
                     ? [settings$$1.analysisFlag.values]
                     : [];
-        }
-
-        // If settings.paltFlag is null
-        if (!settings$$1.paltFlag) settings$$1.paltFlag = { value_col: null, values: [] };
-        if (!settings$$1.paltFlag.value_col) settings$$1.paltFlag.value_col = null;
-        if (!(settings$$1.paltFlag.values instanceof Array)) {
-            settings$$1.paltFlag.values =
-                typeof settings$$1.paltFlag.values == 'string' ? [settings$$1.paltFlag.values] : [];
         }
 
         //if it is null, set settings.baseline.value_col to settings.studyday_col.
@@ -1224,18 +1212,6 @@
         });
     }
 
-    function makePaltFlag() {
-        var config = this.config;
-        this.imputed_data = this.imputed_data.map(function(d) {
-            var hasPaltSetting =
-                config.paltFlag.value_col != null && config.paltFlag.values.length > 0;
-            d.paltFlag = hasPaltSetting
-                ? config.paltFlag.values.indexOf(d[config.paltFlag.value_col]) > -1
-                : true;
-            return d;
-        });
-    }
-
     function makeRRatio() {
         var chart = this;
         var config = this.config;
@@ -1374,7 +1350,6 @@
         imputeData.call(this);
         deriveVariables.call(this);
         makeAnalysisFlag.call(this);
-        makePaltFlag.call(this);
         makeRRatio.call(this);
     }
 
@@ -2879,16 +2854,14 @@
             .filter(function(f) {
                 return f[config.measure_col] == config.measure_values.ALT;
             })
-            .filter(function(f) {
-                return f.paltFlag;
-            })
             .map(function(d) {
                 var obj = {};
                 obj.value = d[config.value_col];
                 obj.day = d[config.studyday_col];
-                obj.hour = d.day * 24;
+                obj.hour = obj.day * 24;
                 return obj;
             });
+
         if (alt_values.length > 1) {
             //get peak alt value
             var alt_peak = d3.max(alt_values, function(f) {
@@ -2929,7 +2902,7 @@
                 ' <sup>0.18</sup> / 10<sup>5</sup> = ' +
                 p_alt_rounded +
                 '<br>' +
-                'P<sub>ALT</sub> shows promise in predicting the percentage hepatocyte loss on the basis of the maximum value and the AUC of serum ALT observed during a DILI event. For more details see <a href = "https://www.ncbi.nlm.nih.gov/pubmed/30303523">A Rapid Method to Estimate Hepatocyte Loss Due to Drug-Induced Liver Injury</a> by Chung et al.';
+                'P<sub>ALT</sub> shows promise in predicting the percentage hepatocyte loss on the basis of the maximum value and the AUC of serum ALT observed during a DILI event. For more details see <a target = "_blank" href = "https://www.ncbi.nlm.nih.gov/pubmed/30303523">A Rapid Method to Estimate Hepatocyte Loss Due to Drug-Induced Liver Injury</a> by Chung et al.';
 
             var obj = {
                 value: p_alt,
@@ -4971,7 +4944,7 @@
                           return f.value;
                       });
 
-            //  Scale the selected domain to the minimum and maximum radius values.
+            // Scale the selected domain to the minimum and maximum radius values.
             this.sizeScale = d3.scale
                 .linear()
                 .domain(sizeDomain)
@@ -4980,7 +4953,7 @@
 
         //TODO: draw a legend (coming later?)
 
-        //set the point radius
+        // Set the point radius.
         this.marks[0].circles
             .transition()
             .attr('r', function(d) {

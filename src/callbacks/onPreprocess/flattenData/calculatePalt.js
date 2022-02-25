@@ -8,14 +8,14 @@ export default function calculatePalt(pt) {
     //Get a list of raw post-baseline ALT values
     var alt_values = pt.values.raw
         .filter(f => f[config.measure_col] == config.measure_values.ALT)
-        .filter(f => f.paltFlag)
         .map(function(d) {
             var obj = {};
             obj.value = d[config.value_col];
             obj.day = d[config.studyday_col];
-            obj.hour = d.day * 24;
+            obj.hour = obj.day * 24;
             return obj;
         });
+
     if (alt_values.length > 1) {
         //get peak alt value
         const alt_peak = d3.max(alt_values, f => f.value);
@@ -54,7 +54,7 @@ export default function calculatePalt(pt) {
             ' <sup>0.18</sup> / 10<sup>5</sup> = ' +
             p_alt_rounded +
             '<br>' +
-            'P<sub>ALT</sub> shows promise in predicting the percentage hepatocyte loss on the basis of the maximum value and the AUC of serum ALT observed during a DILI event. For more details see <a href = "https://www.ncbi.nlm.nih.gov/pubmed/30303523">A Rapid Method to Estimate Hepatocyte Loss Due to Drug-Induced Liver Injury</a> by Chung et al.';
+            'P<sub>ALT</sub> shows promise in predicting the percentage hepatocyte loss on the basis of the maximum value and the AUC of serum ALT observed during a DILI event. For more details see <a target = "_blank" href = "https://www.ncbi.nlm.nih.gov/pubmed/30303523">A Rapid Method to Estimate Hepatocyte Loss Due to Drug-Induced Liver Injury</a> by Chung et al.';
 
         const obj = {
             value: p_alt,

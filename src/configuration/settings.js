@@ -31,11 +31,7 @@ export default function settings() {
             value_col: null, //synced with studyday_col in syncsettings()
             values: [0]
         },
-        calculate_palt: false,
-        paltFlag: {
-            value_col: null,
-            values: []
-        },
+        calculate_palt: true,
         measure_values: {
             ALT: 'Aminotransferase, alanine (ALT)',
             AST: 'Aminotransferase, aspartate (AST)',
